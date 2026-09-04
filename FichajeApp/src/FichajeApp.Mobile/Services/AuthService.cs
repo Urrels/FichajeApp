@@ -1,0 +1,87 @@
+using System.Net.Http.Json;
+
+namespace FichajeApp.Mobile.Services;
+
+public class LoginRequest
+{
+    public string Email { get; set; } = default!;
+    public string Pin { get; set; } = default!;
+}
+
+public class LoginResponse
+{
+    public string Token { get; set; } = default!;
+    public string NombreCompleto { get; set; } = default!;
+    public int EmpleadoId { get; set; }
+}
+
+// Se encarga del I/O (llamar al backend, persistir en SecureStorage) y
+// delega el estado en memoria de la sesión al Singleton SessionManager.
+public class AuthService
+{
+    private readonly HttpClient _httpClient;
+
+    // Reemplazar por la URL real del backend. En emulador Android usar 10.0.2.2 en vez de localhost.
+    private const string BaseUrl = "https://localhost:7001/api";
+
+    private const string TokenKey = "auth_token";
+    private const string NombreKey = "auth_nombre";
+    private const string IdKey = "auth_id";
+
+    public AuthService()
+    {
+        _httpClient = new HttpClient();
+    }
+
+    public async Task<(bool exito, string mensaje)> LoginAsync(string email, string pin)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/auth/login",
+                new LoginRequest { Email = email, Pin = pin });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+                return (false, error?.GetValueOrDefault("mensaje") ?? "Error al iniciar sesión");
+            }
+
+            var data = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            if (data is null) return (false, "Respuesta inválida del servidor");
+
+            await SecureStorage.Default.SetAsync(TokenKey, data.Token);
+            await SecureStorage.Default.SetAsync(NombreKey, data.NombreCompleto);
+            await SecureStorage.Default.SetAsync(IdKey, data.EmpleadoId.ToString());
+
+            // Actualiza el Singleton en memoria y notifica a los observers suscriptos
+            SessionManager.Instance.IniciarSesion(data.Token, data.NombreCompleto, data.EmpleadoId);
+
+            return (true, "Login exitoso");
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Error de conexión: {ex.Message}");
+        }
+    }
+
+    public async Task<bool> RestaurarSesionAsync()
+    {
+        var token = await SecureStorage.Default.GetAsync(TokenKey);
+        var nombre = await SecureStorage.Default.GetAsync(NombreKey);
+        var idStr = await SecureStorage.Default.GetAsync(IdKey);
+
+        if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(nombre) || !int.TryParse(idStr, out var id))
+            return false;
+
+        SessionManager.Instance.IniciarSesion(token, nombre, id);
+        return true;
+    }
+
+    public void Logout()
+    {
+        SecureStorage.Default.RemoveAll();
+        SessionManager.Instance.FinalizarSesion();
+    }
+
+    public void NotificarSesionExpirada() => Logout();
+}

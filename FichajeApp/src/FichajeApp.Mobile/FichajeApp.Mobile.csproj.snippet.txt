@@ -1,0 +1,20 @@
+Este proyecto lo genera "dotnet new maui" (ver mensaje anterior con los comandos).
+Agregar manualmente estas referencias de paquete al .csproj generado:
+
+  <ItemGroup>
+    <PackageReference Include="Plugin.Fingerprint" Version="3.0.0-beta.2" />
+  </ItemGroup>
+
+Y estos permisos:
+
+--- Platforms/Android/AndroidManifest.xml (dentro de <manifest>) ---
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.USE_BIOMETRIC" />
+<uses-permission android:name="android.permission.USE_FINGERPRINT" />
+
+--- Platforms/iOS/Info.plist ---
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Necesitamos tu ubicación para validar el fichaje</string>
+<key>NSFaceIDUsageDescription</key>
+<string>Usamos Face ID para confirmar tu identidad al fichar</string>
