@@ -73,6 +73,16 @@ configuran por variables de entorno: `GoogleSheets__SpreadsheetId`,
 `GoogleSheets__CredentialsPath`, `Jwt__Secret` (distinto en cada una),
 `Fichaje__ModoUbicacion`, `Fichaje__PrecisionMaxMetros`, `Fichaje__CacheMinutos`.
 
-La app móvil es una sola: en el login se ingresa un **código de empresa** que
-`Services/ClienteService.cs` traduce a la URL de la API de ese cliente. Para sumar un
-cliente, agregar una línea al diccionario `Clientes` y publicar una versión nueva de la app.
+La app móvil se compila **una vez por cliente** (cada una con su ícono, nombre, colores y URL
+de API). Cada cliente tiene una carpeta `src/FichajeApp.Mobile/Clientes/<cliente>/` con
+`cliente.json`, `appicon.svg`, `appiconfg.svg` y `logo.svg`. Los colores del tema
+(`Resources/Styles/Tema.xaml`) se pisan al iniciar con los de `cliente.json`.
+Las propiedades del `.csproj` y los comandos de build están en
+`FichajeApp.Mobile.Clientes.csproj.snippet.txt`:
+
+```bash
+dotnet publish -f net8.0-android -c Release -p:Cliente=clientea
+```
+
+Para sumar un cliente: copiar una carpeta de `Clientes/`, editar su `cliente.json` y
+reemplazar los SVG (los actuales son placeholders), y agregar su bloque al `.csproj`.

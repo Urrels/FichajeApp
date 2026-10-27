@@ -34,7 +34,7 @@ public class ApiService
         try
         {
             var token = SessionManager.Instance.Token;
-            if (string.IsNullOrEmpty(token) || _clientes.BaseUrl is null)
+            if (string.IsNullOrEmpty(token))
             {
                 _authService.NotificarSesionExpirada();
                 return new ResultadoFichaje(false, "Sesión expirada, iniciá sesión de nuevo");

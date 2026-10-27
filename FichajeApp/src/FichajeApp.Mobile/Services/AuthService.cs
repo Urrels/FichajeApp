@@ -32,11 +32,8 @@ public class AuthService
         _clientes = clientes;
     }
 
-    public async Task<(bool exito, string mensaje)> LoginAsync(string codigoEmpresa, string email, string pin)
+    public async Task<(bool exito, string mensaje)> LoginAsync(string email, string pin)
     {
-        if (!_clientes.TrySeleccionar(codigoEmpresa))
-            return (false, "Código de empresa inválido");
-
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"{_clientes.BaseUrl}/auth/login",
@@ -54,8 +51,6 @@ public class AuthService
             await SecureStorage.Default.SetAsync(TokenKey, data.Token);
             await SecureStorage.Default.SetAsync(NombreKey, data.NombreCompleto);
             await SecureStorage.Default.SetAsync(IdKey, data.EmpleadoId.ToString());
-
-            _clientes.Persistir();
 
             // Actualiza el Singleton en memoria y notifica a los observers suscriptos
             SessionManager.Instance.IniciarSesion(data.Token, data.NombreCompleto, data.EmpleadoId);
@@ -76,11 +71,6 @@ public class AuthService
 
         if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(nombre) || !int.TryParse(idStr, out var id))
             return false;
-
-        // Sin cliente conocido no sabemos a qué API pertenece el token (ej. sesión de una versión anterior)
-        if (_clientes.BaseUrl is null)
-            return false;
-
         SessionManager.Instance.IniciarSesion(token, nombre, id);
         return true;
     }

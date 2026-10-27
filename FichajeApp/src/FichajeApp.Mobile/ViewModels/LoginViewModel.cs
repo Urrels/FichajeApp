@@ -13,19 +13,9 @@ public class LoginViewModel : INotifyPropertyChanged
     private string _estado = string.Empty;
     private bool _procesando;
 
-    private string _codigoEmpresa = string.Empty;
-
-    public LoginViewModel(AuthService authService, IClienteService clientes)
+    public LoginViewModel(AuthService authService)
     {
         _authService = authService;
-        // Precarga el código usado en el último login exitoso
-        _codigoEmpresa = clientes.Codigo ?? string.Empty;
-    }
-
-    public string CodigoEmpresa
-    {
-        get => _codigoEmpresa;
-        set { _codigoEmpresa = value; OnPropertyChanged(); }
     }
 
     public string Email
@@ -56,16 +46,16 @@ public class LoginViewModel : INotifyPropertyChanged
 
     public async Task LoginAsync()
     {
-        if (string.IsNullOrWhiteSpace(CodigoEmpresa) || string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Pin))
+        if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Pin))
         {
-            Estado = "Completá código de empresa, email y PIN";
+            Estado = "Completá email y PIN";
             return;
         }
 
         Procesando = true;
         Estado = "Verificando...";
 
-        var (exito, mensaje) = await _authService.LoginAsync(CodigoEmpresa, Email, Pin);
+        var (exito, mensaje) = await _authService.LoginAsync(Email, Pin);
 
         Estado = mensaje;
         Procesando = false;
