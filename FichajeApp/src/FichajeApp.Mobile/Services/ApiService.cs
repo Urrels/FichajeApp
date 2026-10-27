@@ -7,7 +7,13 @@ public class FichajeRequest
 {
     public double Latitud { get; set; }
     public double Longitud { get; set; }
+    public double? Precision { get; set; }
+    public bool EsUbicacionFalsa { get; set; }
+    public string? Direccion { get; set; }
+    public string? Motivo { get; set; }
 }
+
+public record ResultadoFichaje(bool Exito, string Mensaje, bool RequiereMotivo = false);
 
 public class ApiService
 {
@@ -21,7 +27,7 @@ public class ApiService
         _authService = authService;
     }
 
-    public async Task<(bool exito, string mensaje)> RegistrarFichajeAsync(FichajeRequest fichaje)
+    public async Task<ResultadoFichaje> RegistrarFichajeAsync(FichajeRequest fichaje)
     {
         try
         {
@@ -29,7 +35,7 @@ public class ApiService
             if (string.IsNullOrEmpty(token))
             {
                 _authService.NotificarSesionExpirada();
-                return (false, "Sesión expirada, iniciá sesión de nuevo");
+                return new ResultadoFichaje(false, "Sesión expirada, iniciá sesión de nuevo");
             }
 
             _httpClient.DefaultRequestHeaders.Authorization =
@@ -40,21 +46,22 @@ public class ApiService
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 _authService.NotificarSesionExpirada();
-                return (false, "Sesión expirada, iniciá sesión de nuevo");
+                return new ResultadoFichaje(false, "Sesión expirada, iniciá sesión de nuevo");
             }
 
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-                return (true, data?.GetValueOrDefault("mensaje") ?? "Fichaje registrado correctamente");
+                return new ResultadoFichaje(true, data?.GetValueOrDefault("mensaje") ?? "Fichaje registrado correctamente");
             }
 
-            var error = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-            return (false, error?.GetValueOrDefault("mensaje") ?? "Error al fichar");
+            var error = await response.Content.ReadFromJsonAsync<Dictionary<string, string?>>();
+            var requiereMotivo = error?.GetValueOrDefault("codigo") == "MOTIVO_REQUERIDO";
+            return new ResultadoFichaje(false, error?.GetValueOrDefault("mensaje") ?? "Error al fichar", requiereMotivo);
         }
         catch (Exception ex)
         {
-            return (false, $"Error de conexión: {ex.Message}");
+            return new ResultadoFichaje(false, $"Error de conexión: {ex.Message}");
         }
     }
 }

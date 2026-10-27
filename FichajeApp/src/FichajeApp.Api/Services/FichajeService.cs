@@ -14,20 +14,32 @@ public class FichajeService
     private readonly List<IFichajeObserver> _observers;
     private readonly ValidacionCompuesta _validaciones;
 
-    public FichajeService(IFichajeStorageStrategy storage, IEnumerable<IFichajeObserver> observers)
+    // "Libre": se registra dónde fichó (sitio conocido u "Otro lugar" con motivo).
+    // Cualquier otro valor: modo anterior, sede fija validada con GeoValidator.
+    public bool ModoLibre { get; }
+
+    public FichajeService(IFichajeStorageStrategy storage, IEnumerable<IFichajeObserver> observers, IConfiguration config)
     {
         _storage = storage;
         _observers = observers.ToList();
 
+        ModoLibre = string.Equals(config["Fichaje:ModoUbicacion"], "Libre", StringComparison.OrdinalIgnoreCase);
+        var precisionMax = config.GetValue<double?>("Fichaje:PrecisionMaxMetros") ?? 50;
+
         // Composite: se arma una sola vez el árbol de reglas.
         _validaciones = new ValidacionCompuesta()
             .Agregar(new ValidacionEmpleadoActivo())
-            .Agregar(new ValidacionUbicacion());
+            .Agregar(new ValidacionUbicacionReal(precisionMax));
+
+        if (ModoLibre)
+            _validaciones.Agregar(new ValidacionMotivoSiLugarDesconocido());
+        else
+            _validaciones.Agregar(new ValidacionUbicacion());
     }
 
     public ResultadoValidacion Validar(FichajeContext contexto) => _validaciones.Validar(contexto);
 
-    public async Task<FichajeDto> RegistrarAsync(EmpleadoDto empleado, double lat, double lon)
+    public async Task<FichajeDto> RegistrarAsync(EmpleadoDto empleado, FichajeContext ctx)
     {
         var tipoAnterior = await _storage.ObtenerUltimoTipoFichajeAsync(empleado.NombreCompleto);
         var tipo = tipoAnterior == "Entrada" ? "Salida" : "Entrada";
@@ -35,10 +47,14 @@ public class FichajeService
         var fichaje = new FichajeDto
         {
             NombreCompleto = empleado.NombreCompleto,
-            Latitud = lat,
-            Longitud = lon,
+            Latitud = ctx.Latitud,
+            Longitud = ctx.Longitud,
             FechaHora = DateTime.Now,
-            TipoFichaje = tipo
+            TipoFichaje = tipo,
+            Lugar = ctx.Sitio ?? (ModoLibre ? "Otro lugar" : "Sede"),
+            Motivo = ctx.Motivo,
+            Precision = ctx.Precision,
+            Direccion = ctx.Direccion
         };
 
         await _storage.GuardarAsync(fichaje);
