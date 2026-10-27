@@ -20,24 +20,26 @@ public class LoginResponse
 public class AuthService
 {
     private readonly HttpClient _httpClient;
-
-    // Reemplazar por la URL real del backend. En emulador Android usar 10.0.2.2 en vez de localhost.
-    private const string BaseUrl = "https://localhost:7001/api";
+    private readonly IClienteService _clientes;
 
     private const string TokenKey = "auth_token";
     private const string NombreKey = "auth_nombre";
     private const string IdKey = "auth_id";
 
-    public AuthService()
+    public AuthService(IClienteService clientes)
     {
         _httpClient = new HttpClient();
+        _clientes = clientes;
     }
 
-    public async Task<(bool exito, string mensaje)> LoginAsync(string email, string pin)
+    public async Task<(bool exito, string mensaje)> LoginAsync(string codigoEmpresa, string email, string pin)
     {
+        if (!_clientes.TrySeleccionar(codigoEmpresa))
+            return (false, "Código de empresa inválido");
+
         try
         {
-            var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/auth/login",
+            var response = await _httpClient.PostAsJsonAsync($"{_clientes.BaseUrl}/auth/login",
                 new LoginRequest { Email = email, Pin = pin });
 
             if (!response.IsSuccessStatusCode)
@@ -52,6 +54,8 @@ public class AuthService
             await SecureStorage.Default.SetAsync(TokenKey, data.Token);
             await SecureStorage.Default.SetAsync(NombreKey, data.NombreCompleto);
             await SecureStorage.Default.SetAsync(IdKey, data.EmpleadoId.ToString());
+
+            _clientes.Persistir();
 
             // Actualiza el Singleton en memoria y notifica a los observers suscriptos
             SessionManager.Instance.IniciarSesion(data.Token, data.NombreCompleto, data.EmpleadoId);
@@ -71,6 +75,10 @@ public class AuthService
         var idStr = await SecureStorage.Default.GetAsync(IdKey);
 
         if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(nombre) || !int.TryParse(idStr, out var id))
+            return false;
+
+        // Sin cliente conocido no sabemos a qué API pertenece el token (ej. sesión de una versión anterior)
+        if (_clientes.BaseUrl is null)
             return false;
 
         SessionManager.Instance.IniciarSesion(token, nombre, id);
