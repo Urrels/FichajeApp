@@ -7,10 +7,10 @@ public partial class LoginPage : ContentPage
 {
     private readonly LoginViewModel _viewModel;
 
-    public LoginPage(AuthService authService, IClienteService clientes)
+    public LoginPage(AuthService authService)
     {
         InitializeComponent();
-        _viewModel = new LoginViewModel(authService, clientes);
+        _viewModel = new LoginViewModel(authService);
         _viewModel.LoginExitoso += OnLoginExitoso;
         BindingContext = _viewModel;
     }

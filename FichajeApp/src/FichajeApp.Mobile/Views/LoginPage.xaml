@@ -2,33 +2,72 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FichajeApp.Mobile.Views.LoginPage"
-             Title="Iniciar sesión">
+             Title="Iniciar sesión"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{DynamicResource ColorFondo}">
 
-    <VerticalStackLayout Padding="30" Spacing="20" VerticalOptions="Center">
+    <Grid RowDefinitions="Auto,*">
 
-        <Label Text="Fichaje - Iniciar sesión" FontSize="24" HorizontalOptions="Center" />
+        <!-- Cabecera con la identidad del cliente -->
+        <VerticalStackLayout Grid.Row="0"
+                             BackgroundColor="{DynamicResource ColorPrimario}"
+                             Padding="24,72,24,56"
+                             Spacing="12">
+            <Image Source="logo" HeightRequest="72" WidthRequest="72" HorizontalOptions="Center" />
+            <Label Text="{DynamicResource NombreCliente}"
+                   TextColor="{DynamicResource ColorPrimarioTexto}"
+                   FontSize="26" FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+            <Label Text="Control de asistencia"
+                   TextColor="{DynamicResource ColorPrimarioTexto}"
+                   Opacity="0.85" FontSize="14"
+                   HorizontalOptions="Center" />
+        </VerticalStackLayout>
 
-        <Entry Placeholder="Código de empresa"
-               Keyboard="Plain"
-               Text="{Binding CodigoEmpresa}" />
+        <!-- Formulario superpuesto a la cabecera -->
+        <Border Grid.Row="1"
+                Margin="24,-32,24,0"
+                Padding="24"
+                VerticalOptions="Start"
+                BackgroundColor="{DynamicResource ColorSuperficie}"
+                Stroke="{DynamicResource ColorBorde}"
+                StrokeShape="RoundRectangle 20">
+            <VerticalStackLayout Spacing="16">
 
-        <Entry Placeholder="Email"
-               Keyboard="Email"
-               Text="{Binding Email}" />
+                <Label Text="Iniciar sesión" FontSize="20" FontAttributes="Bold"
+                       TextColor="{DynamicResource ColorTexto}" />
 
-        <Entry Placeholder="PIN"
-               IsPassword="True"
-               Keyboard="Numeric"
-               MaxLength="4"
-               Text="{Binding Pin}" />
+                <Entry Placeholder="Email"
+                       Keyboard="Email"
+                       TextColor="{DynamicResource ColorTexto}"
+                       Text="{Binding Email}" />
 
-        <Button Text="Ingresar"
-                Clicked="OnLoginClicked"
-                IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
+                <Entry Placeholder="PIN"
+                       IsPassword="True"
+                       Keyboard="Numeric"
+                       MaxLength="4"
+                       TextColor="{DynamicResource ColorTexto}"
+                       Text="{Binding Pin}" />
 
-        <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
+                <Button Text="Ingresar"
+                        HeightRequest="50"
+                        CornerRadius="25"
+                        FontAttributes="Bold"
+                        BackgroundColor="{DynamicResource ColorPrimario}"
+                        TextColor="{DynamicResource ColorPrimarioTexto}"
+                        Clicked="OnLoginClicked"
+                        IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
 
-        <Label Text="{Binding Estado}" HorizontalOptions="Center" />
+                <ActivityIndicator IsRunning="{Binding Procesando}"
+                                   IsVisible="{Binding Procesando}"
+                                   Color="{DynamicResource ColorPrimario}" />
 
-    </VerticalStackLayout>
+                <Label Text="{Binding Estado}"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center"
+                       TextColor="{DynamicResource ColorTextoSuave}" />
+
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
 </ContentPage>

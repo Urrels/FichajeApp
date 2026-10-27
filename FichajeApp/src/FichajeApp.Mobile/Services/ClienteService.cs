@@ -1,57 +1,46 @@
+using System.Text.Json;
+
 namespace FichajeApp.Mobile.Services;
 
-// Resuelve a qué API habla la app según el código de empresa que ingresa el usuario.
-// Cada cliente tiene su propia instancia de la API (y su propia planilla).
-// Para sumar un cliente: agregar una línea al diccionario y publicar una versión de la app.
+public record ColoresCliente(string Primario, string PrimarioTexto, string Acento);
+
+public record ClienteConfig(string Nombre, string ApiBaseUrl, ColoresCliente Colores);
+
+// Identidad del cliente al que pertenece este build de la app (URL de la API, nombre y colores).
+// La config viene de Clientes/<cliente>/cliente.json, embebida al compilar con -p:Cliente=<cliente>.
 public interface IClienteService
 {
-    string? Codigo { get; }
-    string? BaseUrl { get; }
-    bool TrySeleccionar(string codigo);
-    void Persistir();
+    string Nombre { get; }
+    string BaseUrl { get; }
+    void AplicarTema();
 }
 
 public class ClienteService : IClienteService
 {
-    private const string CodigoKey = "cliente_codigo";
-
-    // Código (sin distinguir mayúsculas) -> URL base de la API de ese cliente.
-    // TODO: reemplazar por las URLs reales de cada cliente.
-    private static readonly Dictionary<string, string> Clientes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["CLIENTEA"] = "https://api-clientea.example.com/api",
-        ["CLIENTEB"] = "https://api-clienteb.example.com/api",
-#if DEBUG
-        ["DEV"] = "https://localhost:7001/api", // emulador Android: usar http://10.0.2.2:<puerto>/api
-#endif
-    };
-
-    public string? Codigo { get; private set; }
-    public string? BaseUrl { get; private set; }
+    private readonly ClienteConfig _config;
 
     public ClienteService()
     {
-        // Recupera el cliente de la última sesión (no es un dato sensible)
-        var guardado = Preferences.Default.Get<string?>(CodigoKey, null);
-        if (!string.IsNullOrEmpty(guardado))
-            TrySeleccionar(guardado);
+        using var stream = typeof(ClienteService).Assembly.GetManifestResourceStream("cliente.json")
+            ?? throw new InvalidOperationException(
+                "Falta cliente.json embebido. Ver FichajeApp.Mobile.Clientes.csproj.snippet.txt.");
+
+        _config = JsonSerializer.Deserialize<ClienteConfig>(stream,
+                      new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                  ?? throw new InvalidOperationException("cliente.json inválido.");
     }
 
-    public bool TrySeleccionar(string codigo)
-    {
-        codigo = codigo?.Trim() ?? string.Empty;
-        if (!Clientes.TryGetValue(codigo, out var url))
-            return false;
+    public string Nombre => _config.Nombre;
+    public string BaseUrl => _config.ApiBaseUrl;
 
-        Codigo = codigo.ToUpperInvariant();
-        BaseUrl = url;
-        return true;
-    }
-
-    // Se llama solo tras un login exitoso, para no recordar un código que no funcionó
-    public void Persistir()
+    // Pisa los colores base de Resources/Styles/Tema.xaml con los del cliente.
+    // Las pantallas usan DynamicResource, así que se actualizan solas.
+    public void AplicarTema()
     {
-        if (Codigo is not null)
-            Preferences.Default.Set(CodigoKey, Codigo);
+        var recursos = Application.Current!.Resources;
+        recursos["NombreCliente"] = Nombre;
+        recursos["ColorPrimario"] = Color.FromArgb(_config.Colores.Primario);
+        recursos["ColorPrimarioTexto"] = Color.FromArgb(_config.Colores.PrimarioTexto);
+        recursos["ColorAcento"] = Color.FromArgb(_config.Colores.Acento);
     }
 }

@@ -1,0 +1,9 @@
+{
+  "nombre": "Fichaje (dev)",
+  "apiBaseUrl": "https://localhost:7001/api",
+  "colores": {
+    "primario": "#455A64",
+    "primarioTexto": "#FFFFFF",
+    "acento": "#FFB300"
+  }
+}

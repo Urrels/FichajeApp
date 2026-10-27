@@ -6,9 +6,10 @@ public partial class App : Application
 {
     private readonly AuthService _authService;
 
-    public App(AuthService authService)
+    public App(AuthService authService, IClienteService clientes)
     {
         InitializeComponent();
+        clientes.AplicarTema();
         _authService = authService;
         MainPage = new AppShell();
     }
