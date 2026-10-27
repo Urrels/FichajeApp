@@ -8,6 +8,10 @@
 
         <Label Text="Fichaje - Iniciar sesión" FontSize="24" HorizontalOptions="Center" />
 
+        <Entry Placeholder="Código de empresa"
+               Keyboard="Plain"
+               Text="{Binding CodigoEmpresa}" />
+
         <Entry Placeholder="Email"
                Keyboard="Email"
                Text="{Binding Email}" />

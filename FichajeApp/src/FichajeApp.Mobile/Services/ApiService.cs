@@ -19,13 +19,14 @@ public class ApiService
 {
     private readonly HttpClient _httpClient;
     private readonly AuthService _authService;
-    private const string BaseUrl = "https://localhost:7001/api";
+    private readonly IClienteService _clientes;
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(15);
 
-    public ApiService(AuthService authService)
+    public ApiService(AuthService authService, IClienteService clientes)
     {
         _httpClient = new HttpClient();
         _authService = authService;
+        _clientes = clientes;
     }
 
     public async Task<ResultadoFichaje> RegistrarFichajeAsync(FichajeRequest fichaje)
@@ -33,14 +34,14 @@ public class ApiService
         try
         {
             var token = SessionManager.Instance.Token;
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(token) || _clientes.BaseUrl is null)
             {
                 _authService.NotificarSesionExpirada();
                 return new ResultadoFichaje(false, "Sesión expirada, iniciá sesión de nuevo");
             }
 
             // Header por request: el HttpClient es compartido y no se muta
-            using var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/fichaje")
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_clientes.BaseUrl}/fichaje")
             {
                 Content = JsonContent.Create(fichaje)
             };

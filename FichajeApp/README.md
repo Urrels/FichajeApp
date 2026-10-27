@@ -65,3 +65,14 @@ Configuración en `appsettings.json`:
 | A | B | C | D | E | F | G | H | I | J |
 |---|---|---|---|---|---|---|---|---|---|
 | Nombre | FechaHora | Lat | Lon | Tipo | Lugar | Motivo | Precisión (m) | Dirección | Mapa |
+
+## Varios clientes (una API por cliente)
+
+Cada cliente tiene su propia instancia de la API y su propia planilla. Por instancia se
+configuran por variables de entorno: `GoogleSheets__SpreadsheetId`,
+`GoogleSheets__CredentialsPath`, `Jwt__Secret` (distinto en cada una),
+`Fichaje__ModoUbicacion`, `Fichaje__PrecisionMaxMetros`, `Fichaje__CacheMinutos`.
+
+La app móvil es una sola: en el login se ingresa un **código de empresa** que
+`Services/ClienteService.cs` traduce a la URL de la API de ese cliente. Para sumar un
+cliente, agregar una línea al diccionario `Clientes` y publicar una versión nueva de la app.
