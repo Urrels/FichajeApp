@@ -7,10 +7,10 @@ public partial class FichajePage : ContentPage
 {
     private readonly FichajeViewModel _viewModel;
 
-    public FichajePage(ApiService apiService)
+    public FichajePage(FichajeViewModel viewModel)
     {
         InitializeComponent();
-        _viewModel = new FichajeViewModel(apiService);
+        _viewModel = viewModel;
         _viewModel.SesionFinalizada += OnSesionFinalizada;
         BindingContext = _viewModel;
     }

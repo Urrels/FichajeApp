@@ -3,7 +3,7 @@ using Plugin.Fingerprint.Abstractions;
 
 namespace FichajeApp.Mobile.Services;
 
-public class BiometricService
+public class BiometricService : IBiometricService
 {
     public async Task<(bool exito, string mensaje)> AutenticarAsync()
     {
