@@ -33,3 +33,35 @@
   `ValidacionEmpleadoActivo.cs`, `ValidacionCompuesta.cs` (backend).
 - **Strategy** → `Storage/IFichajeStorageStrategy.cs` + `GoogleSheetsStorageStrategy.cs`
   (backend): permite cambiar el destino de persistencia sin tocar el resto del sistema.
+
+## Registro de ubicación (modo "Libre")
+
+La ubicación ya no se valida contra una sede fija: siempre se registra dónde fichó
+(coordenadas, precisión, dirección y link a Google Maps). Se rechazan ubicaciones
+simuladas (`IsFromMockProvider`) y precisiones peores que `Fichaje:PrecisionMaxMetros`.
+La app no rastrea en segundo plano: pide ubicación solo al tocar "Fichar".
+
+Configuración en `appsettings.json`:
+
+```json
+"Fichaje": { "ModoUbicacion": "Libre", "PrecisionMaxMetros": 50 }
+```
+
+- `ModoUbicacion = "Libre"`: si el fichaje cae dentro de un sitio de la hoja `Sitios`,
+  se anota su nombre en `Lugar`; si no, `Lugar = "Otro lugar"` y se exige un motivo
+  (la API responde 400 con `codigo = "MOTIVO_REQUERIDO"` y la app lo pide).
+- Cualquier otro valor: modo anterior, sede fija validada con `GeoValidator`
+  (`Lugar = "Sede"`).
+
+### Cambios manuales en la planilla de Google (no se automatizan)
+
+**Hoja nueva `Sitios`** — encabezado en fila 1, datos desde fila 2:
+
+| A: Nombre | B: Latitud | C: Longitud | D: RadioMetros |
+|-----------|------------|-------------|----------------|
+
+**Hoja `Fichajes`** — encabezados en fila 1, columnas A-J:
+
+| A | B | C | D | E | F | G | H | I | J |
+|---|---|---|---|---|---|---|---|---|---|
+| Nombre | FechaHora | Lat | Lon | Tipo | Lugar | Motivo | Precisión (m) | Dirección | Mapa |

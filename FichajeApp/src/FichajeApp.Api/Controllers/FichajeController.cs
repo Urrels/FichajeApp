@@ -14,10 +14,14 @@ public class FichajeController : ControllerBase
     private readonly FichajeService _fichajeService;
     private readonly GoogleSheetsEmpleadosService _empleadosService;
 
-    public FichajeController(FichajeService fichajeService, GoogleSheetsEmpleadosService empleadosService)
+    private readonly GoogleSheetsSitiosService _sitiosService;
+
+    public FichajeController(FichajeService fichajeService, GoogleSheetsEmpleadosService empleadosService,
+        GoogleSheetsSitiosService sitiosService)
     {
         _fichajeService = fichajeService;
         _empleadosService = empleadosService;
+        _sitiosService = sitiosService;
     }
 
     [HttpPost]
@@ -33,14 +37,21 @@ public class FichajeController : ControllerBase
         {
             Empleado = empleado,
             Latitud = request.Latitud,
-            Longitud = request.Longitud
+            Longitud = request.Longitud,
+            Precision = request.Precision,
+            EsUbicacionFalsa = request.EsUbicacionFalsa,
+            Direccion = request.Direccion,
+            Motivo = request.Motivo?.Trim()
         };
+
+        if (_fichajeService.ModoLibre)
+            contexto.Sitio = await _sitiosService.BuscarSitioAsync(request.Latitud, request.Longitud);
 
         var validacion = _fichajeService.Validar(contexto);
         if (!validacion.EsValido)
-            return BadRequest(new { mensaje = validacion.Mensaje });
+            return BadRequest(new { mensaje = validacion.Mensaje, codigo = validacion.Codigo });
 
-        var fichaje = await _fichajeService.RegistrarAsync(empleado!, request.Latitud, request.Longitud);
+        var fichaje = await _fichajeService.RegistrarAsync(empleado!, contexto);
 
         return Ok(new { mensaje = $"{fichaje.TipoFichaje} registrada correctamente", tipo = fichaje.TipoFichaje });
     }

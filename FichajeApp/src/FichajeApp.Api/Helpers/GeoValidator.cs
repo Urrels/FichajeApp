@@ -9,11 +9,11 @@ public static class GeoValidator
 
     public static bool EstaEnRango(double lat, double lon)
     {
-        var distancia = CalcularDistanciaHaversine(lat, lon, LatPermitida, LonPermitida);
+        var distancia = DistanciaMetros(lat, lon, LatPermitida, LonPermitida);
         return distancia <= RadioMetrosPermitido;
     }
 
-    private static double CalcularDistanciaHaversine(double lat1, double lon1, double lat2, double lon2)
+    public static double DistanciaMetros(double lat1, double lon1, double lat2, double lon2)
     {
         const double R = 6371000; // radio de la Tierra en metros
         var dLat = ToRad(lat2 - lat1);

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
@@ -10,7 +11,7 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
 {
     private readonly SheetsService _sheetsService;
     private readonly string _spreadsheetId;
-    private const string Range = "Fichajes!A:E"; // hoja "Fichajes"
+    private const string Range = "Fichajes!A:J"; // hoja "Fichajes"
 
     public GoogleSheetsStorageStrategy(IConfiguration config)
     {
@@ -40,7 +41,13 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
                     fichaje.FechaHora.ToString("yyyy-MM-dd HH:mm:ss"),
                     fichaje.Latitud,
                     fichaje.Longitud,
-                    fichaje.TipoFichaje
+                    fichaje.TipoFichaje,
+                    fichaje.Lugar,
+                    fichaje.Motivo ?? "",
+                    fichaje.Precision.HasValue ? Math.Round(fichaje.Precision.Value) : "",
+                    fichaje.Direccion ?? "",
+                    string.Create(CultureInfo.InvariantCulture,
+                        $"https://www.google.com/maps?q={fichaje.Latitud},{fichaje.Longitud}")
                 }
             }
         };

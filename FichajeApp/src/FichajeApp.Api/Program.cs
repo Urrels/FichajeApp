@@ -11,6 +11,7 @@ builder.Services.AddControllers();
 
 // Servicios de datos (Google Sheets)
 builder.Services.AddSingleton<GoogleSheetsEmpleadosService>();
+builder.Services.AddSingleton<GoogleSheetsSitiosService>();
 builder.Services.AddSingleton<JwtService>();
 
 // Strategy: hoy Google Sheets. Para sumar otra, se registra otra implementación acá.

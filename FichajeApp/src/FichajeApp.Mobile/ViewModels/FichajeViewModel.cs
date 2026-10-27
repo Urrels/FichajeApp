@@ -51,18 +51,45 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         Procesando = true;
 
         Estado = "Obteniendo ubicación...";
-        var (geoExito, lat, lon, geoMensaje) = await _geoService.ObtenerUbicacionAsync();
-        if (!geoExito) { Estado = geoMensaje; Procesando = false; return; }
+        var ubicacion = await _geoService.ObtenerUbicacionAsync();
+        if (!ubicacion.Exito) { Estado = ubicacion.Mensaje; Procesando = false; return; }
 
         Estado = "Verificá tu identidad...";
         var (bioExito, bioMensaje) = await _biometricService.AutenticarAsync();
         if (!bioExito) { Estado = bioMensaje; Procesando = false; return; }
 
         Estado = "Registrando fichaje...";
-        var fichaje = new FichajeRequest { Latitud = lat, Longitud = lon };
-        var (apiExito, apiMensaje) = await _apiService.RegistrarFichajeAsync(fichaje);
+        var fichaje = new FichajeRequest
+        {
+            Latitud = ubicacion.Lat,
+            Longitud = ubicacion.Lon,
+            Precision = ubicacion.Precision,
+            EsUbicacionFalsa = ubicacion.EsFalsa,
+            Direccion = ubicacion.Direccion
+        };
+        var resultado = await _apiService.RegistrarFichajeAsync(fichaje);
 
-        Estado = apiMensaje;
+        if (resultado.RequiereMotivo)
+        {
+            // Mismo request: no se vuelve a pedir ubicación ni biometría
+            var motivo = await Shell.Current.DisplayPromptAsync(
+                "Fichaje fuera de un lugar conocido",
+                "Indicá el motivo (ej. visita cliente X)",
+                maxLength: 120);
+
+            if (string.IsNullOrWhiteSpace(motivo))
+            {
+                Estado = "Fichaje cancelado: falta el motivo";
+                Procesando = false;
+                return;
+            }
+
+            fichaje.Motivo = motivo.Trim();
+            Estado = "Registrando fichaje...";
+            resultado = await _apiService.RegistrarFichajeAsync(fichaje);
+        }
+
+        Estado = resultado.Mensaje;
         Procesando = false;
     }
 
