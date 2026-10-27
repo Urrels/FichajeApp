@@ -1,36 +1,22 @@
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
-using Google.Apis.Sheets.v4;
+using FichajeApp.Api.Infrastructure;
 using FichajeApp.Api.Models;
 
 namespace FichajeApp.Api.Services;
 
 // Lee el padrón de empleados autorizados desde la hoja "Empleados"
-public class GoogleSheetsEmpleadosService
+public class GoogleSheetsEmpleadosService : IEmpleadosService
 {
-    private readonly SheetsService _sheetsService;
-    private readonly string _spreadsheetId;
+    private readonly GoogleSheetsClient _sheets;
     private const string Range = "Empleados!A2:E"; // Id, NombreCompleto, Email, PinHash, Activo
 
-    public GoogleSheetsEmpleadosService(IConfiguration config)
+    public GoogleSheetsEmpleadosService(GoogleSheetsClient sheets)
     {
-        var credentialPath = config["GoogleSheets:CredentialsPath"];
-        _spreadsheetId = config["GoogleSheets:SpreadsheetId"]!;
-
-        var credential = GoogleCredential
-            .FromFile(credentialPath)
-            .CreateScoped(SheetsService.Scope.Spreadsheets);
-
-        _sheetsService = new SheetsService(new BaseClientService.Initializer
-        {
-            HttpClientInitializer = credential,
-            ApplicationName = "FichajeApp"
-        });
+        _sheets = sheets;
     }
 
     public async Task<List<EmpleadoDto>> ObtenerEmpleadosAsync()
     {
-        var request = _sheetsService.Spreadsheets.Values.Get(_spreadsheetId, Range);
+        var request = _sheets.Service.Spreadsheets.Values.Get(_sheets.SpreadsheetId, Range);
         var response = await request.ExecuteAsync();
 
         var empleados = new List<EmpleadoDto>();

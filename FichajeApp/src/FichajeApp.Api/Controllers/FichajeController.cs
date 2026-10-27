@@ -11,13 +11,13 @@ namespace FichajeApp.Api.Controllers;
 [Authorize]
 public class FichajeController : ControllerBase
 {
-    private readonly FichajeService _fichajeService;
-    private readonly GoogleSheetsEmpleadosService _empleadosService;
+    private readonly IFichajeService _fichajeService;
+    private readonly IEmpleadosService _empleadosService;
 
-    private readonly GoogleSheetsSitiosService _sitiosService;
+    private readonly ISitiosService _sitiosService;
 
-    public FichajeController(FichajeService fichajeService, GoogleSheetsEmpleadosService empleadosService,
-        GoogleSheetsSitiosService sitiosService)
+    public FichajeController(IFichajeService fichajeService, IEmpleadosService empleadosService,
+        ISitiosService sitiosService)
     {
         _fichajeService = fichajeService;
         _empleadosService = empleadosService;

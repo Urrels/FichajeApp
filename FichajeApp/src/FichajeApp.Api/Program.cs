@@ -1,7 +1,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using FichajeApp.Api.Concurrency;
+using FichajeApp.Api.Infrastructure;
 using FichajeApp.Api.Observers;
+using FichajeApp.Api.Options;
 using FichajeApp.Api.Services;
 using FichajeApp.Api.Storage;
 
@@ -10,17 +15,37 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 // Servicios de datos (Google Sheets)
+builder.Services.Configure<FichajeOptions>(builder.Configuration.GetSection(FichajeOptions.Seccion));
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<GoogleSheetsClient>();
+builder.Services.AddSingleton<BloqueoPorClave>();
+
+// Se registra también la clase concreta porque AuthController (login) la inyecta directamente.
 builder.Services.AddSingleton<GoogleSheetsEmpleadosService>();
+// Decorator: las consultas del fichaje pasan por una caché sobre el servicio de Sheets.
+builder.Services.AddSingleton<IEmpleadosService>(sp => new CachedEmpleadosService(
+    sp.GetRequiredService<GoogleSheetsEmpleadosService>(),
+    sp.GetRequiredService<IMemoryCache>(),
+    sp.GetRequiredService<IOptions<FichajeOptions>>()));
+
 builder.Services.AddSingleton<GoogleSheetsSitiosService>();
+builder.Services.AddSingleton<ISitiosRepository>(sp => new CachedSitiosRepository(
+    sp.GetRequiredService<GoogleSheetsSitiosService>(),
+    sp.GetRequiredService<IMemoryCache>(),
+    sp.GetRequiredService<IOptions<FichajeOptions>>()));
+builder.Services.AddSingleton<ISitiosService, SitiosService>();
 builder.Services.AddSingleton<JwtService>();
 
 // Strategy: hoy Google Sheets. Para sumar otra, se registra otra implementación acá.
-builder.Services.AddSingleton<IFichajeStorageStrategy, GoogleSheetsStorageStrategy>();
+builder.Services.AddSingleton<GoogleSheetsStorageStrategy>();
+builder.Services.AddSingleton<IFichajeStorageStrategy>(sp => new CachedFichajeStorage(
+    sp.GetRequiredService<GoogleSheetsStorageStrategy>(),
+    sp.GetRequiredService<IMemoryCache>()));
 
 // Observer: se pueden registrar varios observers; todos se inyectan como IEnumerable<IFichajeObserver>
 builder.Services.AddSingleton<IFichajeObserver, LogFichajeObserver>();
 
-builder.Services.AddScoped<FichajeService>();
+builder.Services.AddScoped<IFichajeService, FichajeService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
