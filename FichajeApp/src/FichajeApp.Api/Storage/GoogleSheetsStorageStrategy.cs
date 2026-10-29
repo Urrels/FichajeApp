@@ -2,6 +2,7 @@ using System.Globalization;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using FichajeApp.Api.Infrastructure;
+using FichajeApp.Api.Infrastructure;
 using FichajeApp.Api.Models;
 
 namespace FichajeApp.Api.Storage;
@@ -86,31 +87,18 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
         return fichajes;
     }
 
+    // Los enteros llegan como long y los decimales como double: la conversión compartida contempla ambos
     private static bool TryNumero(object? valor, out double numero)
     {
-        switch (valor)
-        {
-            case double d: numero = d; return true;
-            case string s:
-                return double.TryParse(s.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out numero);
-            default: numero = 0; return false;
-        }
+        var ok = ValoresCelda.TryNumero(valor, out var n);
+        numero = (double)n;
+        return ok;
     }
 
-    // Sheets devuelve la fecha como número de serie (días desde 1899-12-30) o como texto
     private static bool TryFecha(object? valor, out DateTime fecha)
     {
-        switch (valor)
-        {
-            case double serie:
-                var bruta = new DateTime(1899, 12, 30).AddDays(serie);
-                // El número de serie es un double: se redondea al segundo más cercano
-                fecha = new DateTime((bruta.Ticks + TimeSpan.TicksPerSecond / 2) / TimeSpan.TicksPerSecond * TimeSpan.TicksPerSecond);
-                return true;
-            case string s:
-                return DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out fecha);
-            default: fecha = default; return false;
-        }
+        fecha = ValoresCelda.TryFecha(valor) ?? default;
+        return fecha != default;
     }
 
     public async Task<string> ObtenerUltimoTipoFichajeAsync(string nombreCompleto)

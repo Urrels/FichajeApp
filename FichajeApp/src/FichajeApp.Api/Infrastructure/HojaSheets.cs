@@ -4,6 +4,42 @@ using Google.Apis.Sheets.v4.Data;
 
 namespace FichajeApp.Api.Infrastructure;
 
+// Conversión de los valores que devuelve la API de Google. OJO: un número entero llega como long (no como
+// double) y uno con decimales como double; si solo se contempla uno de los dos, los enteros se leen como 0.
+public static class ValoresCelda
+{
+    public static bool TryNumero(object? valor, out decimal numero)
+    {
+        numero = 0m;
+        try
+        {
+            switch (valor)
+            {
+                case null or bool: return false;
+                case string s:
+                    return decimal.TryParse(s.Replace(',', '.'), NumberStyles.Number, CultureInfo.InvariantCulture, out numero);
+                case double or float or decimal or long or int or short or byte or ulong or uint or ushort or sbyte:
+                    numero = Convert.ToDecimal(valor, CultureInfo.InvariantCulture);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        catch (OverflowException) { return false; }
+    }
+
+    // Texto ISO o número de serie de Sheets (días desde 1899-12-30, con la hora como fracción)
+    public static DateTime? TryFecha(object? valor)
+    {
+        if (valor is string s)
+            return DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out var f) ? f : null;
+
+        if (!TryNumero(valor, out var serie)) return null;
+        var bruta = new DateTime(1899, 12, 30).AddDays((double)serie);
+        return new DateTime((bruta.Ticks + TimeSpan.TicksPerSecond / 2) / TimeSpan.TicksPerSecond * TimeSpan.TicksPerSecond);
+    }
+}
+
 // Una fila leída de una pestaña. Numero es el número de fila real de la hoja (la 1 es el encabezado).
 // Los valores se leen sin formato: los números y las fechas no dependen del idioma de la planilla.
 public class FilaHoja
@@ -27,41 +63,22 @@ public class FilaHoja
 
     public int? EnteroONulo(int i) => string.IsNullOrWhiteSpace(Texto(i)) ? null : Entero(i);
 
-    public decimal Decimal(int i)
+    public decimal Decimal(int i) =>
+        i < _valores.Count && ValoresCelda.TryNumero(_valores[i], out var n) ? n : 0m;
+
+    public bool Booleano(int i)
     {
-        if (i >= _valores.Count) return 0m;
+        if (i >= _valores.Count) return false;
         return _valores[i] switch
         {
-            double d => (decimal)d,
-            string s when decimal.TryParse(s.Replace(',', '.'), NumberStyles.Number, CultureInfo.InvariantCulture, out var r) => r,
-            bool b => b ? 1m : 0m,
-            _ => 0m
+            bool b => b,
+            string s => s.Equals("TRUE", StringComparison.OrdinalIgnoreCase) || s == "1",
+            _ => ValoresCelda.TryNumero(_valores[i], out var n) && n != 0
         };
     }
 
-    public bool Booleano(int i) => i < _valores.Count && _valores[i] switch
-    {
-        bool b => b,
-        string s => s.Equals("TRUE", StringComparison.OrdinalIgnoreCase) || s == "1",
-        double d => d != 0,
-        _ => false
-    };
-
     // Acepta texto ISO ("2026-10-07", "2026-10-07 08:00:00") o el número de serie de Sheets
-    public DateTime? FechaONula(int i)
-    {
-        if (i >= _valores.Count) return null;
-        switch (_valores[i])
-        {
-            case double serie:
-                var bruta = new DateTime(1899, 12, 30).AddDays(serie);
-                return new DateTime((bruta.Ticks + TimeSpan.TicksPerSecond / 2) / TimeSpan.TicksPerSecond * TimeSpan.TicksPerSecond);
-            case string s when DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out var f):
-                return f;
-            default:
-                return null;
-        }
-    }
+    public DateTime? FechaONula(int i) => i < _valores.Count ? ValoresCelda.TryFecha(_valores[i]) : null;
 
     public DateTime Fecha(int i) => FechaONula(i) ?? default;
 }
