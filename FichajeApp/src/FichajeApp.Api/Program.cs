@@ -58,6 +58,8 @@ builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSheetsReposito
 builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSheetsRepositorio>();
 builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSheetsRepositorio>();
 builder.Services.AddSingleton<IAlmacenFotos, AlmacenFotosEnDisco>();
+builder.Services.AddSingleton<LimpiezaFotos>();
+builder.Services.AddHostedService<LimpiezaFotosHostedService>();
 
 // Servicios de negocio de la administración
 builder.Services.AddSingleton<BitacoraService>();

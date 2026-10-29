@@ -27,7 +27,7 @@ public partial class FotoFichajePage : ContentPage
         var bytes = string.IsNullOrEmpty(Archivo) ? null : await _api.DescargarFotoAsync(Archivo);
         Cargando.IsRunning = Cargando.IsVisible = false;
 
-        if (bytes is null) Detalle.Text = $"{Titulo}\nNo se pudo cargar la foto.";
+        if (bytes is null) Detalle.Text = $"{Titulo}\nNo se pudo cargar la foto. Puede que ya se haya borrado (las fotos se guardan un tiempo limitado).";
         else Foto.Source = ImageSource.FromStream(() => new MemoryStream(bytes));
     }
 }

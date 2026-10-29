@@ -81,7 +81,15 @@ public class KioscoViewModel : VmBase
         // Si el cliente pide foto, se saca antes de mandar: es la prueba de quién fichó
         var config = await _api.ObtenerConfiguracionFichajeAsync("kiosco/configuracion");
         string? foto = null;
-        if (config.PideFoto)
+        if (config.PideFoto && !await AvisoFoto.ConfirmarAsync(Elegido.Id, config.RetencionDias))
+        {
+            if (config.FotoObligatoria)
+            {
+                Estado = "Para fichar con foto tenés que estar de acuerdo. Consultalo con tu empresa.";
+                return;
+            }
+        }
+        else if (config.PideFoto)
         {
             Estado = "Sacate una foto...";
             try { foto = await FotoFichaje.TomarAsync(); }

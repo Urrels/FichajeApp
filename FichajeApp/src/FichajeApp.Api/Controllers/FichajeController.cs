@@ -31,7 +31,7 @@ public class FichajeController : ControllerBase
     public async Task<IActionResult> Configuracion()
     {
         var c = await _fichajeService.ConfiguracionAsync();
-        return Ok(new { ubicacion = c.Ubicacion, foto = c.Foto });
+        return Ok(new { ubicacion = c.Ubicacion, foto = c.Foto, retencionDias = c.RetencionFotosDias });
     }
 
     // Qué va a ser el próximo fichaje del usuario (Entrada o Salida), para mostrarlo antes de fichar

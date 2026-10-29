@@ -15,7 +15,7 @@ public class FichajeRequest
 }
 
 // Cómo se ficha en este cliente: ubicación (Ninguna / Libre / SedeFija) y foto (No / Opcional / Obligatoria)
-public record ConfiguracionFichaje(string Ubicacion, string Foto)
+public record ConfiguracionFichaje(string Ubicacion, string Foto, int RetencionDias = 90)
 {
     public static readonly ConfiguracionFichaje PorDefecto = new("Libre", "No");
     public bool PideUbicacion => Ubicacion != "Ninguna";
@@ -100,9 +100,13 @@ public class ApiService
     // Cómo se ficha en este cliente. Si no se puede consultar, se usa lo de siempre (con ubicación y sin foto)
     public async Task<ConfiguracionFichaje> ObtenerConfiguracionFichajeAsync(string ruta = "fichaje/configuracion")
     {
-        var r = await GetAsync<Dictionary<string, string>>(ruta);
-        if (!r.Exito || r.Datos is null) return ConfiguracionFichaje.PorDefecto;
-        return new ConfiguracionFichaje(r.Datos.GetValueOrDefault("ubicacion") ?? "Libre", r.Datos.GetValueOrDefault("foto") ?? "No");
+        var r = await GetAsync<System.Text.Json.JsonElement>(ruta);
+        if (!r.Exito) return ConfiguracionFichaje.PorDefecto;
+
+        string Texto(string campo, string porDefecto) =>
+            r.Datos.TryGetProperty(campo, out var v) && v.ValueKind == System.Text.Json.JsonValueKind.String ? v.GetString() ?? porDefecto : porDefecto;
+        var dias = r.Datos.TryGetProperty("retencionDias", out var d) && d.TryGetInt32(out var n) ? n : 90;
+        return new ConfiguracionFichaje(Texto("ubicacion", "Libre"), Texto("foto", "No"), dias);
     }
 
     // Empleados que pueden fichar en el teléfono compartido de la sucursal, con lo que les toca ahora

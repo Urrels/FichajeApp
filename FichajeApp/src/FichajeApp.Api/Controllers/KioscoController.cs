@@ -33,7 +33,11 @@ public class KioscoController : ControllerBase
 
     // Si se pide foto (la app la saca antes de mandar el fichaje)
     [HttpGet("configuracion")]
-    public async Task<IActionResult> Configuracion() => Ok(new { foto = (await _fichaje.ConfiguracionAsync()).Foto });
+    public async Task<IActionResult> Configuracion()
+    {
+        var c = await _fichaje.ConfiguracionAsync();
+        return Ok(new { foto = c.Foto, retencionDias = c.RetencionFotosDias });
+    }
 
     [HttpGet("empleados")]
     public async Task<IActionResult> Empleados() => Ok(await _kiosco.ListarAsync());

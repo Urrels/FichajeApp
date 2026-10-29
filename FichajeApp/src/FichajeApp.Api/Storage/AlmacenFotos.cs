@@ -12,6 +12,9 @@ public interface IAlmacenFotos
 
     // null si no existe o el nombre no es válido
     Task<(byte[] Bytes, string Mime)?> LeerAsync(string nombre);
+
+    // Borra las fotos de los días anteriores a la fecha dada; devuelve cuántas borró
+    Task<int> EliminarAnterioresAsync(DateTime fecha);
 }
 
 // Reglas de las fotos: mismas imágenes que el logo (PNG o JPG), con un tope de tamaño
@@ -68,6 +71,38 @@ public partial class AlmacenFotosEnDisco : IAlmacenFotos
 
         var bytes = await File.ReadAllBytesAsync(ruta);
         return (bytes, nombre.EndsWith(".png", StringComparison.Ordinal) ? "image/png" : "image/jpeg");
+    }
+
+    public Task<int> EliminarAnterioresAsync(DateTime fecha)
+    {
+        int borradas = 0;
+        if (!Directory.Exists(_carpeta)) return Task.FromResult(0);
+
+        // Solo se tocan las carpetas aaaa/mm/dd que creó este almacén
+        foreach (var anio in Directory.GetDirectories(_carpeta).Where(d => EsNumero(d, 4)))
+        {
+            foreach (var mes in Directory.GetDirectories(anio).Where(d => EsNumero(d, 2)))
+            {
+                foreach (var dia in Directory.GetDirectories(mes).Where(d => EsNumero(d, 2)))
+                {
+                    if (!DateTime.TryParse($"{Path.GetFileName(anio)}-{Path.GetFileName(mes)}-{Path.GetFileName(dia)}",
+                            System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var dia_)
+                        || dia_.Date >= fecha.Date) continue;
+
+                    borradas += Directory.GetFiles(dia).Length;
+                    Directory.Delete(dia, recursive: true);
+                }
+                if (!Directory.EnumerateFileSystemEntries(mes).Any()) Directory.Delete(mes);
+            }
+            if (!Directory.EnumerateFileSystemEntries(anio).Any()) Directory.Delete(anio);
+        }
+        return Task.FromResult(borradas);
+    }
+
+    private static bool EsNumero(string carpeta, int largo)
+    {
+        var nombre = Path.GetFileName(carpeta);
+        return nombre.Length == largo && nombre.All(char.IsDigit);
     }
 
     private string? RutaDe(string nombre)

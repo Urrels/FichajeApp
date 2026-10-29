@@ -31,7 +31,7 @@ public class SupervisorController : ControllerBase
     public async Task<IActionResult> Foto([FromQuery] string archivo)
     {
         var foto = await _fotos.LeerAsync(archivo ?? "");
-        if (foto is null) return NotFound(new { mensaje = "La foto no existe" });
+        if (foto is null) return NotFound(new { mensaje = "La foto ya no está disponible (las fotos se borran pasado un tiempo)." });
 
         Response.Headers.CacheControl = "private,max-age=3600";
         return File(foto.Value.Bytes, foto.Value.Mime);

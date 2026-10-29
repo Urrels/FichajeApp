@@ -23,7 +23,8 @@
             </Border>
             <Button Text="Cambiar foto" Clicked="OnFoto" />
             <Label FontSize="11"
-                   Text="Las fotos se guardan en el servidor y solo las ve un supervisor desde el panel. Avisales a tus empleados que se les saca una foto al fichar." />
+                   Text="Las fotos se guardan en el servidor y solo las ve un supervisor desde el panel. La primera vez que cada empleado ficha con foto, la app le muestra un aviso y le pide que esté de acuerdo." />
+            <Label FontSize="11" Text="{Binding RetencionTexto}" />
 
             <Button Text="Guardar" Clicked="OnGuardar" Margin="0,12,0,0"
                     IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
