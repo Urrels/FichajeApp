@@ -29,6 +29,10 @@
 		<!-- Fast Deployment falla en este emulador (XA0137, run-as): se empaquetan los assemblies en el APK -->
 		<EmbedAssembliesIntoApk Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">true</EmbedAssembliesIntoApk>
 
+		<!-- Sin Package.appxmanifest, la app de Windows se compila sin empaquetar (si no, falla con
+		     "no AppxManifest is specified, but WindowsPackageType is not set to MSIX") -->
+		<WindowsPackageType Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">None</WindowsPackageType>
+
 		<!-- App Identifier -->
 		<ApplicationId>com.companyname.fichajeapp.mobile</ApplicationId>
 
