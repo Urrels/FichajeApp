@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+             x:Class="FichajeApp.Mobile.Views.SupervisorPage"
+             Title="Supervisor">
+
+    <Grid RowDefinitions="Auto,Auto,2*,Auto,3*" RowSpacing="6" Padding="10">
+
+        <!-- Modo de consulta -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,*,*" ColumnSpacing="6">
+            <Button Grid.Column="0" Text="Hoy" Clicked="OnHoyClicked" />
+            <Button Grid.Column="1" Text="Presentes" Clicked="OnPresentesClicked" />
+            <Button Grid.Column="2" Text="Historial" Clicked="OnHistorialClicked" />
+        </Grid>
+
+        <!-- Filtros: solo en Historial -->
+        <VerticalStackLayout Grid.Row="1" Spacing="4" IsVisible="{Binding EsHistorial}">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                <DatePicker Grid.Column="0" Date="{Binding Desde}" />
+                <DatePicker Grid.Column="1" Date="{Binding Hasta}" />
+            </Grid>
+            <Picker Title="Empleado"
+                    ItemsSource="{Binding Empleados}"
+                    SelectedItem="{Binding EmpleadoSeleccionado}" />
+            <HorizontalStackLayout Spacing="8">
+                <Switch IsToggled="{Binding UnirRecorrido}" />
+                <Label Text="Unir con línea (recorrido de una persona)" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <Button Text="Buscar" Clicked="OnBuscarClicked" />
+        </VerticalStackLayout>
+
+        <maps:Map Grid.Row="2" x:Name="Mapa" />
+
+        <Label Grid.Row="3" Text="{Binding Estado}" HorizontalOptions="Center" />
+
+        <CollectionView Grid.Row="4"
+                        ItemsSource="{Binding Items}"
+                        SelectionMode="Single"
+                        SelectionChanged="OnItemSelected">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <VerticalStackLayout Padding="6,4">
+                        <Label Text="{Binding NombreCompleto}" FontAttributes="Bold" />
+                        <Label Text="{Binding Resumen}" FontSize="12" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

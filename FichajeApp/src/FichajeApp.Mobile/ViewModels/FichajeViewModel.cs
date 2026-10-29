@@ -15,6 +15,8 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
     private string _nombreCompleto = string.Empty;
     private string _estado = "Listo para fichar";
     private bool _procesando;
+    private bool _mostrarMapa;
+    private string? _enlaceMaps;
 
     public event Action? SesionFinalizada;
 
@@ -46,9 +48,31 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         set { _procesando = value; OnPropertyChanged(); }
     }
 
+    public bool MostrarMapa
+    {
+        get => _mostrarMapa;
+        private set { _mostrarMapa = value; OnPropertyChanged(); }
+    }
+
+    // Enlace a Google Maps del lugar donde se ficó
+    private void MostrarUbicacion(double lat, double lon)
+    {
+        _enlaceMaps = string.Create(System.Globalization.CultureInfo.InvariantCulture,
+            $"https://www.google.com/maps?q={lat},{lon}");
+        MostrarMapa = true;
+    }
+
+    public async Task AbrirEnMapsAsync()
+    {
+        if (_enlaceMaps is null) return;
+        try { await Launcher.Default.OpenAsync(new Uri(_enlaceMaps)); }
+        catch { Estado = "No se pudo abrir Google Maps"; }
+    }
+
     public async Task FicharAsync()
     {
         Procesando = true;
+        MostrarMapa = false;
 
         Estado = "Obteniendo ubicación...";
         var ubicacion = await _geoService.ObtenerUbicacionAsync();
@@ -90,6 +114,8 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         }
 
         Estado = resultado.Mensaje;
+        if (resultado.Exito)
+            MostrarUbicacion(ubicacion.Lat, ubicacion.Lon);
         Procesando = false;
     }
 

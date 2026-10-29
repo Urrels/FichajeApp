@@ -13,6 +13,7 @@ public class LoginResponse
     public string Token { get; set; } = default!;
     public string NombreCompleto { get; set; } = default!;
     public int EmpleadoId { get; set; }
+    public string Rol { get; set; } = "Empleado";
 }
 
 // Se encarga del I/O (llamar al backend, persistir en SecureStorage) y
@@ -22,11 +23,12 @@ public class AuthService
     private readonly HttpClient _httpClient;
 
     // Reemplazar por la URL real del backend. En emulador Android usar 10.0.2.2 en vez de localhost.
-    private const string BaseUrl = "https://localhost:7001/api";
+    private const string BaseUrl = "http://10.0.2.2:5224/api";
 
     private const string TokenKey = "auth_token";
     private const string NombreKey = "auth_nombre";
     private const string IdKey = "auth_id";
+    private const string RolKey = "auth_rol";
 
     public AuthService()
     {
@@ -52,9 +54,10 @@ public class AuthService
             await SecureStorage.Default.SetAsync(TokenKey, data.Token);
             await SecureStorage.Default.SetAsync(NombreKey, data.NombreCompleto);
             await SecureStorage.Default.SetAsync(IdKey, data.EmpleadoId.ToString());
+            await SecureStorage.Default.SetAsync(RolKey, data.Rol);
 
             // Actualiza el Singleton en memoria y notifica a los observers suscriptos
-            SessionManager.Instance.IniciarSesion(data.Token, data.NombreCompleto, data.EmpleadoId);
+            SessionManager.Instance.IniciarSesion(data.Token, data.NombreCompleto, data.EmpleadoId, data.Rol);
 
             return (true, "Login exitoso");
         }
@@ -73,7 +76,8 @@ public class AuthService
         if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(nombre) || !int.TryParse(idStr, out var id))
             return false;
 
-        SessionManager.Instance.IniciarSesion(token, nombre, id);
+        var rol = await SecureStorage.Default.GetAsync(RolKey) ?? "Empleado";
+        SessionManager.Instance.IniciarSesion(token, nombre, id, rol);
         return true;
     }
 
