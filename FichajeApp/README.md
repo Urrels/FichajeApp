@@ -149,6 +149,16 @@ la app (`GET /api/apariencia`, público; `PUT /api/admin/apariencia`, con permis
 sobre el color principal, y el logo (PNG/JPG, hasta 150 KB; la app lo achica a 256 px). **El ícono del launcher no
 se puede cambiar en runtime**: lo fija Android al instalar, así que solo cambia con un nuevo build del cliente.
 
+### Conectar Google Sheets desde la app
+
+Cada cliente conecta su propia planilla sin tocar archivos del servidor: en el login, **Conectar mi planilla de Google**
+(aparece sola si el servidor todavía no está configurado). Se carga la **clave de instalación**, el link de la planilla, el
+`.json` de la cuenta de servicio y los datos del primer administrador. La API (`POST /api/configuracion/google`) prueba el
+acceso contra Google, guarda la credencial **cifrada en el servidor** (`datos/`, fuera de git) y crea las pestañas.
+La clave de instalación es `Setup:Clave` o, si no se definió, una que la API genera y escribe en el log y en
+`datos/clave-instalacion.txt`. Lo que haya en `appsettings` (`GoogleSheets:*`) sigue funcionando como alternativa.
+La guía completa para publicar en Play Store está en [docs/PLAY_STORE.md](docs/PLAY_STORE.md).
+
 ## Varios clientes (una API por cliente)
 
 Cada cliente tiene su propia instancia de la API y su propia planilla. Por instancia se

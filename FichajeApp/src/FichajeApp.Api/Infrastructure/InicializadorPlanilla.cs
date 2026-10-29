@@ -9,7 +9,14 @@ namespace FichajeApp.Api.Infrastructure;
 // "Migraciones" de la planilla: al iniciar la API crea las pestañas de administración que falten (con su
 // encabezado) y siembra el catálogo de permisos, los roles iniciales y los parámetros de liquidación.
 // Es idempotente: no toca nada de lo que ya existe. Se puede apagar con Planilla:AutoCrear = false.
-public class InicializadorPlanilla : IHostedService
+public record NuevoAdministrador(string Nombre, string Email, string Pin);
+
+public interface IInicializadorPlanilla
+{
+    Task InicializarAsync(NuevoAdministrador? nuevo = null);
+}
+
+public class InicializadorPlanilla : IHostedService, IInicializadorPlanilla
 {
     private readonly GoogleSheetsClient _cliente;
     private readonly IRolesRepositorio _roles;
@@ -32,22 +39,50 @@ public class InicializadorPlanilla : IHostedService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         if (!_config.GetValue("Planilla:AutoCrear", true)) return;
+        if (!_cliente.Configurado)
+        {
+            _log.LogWarning("Falta configurar la conexión con Google Sheets: hacelo desde la pantalla de configuración de la app.");
+            return;
+        }
 
         try
         {
-            await CrearPestanasAsync();
-            await SembrarPermisosAsync();
-            await SembrarRolesAsync();
-            await AsegurarPermisosDelAdministradorAsync();
-            await SembrarParametrosAsync();
-            await MigrarAsignacionesAsync();
-            await GarantizarAdministradorAsync();
+            await InicializarAsync();
         }
         catch (Exception ex)
         {
             // La API sigue funcionando para fichar; la administración fallará hasta que se arregle la planilla
             _log.LogError(ex, "No se pudo inicializar la planilla de administración");
         }
+    }
+
+    // Lo usa también la configuración desde la app: en una planilla vacía crea el primer administrador
+    public async Task InicializarAsync(NuevoAdministrador? nuevo = null)
+    {
+        await CrearPestanasAsync();
+        await SembrarPermisosAsync();
+        await SembrarRolesAsync();
+        await AsegurarPermisosDelAdministradorAsync();
+        await SembrarParametrosAsync();
+        if (nuevo is not null) await CrearPrimerAdministradorAsync(nuevo);
+        await MigrarAsignacionesAsync();
+        await GarantizarAdministradorAsync(nuevo?.Email);
+    }
+
+    // Solo si todavía no hay ningún empleado cargado
+    private async Task CrearPrimerAdministradorAsync(NuevoAdministrador nuevo)
+    {
+        if ((await _empleados.ListarAsync()).Count > 0) return;
+
+        await _empleados.CrearAsync(new Models.EmpleadoDto
+        {
+            NombreCompleto = nuevo.Nombre,
+            Email = nuevo.Email,
+            PinHash = BCrypt.Net.BCrypt.HashPassword(nuevo.Pin),
+            Activo = true,
+            Rol = CatalogoPermisos.RolAdministrador
+        });
+        _log.LogInformation("Se creó el primer administrador: {Email}", nuevo.Email);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
@@ -135,7 +170,7 @@ public class InicializadorPlanilla : IHostedService
     }
 
     // Si nadie puede administrar, se promueve al usuario indicado en Planilla:AdministradorInicial
-    private async Task GarantizarAdministradorAsync()
+    private async Task GarantizarAdministradorAsync(string? emailIndicado = null)
     {
         var usuarios = await _permisos.RolesDeUsuariosActivosAsync();
         var permisosPorRol = await _permisos.PermisosPorRolAsync();
@@ -144,7 +179,7 @@ public class InicializadorPlanilla : IHostedService
             permisosPorRol.TryGetValue(r, out var p) && CatalogoPermisos.DeAdministracion.All(p.Contains)));
         if (hayAdministrador) return;
 
-        var email = _config["Planilla:AdministradorInicial"];
+        var email = string.IsNullOrWhiteSpace(emailIndicado) ? _config["Planilla:AdministradorInicial"] : emailIndicado;
         if (string.IsNullOrWhiteSpace(email))
         {
             _log.LogWarning("Ningún usuario activo puede administrar el sistema. Poné \"Administrador\" en la columna F de " +

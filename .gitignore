@@ -23,3 +23,11 @@ appsettings.Development.json
 
 # Resultados de pruebas
 TestResults/
+
+# Conexion guardada desde la app (credencial cifrada, llaves y clave de instalacion)
+**/FichajeApp.Api/datos/
+
+# Llaves de firma de Play Store (NUNCA subir: si se pierden no se puede actualizar la app)
+*.keystore
+*.jks
+**/keystores/

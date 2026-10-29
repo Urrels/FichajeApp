@@ -18,6 +18,7 @@ public partial class AppShell : Shell, ISessionObserver
         Routing.RegisterRoute(nameof(LiquidacionPage), typeof(LiquidacionPage));
         Routing.RegisterRoute(nameof(CambiarPinPage), typeof(CambiarPinPage));
         Routing.RegisterRoute(nameof(AparienciaPage), typeof(AparienciaPage));
+        Routing.RegisterRoute(nameof(ConfiguracionPage), typeof(ConfiguracionPage));
 
         SessionManager.Instance.Suscribir(this);
     }
