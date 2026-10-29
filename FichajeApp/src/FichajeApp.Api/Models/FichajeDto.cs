@@ -45,6 +45,9 @@ public class FichajeContext
 
     // Foto ya decodificada y validada
     public byte[]? Foto { get; set; }
+
+    // Kiosco: el lugar es el de la sucursal (teléfono fijo), no se pide ni se valida la ubicación
+    public string? LugarFijo { get; set; }
 }
 
 public class ResultadoValidacion

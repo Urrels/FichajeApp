@@ -1,3 +1,4 @@
+using FichajeApp.Api.Dominio.Seguridad;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using FichajeApp.Api.Models;
@@ -35,7 +36,9 @@ public class AuthController : ControllerBase
                 var empleado = resultado.Empleado!;
                 return Ok(new LoginResponseDto
                 {
-                    Token = _jwtService.GenerarToken(empleado, resultado.Roles, resultado.Permisos),
+                    // El teléfono de una sucursal queda abierto: su sesión dura un mes (la baja o el bloqueo la cortan igual)
+                    Token = _jwtService.GenerarToken(empleado, resultado.Roles, resultado.Permisos,
+                        resultado.Permisos.Contains(CatalogoPermisos.FicharEnKiosco) ? TimeSpan.FromDays(30) : null),
                     NombreCompleto = empleado.NombreCompleto,
                     EmpleadoId = empleado.Id,
                     Rol = resultado.Roles.FirstOrDefault() ?? "Empleado",

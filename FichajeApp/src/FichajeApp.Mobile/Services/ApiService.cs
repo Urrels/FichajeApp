@@ -23,6 +23,15 @@ public record ConfiguracionFichaje(string Ubicacion, string Foto)
     public bool FotoObligatoria => Foto == "Obligatoria";
 }
 
+// Un empleado de la lista del kiosco; Proximo es "Entrada" o "Salida"
+public class KioscoEmpleado
+{
+    public int Id { get; set; }
+    public string Nombre { get; set; } = string.Empty;
+    public string Proximo { get; set; } = "Entrada";
+    public string Accion => $"Fichar {Proximo.ToLowerInvariant()}";
+}
+
 public record ResultadoFichaje(bool Exito, string Mensaje, bool RequiereMotivo = false);
 
 public record ResultadoConsulta<T>(bool Exito, string Mensaje, T? Datos);
@@ -89,12 +98,16 @@ public class ApiService
     }
 
     // Cómo se ficha en este cliente. Si no se puede consultar, se usa lo de siempre (con ubicación y sin foto)
-    public async Task<ConfiguracionFichaje> ObtenerConfiguracionFichajeAsync()
+    public async Task<ConfiguracionFichaje> ObtenerConfiguracionFichajeAsync(string ruta = "fichaje/configuracion")
     {
-        var r = await GetAsync<Dictionary<string, string>>("fichaje/configuracion");
+        var r = await GetAsync<Dictionary<string, string>>(ruta);
         if (!r.Exito || r.Datos is null) return ConfiguracionFichaje.PorDefecto;
         return new ConfiguracionFichaje(r.Datos.GetValueOrDefault("ubicacion") ?? "Libre", r.Datos.GetValueOrDefault("foto") ?? "No");
     }
+
+    // Empleados que pueden fichar en el teléfono compartido de la sucursal, con lo que les toca ahora
+    public Task<ResultadoConsulta<List<KioscoEmpleado>>> ObtenerKioscoEmpleadosAsync() =>
+        GetAsync<List<KioscoEmpleado>>("kiosco/empleados");
 
     // La foto de un fichaje (solo supervisores). null si no se pudo bajar
     public async Task<byte[]?> DescargarFotoAsync(string archivo)
@@ -165,7 +178,7 @@ public class ApiService
         }
     }
 
-    public async Task<ResultadoFichaje> RegistrarFichajeAsync(FichajeRequest fichaje)
+    public async Task<ResultadoFichaje> RegistrarFichajeAsync(object fichaje, string ruta = "fichaje")
     {
         try
         {
@@ -177,7 +190,7 @@ public class ApiService
             }
 
             // Header por request: el HttpClient es compartido y no se muta
-            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_clientes.BaseUrl}/fichaje")
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_clientes.BaseUrl}/{ruta}")
             {
                 Content = JsonContent.Create(fichaje)
             };

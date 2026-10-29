@@ -187,8 +187,21 @@ public class LoginService
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrEmpty(pin))
             return new ResultadoLogin { Resultado = LoginResultado.CredencialesInvalidas };
 
-        var empleado = await _empleados.BuscarPorEmailAsync(email, incluirInactivos: true);
+        return await VerificarAsync(await _empleados.BuscarPorEmailAsync(email, incluirInactivos: true), pin);
+    }
 
+    // En el kiosco el empleado elige su nombre en la lista: mismo control del PIN y mismo bloqueo por intentos,
+    // pero sin dejar un "LOGIN" en la bitácora por cada fichaje
+    public async Task<ResultadoLogin> AutenticarPorIdAsync(int empleadoId, string? pin)
+    {
+        if (string.IsNullOrEmpty(pin))
+            return new ResultadoLogin { Resultado = LoginResultado.CredencialesInvalidas };
+
+        return await VerificarAsync(await _empleados.ObtenerPorIdAsync(empleadoId), pin, registrarLogin: false);
+    }
+
+    private async Task<ResultadoLogin> VerificarAsync(EmpleadoDto? empleado, string pin, bool registrarLogin = true)
+    {
         // No se distingue "no existe" de "dado de baja": mismo mensaje y sin contar intentos
         if (empleado is null || !empleado.Activo)
             return new ResultadoLogin { Resultado = LoginResultado.CredencialesInvalidas };
@@ -205,7 +218,7 @@ public class LoginService
             }
 
             var (roles, permisos) = await _permisos.ObtenerAsync(empleado);
-            await _bitacora.RegistrarAsync(empleado.Email, "LOGIN");
+            if (registrarLogin) await _bitacora.RegistrarAsync(empleado.Email, "LOGIN");
             return new ResultadoLogin { Resultado = LoginResultado.Exito, Empleado = empleado, Roles = roles, Permisos = permisos };
         }
 

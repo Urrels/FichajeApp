@@ -40,11 +40,13 @@ public partial class AppShell : Shell, ISessionObserver
         var sesion = SessionManager.Instance;
         bool supervisor = sesion.EsSupervisor;
         bool administrador = sesion.EsAdministrador;
+        bool kiosco = sesion.EsKiosco;
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
             SupervisorItem.FlyoutItemIsVisible = supervisor;
             AdminItem.FlyoutItemIsVisible = administrador;
+            FichajeItem.FlyoutItemIsVisible = !kiosco;
         });
     }
 }

@@ -38,6 +38,8 @@ public static class MauiProgram
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<FichajePage>();
         builder.Services.AddTransient<SupervisorPage>();
+        builder.Services.AddTransient<KioscoViewModel>();
+        builder.Services.AddTransient<KioscoPage>();
 
         // Administración: usuarios, roles, bitácora, corrección de fichajes y liquidación
         builder.Services.AddSingleton<AdminApiService>();

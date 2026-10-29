@@ -42,12 +42,14 @@ public class FichajeService : IFichajeService
 
         var reglas = new ValidacionCompuesta().Agregar(new ValidacionEmpleadoActivo());
 
-        if (config.Ubicacion != ConfiguracionFichaje.UbicacionNinguna)
+        var pideUbicacion = config.Ubicacion != ConfiguracionFichaje.UbicacionNinguna && contexto.LugarFijo is null;
+
+        if (pideUbicacion)
             reglas.Agregar(new ValidacionUbicacionReal(_precisionMaxMetros));
 
-        if (config.Ubicacion == ConfiguracionFichaje.UbicacionLibre)
+        if (pideUbicacion && config.Ubicacion == ConfiguracionFichaje.UbicacionLibre)
             reglas.Agregar(new ValidacionMotivoSiLugarDesconocido());
-        else if (config.Ubicacion == ConfiguracionFichaje.UbicacionSedeFija)
+        else if (pideUbicacion && config.Ubicacion == ConfiguracionFichaje.UbicacionSedeFija)
             reglas.Agregar(new ValidacionUbicacion());
 
         if (config.Foto == ConfiguracionFichaje.FotoObligatoria)
@@ -68,7 +70,7 @@ public class FichajeService : IFichajeService
 
         var tipo = await ProximoTipoAsync(empleado.NombreCompleto);
         var ahora = DateTime.Now;
-        var sinUbicacion = config.Ubicacion == ConfiguracionFichaje.UbicacionNinguna;
+        var sinUbicacion = config.Ubicacion == ConfiguracionFichaje.UbicacionNinguna || ctx.LugarFijo is not null;
 
         var fichaje = new FichajeDto
         {
@@ -77,8 +79,8 @@ public class FichajeService : IFichajeService
             Longitud = sinUbicacion ? 0 : ctx.Longitud,
             FechaHora = ahora,
             TipoFichaje = tipo,
-            Lugar = sinUbicacion ? "Sin ubicación"
-                : ctx.Sitio ?? (config.Ubicacion == ConfiguracionFichaje.UbicacionLibre ? "Otro lugar" : "Sede"),
+            Lugar = ctx.LugarFijo ?? (sinUbicacion ? "Sin ubicación"
+                : ctx.Sitio ?? (config.Ubicacion == ConfiguracionFichaje.UbicacionLibre ? "Otro lugar" : "Sede")),
             Motivo = ctx.Motivo,
             Precision = sinUbicacion ? null : ctx.Precision,
             Direccion = sinUbicacion ? null : ctx.Direccion

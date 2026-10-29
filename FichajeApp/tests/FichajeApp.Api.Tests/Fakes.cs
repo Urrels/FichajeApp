@@ -288,6 +288,7 @@ public class Entorno
     public AparienciaService Apariencia { get; }
     public ConfiguracionFichajeService ConfigFichaje { get; }
     public FichajeService Fichaje { get; }
+    public KioscoService Kiosco { get; }
 
     public const string PinAdmin = "1111", PinAna = "2222", PinBeto = "3333";
 
@@ -323,6 +324,7 @@ public class Entorno
         ConfigFichaje = new ConfiguracionFichajeService(ConfigFichajeRepo, Bitacora, new Microsoft.Extensions.Caching.Memory.MemoryCache(
             new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()), opciones);
         Fichaje = new FichajeService(StorageFichajes, Array.Empty<IFichajeObserver>(), new BloqueoPorClave(), ConfigFichaje, Fotos, opciones);
+        Kiosco = new KioscoService(Empleados, Permisos, StorageFichajes, Login, Fichaje);
     }
 
     // Costo 4 (el mínimo de BCrypt) para que los tests no tarden
@@ -330,6 +332,20 @@ public class Entorno
     {
         Id = id, NombreCompleto = nombre, Email = email, PinHash = BCrypt.Net.BCrypt.HashPassword(pin, 4), Activo = true, Rol = rol
     };
+
+    public const string PinKiosco = "4444";
+
+    // La cuenta del teléfono compartido de una sucursal: rol Kiosco, sin permiso de fichar por sí misma
+    public EmpleadoDto AgregarSucursal(string nombre = "Sucursal Centro", string email = "centro@test.com")
+    {
+        var existente = Empleados.Datos.FirstOrDefault(x => x.Email == email);
+        if (existente is not null) return existente;
+
+        var sucursal = Persona(Empleados.Datos.Max(x => x.Id) + 1, nombre, email, PinKiosco, "");
+        Empleados.Datos.Add(sucursal);
+        Roles.ReemplazarAsignacionesAsync(sucursal.Id, new[] { IdRol(CatalogoPermisos.RolKiosco) }).Wait();
+        return sucursal;
+    }
 
     public int IdRol(string nombre) => Roles.Roles.First(r => r.Nombre == nombre).Id;
 }
