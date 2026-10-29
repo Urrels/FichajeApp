@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FichajeApp.Mobile.Views.FichajesAdminPage"
+             Title="Corregir fichajes">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="12" RowSpacing="8">
+
+        <VerticalStackLayout Spacing="6">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <DatePicker Date="{Binding Desde}" />
+                <DatePicker Grid.Column="1" Date="{Binding Hasta}" />
+            </Grid>
+            <HorizontalStackLayout Spacing="8">
+                <Switch IsToggled="{Binding SoloVencidos}" />
+                <Label Text="Solo entradas vencidas" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <Button Text="Buscar" Clicked="OnBuscar" />
+        </VerticalStackLayout>
+
+        <Label Grid.Row="1" Text="{Binding Estado}" FontSize="12" />
+
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Incompletos}" SelectionMode="Single" SelectionChanged="OnSeleccion">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <VerticalStackLayout Padding="6,6">
+                        <Label Text="{Binding Empleado}" FontAttributes="Bold" />
+                        <Label Text="{Binding Resumen}" FontSize="12" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <VerticalStackLayout Grid.Row="3" Spacing="6">
+            <Button Text="Cargar un fichaje que faltó" Clicked="OnManual" />
+            <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

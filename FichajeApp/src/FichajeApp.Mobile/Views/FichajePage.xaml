@@ -23,5 +23,8 @@
                 Clicked="OnAbrirMapsClicked"
                 IsVisible="{Binding MostrarMapa}" />
 
+        <Button x:Name="PinButton" Text="Cambiar mi PIN" Clicked="OnCambiarPin" IsVisible="False" />
+        <Button Text="Cerrar sesión" Clicked="OnCerrarSesion" />
+
     </VerticalStackLayout>
 </ContentPage>

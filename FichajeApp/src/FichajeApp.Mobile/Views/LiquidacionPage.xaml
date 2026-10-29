@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FichajeApp.Mobile.Views.LiquidacionPage"
+             Title="Liquidación de horas">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Padding="12" RowSpacing="8">
+
+        <VerticalStackLayout Spacing="6">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <DatePicker Date="{Binding Desde}" />
+                <DatePicker Grid.Column="1" Date="{Binding Hasta}" />
+            </Grid>
+            <Button Text="Calcular" Clicked="OnCalcular" />
+        </VerticalStackLayout>
+
+        <Label Grid.Row="1" Text="{Binding Estado}" FontSize="12" />
+
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Resumen}" SelectionMode="Single" SelectionChanged="OnSeleccion">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="*,Auto" Padding="6,6" ColumnSpacing="8">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Empleado}" FontAttributes="Bold" />
+                            <Label Text="{Binding Detalle}" FontSize="12" />
+                        </VerticalStackLayout>
+                        <Label Grid.Column="1" Text="{Binding ImporteTexto}" FontAttributes="Bold" VerticalOptions="Center" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Label Grid.Row="3" Text="{Binding Total}" FontSize="16" FontAttributes="Bold" HorizontalOptions="End" />
+
+        <VerticalStackLayout Grid.Row="4" Spacing="6">
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                <Button Text="Cerrar período" Clicked="OnCerrar" />
+                <Button Grid.Column="1" Text="Cerradas" Clicked="OnCerradas" />
+                <Button Grid.Column="2" Text="Configuración" Clicked="OnConfiguracion" />
+            </Grid>
+            <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>
