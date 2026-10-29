@@ -38,6 +38,7 @@ public class InicializadorPlanilla : IHostedService
             await CrearPestanasAsync();
             await SembrarPermisosAsync();
             await SembrarRolesAsync();
+            await AsegurarPermisosDelAdministradorAsync();
             await SembrarParametrosAsync();
             await MigrarAsignacionesAsync();
             await GarantizarAdministradorAsync();
@@ -94,6 +95,22 @@ public class InicializadorPlanilla : IHostedService
             int id = await _roles.InsertarRolAsync(nombre, null, protegido: nombre == CatalogoPermisos.RolAdministrador);
             await _roles.GuardarPermisosDeRolAsync(id, permisosDelRol.Select(p => permisos[p]));
         }
+    }
+
+    // El rol Administrador (protegido) tiene todos los permisos por definición: cuando una versión nueva suma un
+    // permiso al catálogo, se le asigna solo. A los demás roles no se les agrega nada.
+    private async Task AsegurarPermisosDelAdministradorAsync()
+    {
+        var admin = (await _roles.ListarRolesAsync())
+            .FirstOrDefault(r => r.Protegido && r.Nombre == CatalogoPermisos.RolAdministrador);
+        if (admin is null) return;
+
+        var catalogo = (await _roles.ListarPermisosAsync()).Select(p => p.Id).ToHashSet();
+        var actuales = (await _roles.ListarRolPermisosAsync()).Where(rp => rp.RolId == admin.Id).Select(rp => rp.PermisoId).ToHashSet();
+        if (catalogo.IsSubsetOf(actuales)) return;
+
+        await _roles.GuardarPermisosDeRolAsync(admin.Id, catalogo);
+        _log.LogInformation("El rol Administrador recibió los permisos nuevos del catálogo.");
     }
 
     private async Task SembrarParametrosAsync()

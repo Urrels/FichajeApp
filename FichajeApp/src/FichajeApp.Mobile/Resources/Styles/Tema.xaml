@@ -2,8 +2,9 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Tokens de diseño. Los valores marcados "del cliente" se pisan al iniciar
-         con los de Clientes/<cliente>/cliente.json (ver ClienteService.AplicarTema). -->
+    <!-- Tokens de diseño. Los valores marcados "del cliente" se pisan al iniciar con los de
+         Clientes/<cliente>/cliente.json y con lo que el administrador defina desde la app
+         (ver ClienteService.AplicarTema). -->
 
     <x:String x:Key="NombreCliente">Fichaje</x:String>
 
@@ -11,6 +12,7 @@
     <Color x:Key="ColorPrimario">#1B5E9B</Color>
     <Color x:Key="ColorPrimarioTexto">#FFFFFF</Color>
     <Color x:Key="ColorAcento">#F5A623</Color>
+    <Color x:Key="ColorPrimarioOscuro">#144670</Color>
 
     <!-- fijos -->
     <Color x:Key="ColorFondo">#F4F6F8</Color>
@@ -18,5 +20,42 @@
     <Color x:Key="ColorTexto">#1C2530</Color>
     <Color x:Key="ColorTextoSuave">#6B7785</Color>
     <Color x:Key="ColorBorde">#DDE3EA</Color>
+
+    <!-- Estilos que reemplazan a los de la plantilla (Styles.xaml): usan el color del cliente y cambian en vivo.
+         Se declaran acá, después de Styles.xaml, para que ganen. Los colores del estado "deshabilitado" van fijos
+         para no depender de Colors.xaml. -->
+    <Style TargetType="Button">
+        <Setter Property="TextColor" Value="{DynamicResource ColorPrimarioTexto}" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource ColorPrimario}" />
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="14,10" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+        <Setter Property="MinimumWidthRequest" Value="44" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="TextColor" Value="#6E6E6E" />
+                            <Setter Property="BackgroundColor" Value="#C8C8C8" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="PointerOver" />
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+    <Style TargetType="ActivityIndicator">
+        <Setter Property="Color" Value="{DynamicResource ColorPrimario}" />
+    </Style>
+
+    <Style TargetType="Switch">
+        <Setter Property="OnColor" Value="{DynamicResource ColorPrimario}" />
+    </Style>
 
 </ResourceDictionary>

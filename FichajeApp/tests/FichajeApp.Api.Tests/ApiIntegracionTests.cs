@@ -36,6 +36,7 @@ public class ApiFactory : WebApplicationFactory<Program>
             servicios.RemoveAll<IHistorialUsuariosRepositorio>();
             servicios.RemoveAll<IFichajesRepositorio>();
             servicios.RemoveAll<ILiquidacionRepositorio>();
+            servicios.RemoveAll<IAparienciaRepositorio>();
             servicios.RemoveAll<IFichajeStorageStrategy>();
 
             servicios.AddSingleton<TimeProvider>(Datos.Reloj);
@@ -45,6 +46,7 @@ public class ApiFactory : WebApplicationFactory<Program>
             servicios.AddSingleton<IHistorialUsuariosRepositorio>(Datos.HistorialRepo);
             servicios.AddSingleton<IFichajesRepositorio>(Datos.Fichajes);
             servicios.AddSingleton<ILiquidacionRepositorio>(Datos.LiquidacionRepo);
+            servicios.AddSingleton<IAparienciaRepositorio>(Datos.AparienciaRepo);
             servicios.AddSingleton<IFichajeStorageStrategy, StorageVacio>();
         });
     }
