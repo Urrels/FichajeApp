@@ -45,3 +45,26 @@ public class AparienciaAdminController : AdminControllerBase
         return Ok(new { mensaje = "Apariencia guardada" });
     }
 }
+
+// Cómo ficha este cliente: ubicación (Ninguna / Libre / SedeFija) y foto (No / Opcional / Obligatoria)
+[Route("api/admin/configuracion-fichaje")]
+[RequierePermiso(CatalogoPermisos.ConfigurarFichaje)]
+public class ConfiguracionFichajeAdminController : AdminControllerBase
+{
+    private readonly ConfiguracionFichajeService _configuracion;
+    public ConfiguracionFichajeAdminController(ConfiguracionFichajeService configuracion) => _configuracion = configuracion;
+
+    [HttpGet]
+    public async Task<IActionResult> Obtener()
+    {
+        var c = await _configuracion.ObtenerAsync();
+        return Ok(new { ubicacion = c.Ubicacion, foto = c.Foto });
+    }
+
+    [HttpPut]
+    public async Task<IActionResult> Guardar([FromBody] GuardarConfiguracionFichajeRequest request)
+    {
+        await _configuracion.GuardarAsync(Actor, request);
+        return Ok(new { mensaje = "Configuración de fichaje guardada" });
+    }
+}

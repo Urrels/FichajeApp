@@ -12,6 +12,9 @@ public class FichajeDto
     public string? Motivo { get; set; }
     public double? Precision { get; set; }
     public string? Direccion { get; set; }
+
+    // Nombre del archivo de la foto en el servidor (vacío si no se sacó)
+    public string? Foto { get; set; }
 }
 
 // Lo único que manda el cliente: el nombre y el tipo (Entrada/Salida) los decide el backend
@@ -23,6 +26,9 @@ public class FichajeRequestDto
     public bool EsUbicacionFalsa { get; set; }
     public string? Direccion { get; set; }
     public string? Motivo { get; set; }
+
+    // Foto en base64 (PNG o JPG), si la configuración la pide u ofrece
+    public string? FotoBase64 { get; set; }
 }
 
 // Contexto que viaja por la cadena de validaciones (patrón Composite)
@@ -36,6 +42,9 @@ public class FichajeContext
     public string? Motivo { get; set; }
     public string? Direccion { get; set; }
     public string? Sitio { get; set; }
+
+    // Foto ya decodificada y validada
+    public byte[]? Foto { get; set; }
 }
 
 public class ResultadoValidacion

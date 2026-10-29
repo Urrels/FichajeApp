@@ -200,6 +200,10 @@ public class AdminApiService
     public Task<ResultadoConsulta<PaginaDatos<UsuarioAdmin>>> ListarUsuarios(string? busqueda, int pagina = 1, int tamanio = 100) =>
         Pedir<PaginaDatos<UsuarioAdmin>>(HttpMethod.Get, $"admin/usuarios?pagina={pagina}&tamanio={tamanio}" +
             (string.IsNullOrWhiteSpace(busqueda) ? "" : $"&busqueda={Uri.EscapeDataString(busqueda)}"));
+    public Task<ResultadoConsulta<ConfiguracionFichaje>> ConfiguracionFichajeActual() =>
+        Pedir<ConfiguracionFichaje>(HttpMethod.Get, "admin/configuracion-fichaje");
+    public Task<ResultadoConsulta<Respuesta>> GuardarConfiguracionFichaje(string ubicacion, string foto) =>
+        Pedir<Respuesta>(HttpMethod.Put, "admin/configuracion-fichaje", new { ubicacion, foto });
     public Task<ResultadoConsulta<List<RolResumen>>> ListarRolesParaAsignar() => Pedir<List<RolResumen>>(HttpMethod.Get, "admin/usuarios/roles");
     public Task<ResultadoConsulta<Respuesta>> CrearUsuario(string nombre, string email, string pin, List<int> rolIds) =>
         Pedir<Respuesta>(HttpMethod.Post, "admin/usuarios", new { nombreCompleto = nombre, email, pin, rolIds });

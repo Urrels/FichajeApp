@@ -11,6 +11,16 @@ public class FichajeRequest
     public bool EsUbicacionFalsa { get; set; }
     public string? Direccion { get; set; }
     public string? Motivo { get; set; }
+    public string? FotoBase64 { get; set; }
+}
+
+// Cómo se ficha en este cliente: ubicación (Ninguna / Libre / SedeFija) y foto (No / Opcional / Obligatoria)
+public record ConfiguracionFichaje(string Ubicacion, string Foto)
+{
+    public static readonly ConfiguracionFichaje PorDefecto = new("Libre", "No");
+    public bool PideUbicacion => Ubicacion != "Ninguna";
+    public bool PideFoto => Foto != "No";
+    public bool FotoObligatoria => Foto == "Obligatoria";
 }
 
 public record ResultadoFichaje(bool Exito, string Mensaje, bool RequiereMotivo = false);
@@ -29,9 +39,16 @@ public class FichajeItem
     public string? Motivo { get; set; }
     public double? Precision { get; set; }
     public string? Direccion { get; set; }
+    public string? Foto { get; set; }
+
+    public bool TieneFoto => !string.IsNullOrWhiteSpace(Foto);
+
+    // Con la ubicación desactivada se guarda (0, 0): no hay nada que mostrar en el mapa
+    public bool TieneUbicacion => Latitud != 0 || Longitud != 0;
 
     public string Resumen =>
-        $"{FechaHora:dd/MM HH:mm} · {TipoFichaje} · {Lugar}" + (string.IsNullOrWhiteSpace(Motivo) ? "" : $" · {Motivo}");
+        $"{FechaHora:dd/MM HH:mm} · {TipoFichaje} · {Lugar}" + (string.IsNullOrWhiteSpace(Motivo) ? "" : $" · {Motivo}")
+        + (TieneFoto ? " · 📷 foto" : "");
 }
 
 public class ApiService
@@ -69,6 +86,33 @@ public class ApiService
     {
         var r = await GetAsync<Dictionary<string, string>>("fichaje/estado");
         return r.Exito ? r.Datos?.GetValueOrDefault("proximo") : null;
+    }
+
+    // Cómo se ficha en este cliente. Si no se puede consultar, se usa lo de siempre (con ubicación y sin foto)
+    public async Task<ConfiguracionFichaje> ObtenerConfiguracionFichajeAsync()
+    {
+        var r = await GetAsync<Dictionary<string, string>>("fichaje/configuracion");
+        if (!r.Exito || r.Datos is null) return ConfiguracionFichaje.PorDefecto;
+        return new ConfiguracionFichaje(r.Datos.GetValueOrDefault("ubicacion") ?? "Libre", r.Datos.GetValueOrDefault("foto") ?? "No");
+    }
+
+    // La foto de un fichaje (solo supervisores). null si no se pudo bajar
+    public async Task<byte[]?> DescargarFotoAsync(string archivo)
+    {
+        try
+        {
+            var token = SessionManager.Instance.Token;
+            if (string.IsNullOrEmpty(token)) return null;
+
+            using var request = new HttpRequestMessage(HttpMethod.Get,
+                $"{_clientes.BaseUrl}/supervisor/foto?archivo={Uri.EscapeDataString(archivo)}");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            using var response = await _httpClient.SendAsync(request, cts.Token);
+            return response.IsSuccessStatusCode ? await response.Content.ReadAsByteArrayAsync(cts.Token) : null;
+        }
+        catch { return null; }
     }
 
     private async Task<ResultadoConsulta<T>> GetAsync<T>(string ruta)

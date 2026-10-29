@@ -81,3 +81,10 @@ public interface ILiquidacionRepositorio
     Task MarcarPagadaAsync(int liquidacionId, string pagadaPor, DateTime fechaPago);
     Task<List<LiquidacionDia>> ListarDiasDeLiquidacionAsync(int liquidacionId);
 }
+
+// Configuración de fichaje del cliente (ubicación y foto); null si todavía no se guardó nada
+public interface IConfiguracionFichajeRepositorio
+{
+    Task<FichajeApp.Api.Models.ConfiguracionFichaje?> ObtenerAsync();
+    Task GuardarAsync(FichajeApp.Api.Models.ConfiguracionFichaje configuracion);
+}
