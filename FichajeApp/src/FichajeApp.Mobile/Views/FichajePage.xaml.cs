@@ -18,9 +18,10 @@ public partial class FichajePage : ContentPage
         BindingContext = _viewModel;
     }
 
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
+        await _viewModel.ActualizarProximoAsync();
         var sesion = SessionManager.Instance;
         PinButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarPin);
         PanelButton.IsVisible = sesion.EsSupervisor || sesion.EsAdministrador;

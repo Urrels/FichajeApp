@@ -417,8 +417,8 @@ public class FichajesYLiquidacionTests
     {
         var e = ConFichajes();
 
-        // período que termina hoy o después
-        await Assert.ThrowsAsync<InvalidOperationException>(() => e.Liquidacion.CerrarAsync("a", Desde, new DateTime(2026, 11, 2)));
+        // un período que termina en el futuro no se puede liquidar (hoy sí: "ahora" es 2/11)
+        await Assert.ThrowsAsync<InvalidOperationException>(() => e.Liquidacion.CerrarAsync("a", Desde, new DateTime(2026, 11, 3)));
 
         // sin valor hora de Beto
         e.LiquidacionRepo.Valores.RemoveAll(v => v.EmpleadoId == 3);

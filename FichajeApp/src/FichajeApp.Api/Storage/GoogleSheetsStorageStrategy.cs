@@ -103,21 +103,15 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
 
     public async Task<string> ObtenerUltimoTipoFichajeAsync(string nombreCompleto)
     {
-        var request = _sheets.Service.Spreadsheets.Values.Get(_sheets.SpreadsheetId, Range);
-        var response = await request.ExecuteAsync();
-
-        if (response.Values is null || response.Values.Count == 0)
-            return "Salida"; // no hay fichajes previos -> el próximo es "Entrada"
-
+        // Mismo parseo que el resto de las lecturas (valores crudos): la fecha no depende del idioma de la planilla
         var hoy = DateTime.Now.Date;
-
-        var ultimoDeHoy = response.Values
-            .Where(row => row.Count >= 5
-                && row[0].ToString() == nombreCompleto
-                && DateTime.TryParse(row[1].ToString(), out var fecha)
-                && fecha.Date == hoy)
+        var ultimoDeHoy = (await ObtenerFichajesAsync())
+            .Where(f => string.Equals(f.NombreCompleto, nombreCompleto, StringComparison.OrdinalIgnoreCase)
+                && f.FechaHora.Date == hoy)
+            .OrderBy(f => f.FechaHora)
             .LastOrDefault();
 
-        return ultimoDeHoy is null ? "Salida" : ultimoDeHoy[4].ToString()!;
+        // Sin fichajes hoy -> el próximo es "Entrada"
+        return ultimoDeHoy?.TipoFichaje is { Length: > 0 } tipo ? tipo : "Salida";
     }
 }

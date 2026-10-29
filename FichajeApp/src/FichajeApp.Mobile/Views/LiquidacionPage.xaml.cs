@@ -14,6 +14,12 @@ public partial class LiquidacionPage : ContentPage
         BindingContext = viewModel;
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await _viewModel.SugerirPeriodoAsync();
+    }
+
     private async void OnCalcular(object sender, EventArgs e) => await _viewModel.CalcularAsync();
     private async void OnCerrar(object sender, EventArgs e) => await _viewModel.CerrarAsync();
     private async void OnCerradas(object sender, EventArgs e) => await _viewModel.VerLiquidacionesAsync();

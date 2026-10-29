@@ -44,13 +44,15 @@ public class FichajeService : IFichajeService
 
     public ResultadoValidacion Validar(FichajeContext contexto) => _validaciones.Validar(contexto);
 
+    public async Task<string> ProximoTipoAsync(string nombreCompleto) =>
+        await _storage.ObtenerUltimoTipoFichajeAsync(nombreCompleto) == "Entrada" ? "Salida" : "Entrada";
+
     public async Task<FichajeDto> RegistrarAsync(EmpleadoDto empleado, FichajeContext ctx)
     {
         // Un fichaje por empleado a la vez: leer el último tipo y guardar es una sola sección crítica
         using var _ = await _bloqueo.AdquirirAsync(empleado.NombreCompleto);
 
-        var tipoAnterior =await _storage.ObtenerUltimoTipoFichajeAsync(empleado.NombreCompleto);
-        var tipo = tipoAnterior == "Entrada" ? "Salida" : "Entrada";
+        var tipo = await ProximoTipoAsync(empleado.NombreCompleto);
 
         var fichaje = new FichajeDto
         {

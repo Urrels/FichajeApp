@@ -22,4 +22,7 @@ public interface IFichajeService
     bool ModoLibre { get; }
     ResultadoValidacion Validar(FichajeContext contexto);
     Task<FichajeDto> RegistrarAsync(EmpleadoDto empleado, FichajeContext ctx);
+
+    // "Entrada" o "Salida": lo que va a ser el próximo fichaje del empleado
+    Task<string> ProximoTipoAsync(string nombreCompleto);
 }
