@@ -129,3 +129,12 @@ dotnet test tests/FichajeApp.Api.Tests
 ```
 Cubren el cálculo de horas, las reglas de roles y los servicios (con repositorios en memoria) y la API completa por HTTP.
 **No** cubren la lectura y escritura reales contra Google Sheets.
+
+### Pantallas de administración en la app
+El menú lateral muestra **Supervisor** y **Administración** solo a quien tiene los permisos (la app consulta
+`SessionManager.TienePermiso`, nunca el nombre del rol). Administración abre, según el permiso: **Usuarios** (alta, edición,
+roles, restablecer PIN, desbloquear, baja, historial con rollback), **Roles y permisos** (árbol, permisos por rol, subroles,
+duplicar, mover, eliminar), **Bitácora**, **Corregir fichajes** (entradas sin salida, salidas sin entrada y carga manual) y
+**Liquidación de horas** (calcular, revisar por empleado, aprobar excedentes, cerrar el período, marcar como pagado,
+compartir el CSV, y configurar parámetros, valor hora y feriados). Cada usuario puede **cambiar su PIN** y **cerrar sesión**.
+Las acciones se hacen con diálogos del sistema: es la versión mínima, sin pantallas de formulario por cada operación.

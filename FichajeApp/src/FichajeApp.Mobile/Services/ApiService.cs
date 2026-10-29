@@ -38,7 +38,7 @@ public class ApiService
 {
     private readonly HttpClient _httpClient;
     private readonly AuthService _authService;
-    private const string BaseUrl = "http://10.0.2.2:5224/api";
+    private const string BaseUrl = ApiConfig.BaseUrl;
 
     public ApiService(AuthService authService)
     {
@@ -133,6 +133,9 @@ public class ApiService
                 _authService.NotificarSesionExpirada();
                 return new ResultadoFichaje(false, "Sesión expirada, iniciá sesión de nuevo");
             }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                return new ResultadoFichaje(false, "Tu usuario no tiene permiso para fichar");
 
             if (response.IsSuccessStatusCode)
             {

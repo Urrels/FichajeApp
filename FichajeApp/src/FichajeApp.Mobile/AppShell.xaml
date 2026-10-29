@@ -4,10 +4,14 @@
        xmlns:views="clr-namespace:FichajeApp.Mobile.Views"
        x:Class="FichajeApp.Mobile.AppShell">
 
-    <ShellContent Route="LoginPage"
+    <!-- El login no es una opción del menú -->
+    <ShellContent Title="Iniciar sesión"
+                  Route="LoginPage"
+                  FlyoutItemIsVisible="False"
                   ContentTemplate="{DataTemplate views:LoginPage}" />
 
-    <ShellContent Route="FichajePage"
+    <ShellContent Title="Fichar"
+                  Route="FichajePage"
                   ContentTemplate="{DataTemplate views:FichajePage}" />
 
     <!-- Solo visible para supervisores (ver AppShell.xaml.cs) -->
@@ -16,5 +20,12 @@
                   Route="SupervisorPage"
                   FlyoutItemIsVisible="False"
                   ContentTemplate="{DataTemplate views:SupervisorPage}" />
+
+    <!-- Solo visible para quien tiene algún permiso de administración (ver AppShell.xaml.cs) -->
+    <ShellContent x:Name="AdminItem"
+                  Title="Administración"
+                  Route="AdminPage"
+                  FlyoutItemIsVisible="False"
+                  ContentTemplate="{DataTemplate views:AdminPage}" />
 
 </Shell>
