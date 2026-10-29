@@ -43,10 +43,10 @@
             <Entry Text="{Binding EmailAdmin}" Placeholder="Email" Keyboard="Email" />
             <Entry Text="{Binding PinAdmin}" Placeholder="PIN (4 dígitos)" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
 
-            <Label Text="Clave de instalación" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Label Text="Te la da quien instaló el servidor." FontSize="11" />
-            <Entry Text="{Binding Clave}" IsPassword="True" Placeholder="Clave de instalación" />
-            <Button Text="¿Dónde consigo la clave?" Clicked="OnAyudaClave" BackgroundColor="Transparent"
+            <Label Text="Código de activación" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Label Text="Te lo envía la empresa que te dio la app." FontSize="11" />
+            <Entry Text="{Binding Clave}" IsPassword="True" Placeholder="Código de activación" />
+            <Button Text="¿No tenés el código?" Clicked="OnAyudaClave" BackgroundColor="Transparent"
                     TextColor="{DynamicResource ColorTextoSuave}" FontSize="12" />
 
             <Button Text="Probar y guardar" Clicked="OnGuardar" Margin="0,8,0,0"

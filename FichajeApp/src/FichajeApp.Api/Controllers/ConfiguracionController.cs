@@ -25,7 +25,7 @@ public class ConfiguracionController : ControllerBase
     public async Task<IActionResult> Configurar([FromBody] ConfigurarConexionRequest request)
     {
         if (!_conexion.ClaveCorrecta(request.Clave))
-            return StatusCode(StatusCodes.Status403Forbidden, new { mensaje = "La clave de instalación no es correcta." });
+            return StatusCode(StatusCodes.Status403Forbidden, new { mensaje = "El código de activación no es correcto." });
 
         try
         {

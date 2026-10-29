@@ -2,52 +2,64 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FichajeApp.Mobile.Views.AyudaClavePage"
-             Title="Clave de instalación"
+             Title="Código de activación"
              BackgroundColor="{DynamicResource ColorFondo}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="12">
 
-            <Label Text="¿Dónde consigo la clave?" FontSize="20" FontAttributes="Bold" />
+            <Label Text="¿Qué es el código de activación?" FontSize="20" FontAttributes="Bold" />
             <Label FontSize="13"
-                   Text="La clave de instalación es una contraseña que protege la conexión con tu planilla. No es tu PIN ni tu contraseña de Google. Se la da a cada cliente quien instaló el servidor: si es tu caso, pedísela. Si instalaste el servidor vos, la conseguís de cualquiera de estas tres formas." />
+                   Text="Es un código que sirve para conectar tu planilla de Google por primera vez. Evita que otra persona que descargue la app configure tu servidor. No es tu PIN ni tu contraseña de Google." />
 
-            <!-- Opción 1 -->
             <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Opción 1 · En la consola de la API" FontAttributes="Bold" />
-                    <Label FontSize="13" Text="1. Iniciá la API (la ventana negra de consola o la salida de Visual Studio)." />
-                    <Label FontSize="13" Text="2. Buscá el aviso amarillo que dice «Clave de instalación para la app» y copiá el código que sigue." />
-                    <Image Source="ayuda_log.png" Aspect="AspectFit" HeightRequest="170" />
-                    <Label FontSize="11" Text="Solo aparece mientras el servidor no tiene planilla conectada." />
+                    <Label Text="Si sos cliente" FontAttributes="Bold" />
+                    <Label FontSize="13" Text="Te lo envía la empresa que te dio la app (por WhatsApp, mail o mensaje), junto con el aviso de que tu servidor está listo." />
+                    <Label FontSize="13" Text="Si todavía no lo recibiste, pedíselo y escribilo tal cual: distingue mayúsculas de minúsculas." />
+                    <Label FontSize="12" Text="Ejemplo de mensaje que podés mandar:" />
+                    <Border Padding="10" StrokeShape="RoundRectangle 8" BackgroundColor="#EEEEEE" Stroke="Transparent">
+                        <Label FontSize="12" TextColor="#212121" Text="Hola, ya instalé la app. ¿Me pasás el código de activación para conectar mi planilla de Google?" />
+                    </Border>
                 </VerticalStackLayout>
             </Border>
 
-            <!-- Opción 2 -->
-            <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Opción 2 · En un archivo del servidor" FontAttributes="Bold" />
-                    <Label FontSize="13" Text="1. Abrí la carpeta de la API en el servidor y entrá a «datos»." />
-                    <Label FontSize="13" Text="2. Abrí «clave-instalacion.txt» con el Bloc de notas. El texto es la clave." />
-                    <Image Source="ayuda_archivo.png" Aspect="AspectFit" HeightRequest="170" />
-                </VerticalStackLayout>
-            </Border>
+            <Button Text="Soy quien instaló el servidor" Clicked="OnVerComoServidor" Margin="0,6,0,0" />
 
-            <!-- Opción 3 -->
-            <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Opción 3 · Elegirla vos" FontAttributes="Bold" />
-                    <Label FontSize="13" Text="1. Abrí el archivo de configuración de la API (appsettings.Development.json o appsettings.json)." />
-                    <Label FontSize="13" Text="2. Agregá el bloque «Setup» con la clave que quieras, guardá y reiniciá la API." />
-                    <Image Source="ayuda_config.png" Aspect="AspectFit" HeightRequest="170" />
-                    <Label FontSize="11" Text="En un servidor en internet se hace con la variable de entorno Setup__Clave." />
-                </VerticalStackLayout>
-            </Border>
+            <!-- Para quien instala el servidor (el cliente no tiene acceso a esto) -->
+            <VerticalStackLayout x:Name="ServidorPanel" IsVisible="False" Spacing="12">
 
-            <Label FontAttributes="Bold" Text="Para tener en cuenta" Margin="0,6,0,0" />
-            <Label FontSize="13" Text="• Escribila tal cual: distingue mayúsculas de minúsculas." />
-            <Label FontSize="13" Text="• Si la escribís mal varias veces, la app te pide esperar un minuto." />
-            <Label FontSize="13" Text="• No la compartas con nadie que no deba cambiar la conexión de la planilla." />
+                <Label FontSize="13"
+                       Text="Como administrás el servidor, el código lo conseguís de cualquiera de estas tres formas. Después se lo enviás al cliente." />
+
+                <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Opción 1 · En la consola de la API" FontAttributes="Bold" />
+                        <Label FontSize="13" Text="Iniciá la API y buscá el aviso amarillo «Código de activación para la app». Copiá el código que sigue." />
+                        <Image Source="ayuda_log.png" Aspect="AspectFit" HeightRequest="170" />
+                        <Label FontSize="11" Text="Solo aparece mientras el servidor no tiene planilla conectada." />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Opción 2 · En un archivo del servidor" FontAttributes="Bold" />
+                        <Label FontSize="13" Text="Abrí la carpeta de la API, entrá a «datos» y abrí «clave-instalacion.txt» con el Bloc de notas." />
+                        <Image Source="ayuda_archivo.png" Aspect="AspectFit" HeightRequest="170" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="Opción 3 · Elegirlo vos" FontAttributes="Bold" />
+                        <Label FontSize="13" Text="Agregá el bloque «Setup» en appsettings con el código que quieras, guardá y reiniciá la API." />
+                        <Image Source="ayuda_config.png" Aspect="AspectFit" HeightRequest="170" />
+                        <Label FontSize="11" Text="En un servidor en internet se hace con la variable de entorno Setup__Clave." />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Label FontSize="12" Text="Conviene usar un código distinto para cada cliente y mandárselo por un medio privado." />
+            </VerticalStackLayout>
 
             <Button Text="Entendido, volver" Clicked="OnVolver" Margin="0,8,0,0" />
 
