@@ -17,11 +17,12 @@ public static class CatalogoPermisos
     public const string CorregirFichajes = "Corregir fichajes";
     public const string LiquidarHoras = "Liquidar horas";
     public const string GestionarApariencia = "Gestionar apariencia";
+    public const string ConfigurarFichaje = "Configurar fichaje";
 
     public static readonly string[] Todos =
     {
         AdministrarUsuarios, GestionRoles, VerBitacora, CambiarPin,
-        FicharAsistencia, VerPanelSupervisor, CorregirFichajes, LiquidarHoras, GestionarApariencia
+        FicharAsistencia, VerPanelSupervisor, CorregirFichajes, LiquidarHoras, GestionarApariencia, ConfigurarFichaje
     };
 
     // Permisos sin los cuales el sistema quedaría sin administración (guarda anti-lockout)

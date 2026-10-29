@@ -31,12 +31,21 @@ public partial class SupervisorPage : ContentPage
     private async void OnHistorialClicked(object sender, EventArgs e) => await _viewModel.BuscarHistorialAsync();
     private async void OnBuscarClicked(object sender, EventArgs e) => await _viewModel.BuscarHistorialAsync();
 
-    // Al elegir un fichaje de la lista, el mapa se centra en ese punto
-    private void OnItemSelected(object sender, SelectionChangedEventArgs e)
+    // Al elegir un fichaje de la lista, el mapa se centra en ese punto; si tiene foto, se abre
+    private async void OnItemSelected(object sender, SelectionChangedEventArgs e)
     {
-        if (e.CurrentSelection.FirstOrDefault() is FichajeItem f)
+        if (e.CurrentSelection.FirstOrDefault() is not FichajeItem f) return;
+
+        if (f.TieneUbicacion)
             Mapa.MoveToRegion(MapSpan.FromCenterAndRadius(
                 new Location(f.Latitud, f.Longitud), Distance.FromMeters(250)));
+
+        if (f.TieneFoto)
+        {
+            ((CollectionView)sender).SelectedItem = null;
+            await Shell.Current.GoToAsync($"{nameof(FotoFichajePage)}?archivo={Uri.EscapeDataString(f.Foto!)}" +
+                $"&titulo={Uri.EscapeDataString($"{f.NombreCompleto} · {f.TipoFichaje} {f.FechaHora:dd/MM HH:mm}")}");
+        }
     }
 
     private void RedibujarMapa()
@@ -44,7 +53,8 @@ public partial class SupervisorPage : ContentPage
         Mapa.Pins.Clear();
         Mapa.MapElements.Clear();
 
-        var items = _viewModel.Items;
+        // Los fichajes sin ubicación (cliente que no la pide) no se dibujan en el mapa
+        var items = _viewModel.Items.Where(i => i.TieneUbicacion).ToList();
         if (items.Count == 0) return;
 
         foreach (var f in items)

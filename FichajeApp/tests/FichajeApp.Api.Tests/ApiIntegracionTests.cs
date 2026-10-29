@@ -37,6 +37,9 @@ public class ApiFactory : WebApplicationFactory<Program>
             servicios.RemoveAll<IFichajesRepositorio>();
             servicios.RemoveAll<ILiquidacionRepositorio>();
             servicios.RemoveAll<IAparienciaRepositorio>();
+            servicios.RemoveAll<IConfiguracionFichajeRepositorio>();
+            servicios.RemoveAll<IAlmacenFotos>();
+            servicios.RemoveAll<FichajeApp.Api.Services.ISitiosRepository>();
             servicios.RemoveAll<IFichajeStorageStrategy>();
 
             servicios.AddSingleton<TimeProvider>(Datos.Reloj);
@@ -47,9 +50,17 @@ public class ApiFactory : WebApplicationFactory<Program>
             servicios.AddSingleton<IFichajesRepositorio>(Datos.Fichajes);
             servicios.AddSingleton<ILiquidacionRepositorio>(Datos.LiquidacionRepo);
             servicios.AddSingleton<IAparienciaRepositorio>(Datos.AparienciaRepo);
+            servicios.AddSingleton<IConfiguracionFichajeRepositorio>(Datos.ConfigFichajeRepo);
+            servicios.AddSingleton<IAlmacenFotos>(Datos.Fotos);
+            servicios.AddSingleton<FichajeApp.Api.Services.ISitiosRepository, SitiosVacio>();
             servicios.AddSingleton<IFichajeStorageStrategy, StorageVacio>();
         });
     }
+}
+
+public class SitiosVacio : FichajeApp.Api.Services.ISitiosRepository
+{
+    public Task<IReadOnlyList<Sitio>> ObtenerSitiosAsync() => Task.FromResult<IReadOnlyList<Sitio>>(new List<Sitio>());
 }
 
 public class StorageVacio : IFichajeStorageStrategy

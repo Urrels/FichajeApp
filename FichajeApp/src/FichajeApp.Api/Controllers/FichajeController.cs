@@ -5,6 +5,7 @@ using FichajeApp.Api.Dominio.Seguridad;
 using FichajeApp.Api.Models;
 using FichajeApp.Api.Repositorios;
 using FichajeApp.Api.Services;
+using FichajeApp.Api.Storage;
 
 namespace FichajeApp.Api.Controllers;
 
@@ -23,6 +24,14 @@ public class FichajeController : ControllerBase
         _fichajeService = fichajeService;
         _empleadosService = empleadosService;
         _sitiosService = sitiosService;
+    }
+
+    // Cómo se ficha en este cliente (si pide ubicación y foto): la app lo consulta antes de fichar
+    [HttpGet("configuracion")]
+    public async Task<IActionResult> Configuracion()
+    {
+        var c = await _fichajeService.ConfiguracionAsync();
+        return Ok(new { ubicacion = c.Ubicacion, foto = c.Foto });
     }
 
     // Qué va a ser el próximo fichaje del usuario (Entrada o Salida), para mostrarlo antes de fichar
@@ -49,6 +58,8 @@ public class FichajeController : ControllerBase
 
         var empleado = await _empleadosService.BuscarPorEmailAsync(email);
 
+        var config = await _fichajeService.ConfiguracionAsync();
+
         var contexto = new FichajeContext
         {
             Empleado = empleado,
@@ -60,10 +71,16 @@ public class FichajeController : ControllerBase
             Motivo = request.Motivo?.Trim()
         };
 
-        if (_fichajeService.ModoLibre)
+        if (!string.IsNullOrWhiteSpace(request.FotoBase64) && config.Foto != ConfiguracionFichaje.FotoNo)
+        {
+            try { contexto.Foto = ReglasFotos.Decodificar(request.FotoBase64); }
+            catch (FormatException ex) { return BadRequest(new { mensaje = ex.Message, codigo = "FOTO_INVALIDA" }); }
+        }
+
+        if (config.Ubicacion == ConfiguracionFichaje.UbicacionLibre)
             contexto.Sitio = await _sitiosService.BuscarSitioAsync(request.Latitud, request.Longitud);
 
-        var validacion = _fichajeService.Validar(contexto);
+        var validacion = await _fichajeService.ValidarAsync(contexto);
         if (!validacion.EsValido)
             return BadRequest(new { mensaje = validacion.Mensaje, codigo = validacion.Codigo });
 

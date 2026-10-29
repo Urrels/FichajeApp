@@ -3,6 +3,11 @@ using FichajeApp.Api.Dominio.Seguridad;
 using FichajeApp.Api.Models;
 using FichajeApp.Api.Repositorios;
 using FichajeApp.Api.Servicios;
+using FichajeApp.Api.Concurrency;
+using FichajeApp.Api.Observers;
+using FichajeApp.Api.Options;
+using FichajeApp.Api.Services;
+using FichajeApp.Api.Storage;
 
 namespace FichajeApp.Api.Tests;
 
@@ -170,6 +175,41 @@ public class AparienciaFalso : IAparienciaRepositorio
     }
 }
 
+public class ConfiguracionFichajeFalso : IConfiguracionFichajeRepositorio
+{
+    public ConfiguracionFichaje? Datos { get; set; }
+    public Task<ConfiguracionFichaje?> ObtenerAsync() => Task.FromResult(Datos);
+    public Task GuardarAsync(ConfiguracionFichaje configuracion) { Datos = configuracion; return Task.CompletedTask; }
+}
+
+public class AlmacenFotosFalso : IAlmacenFotos
+{
+    public Dictionary<string, byte[]> Datos { get; } = new();
+
+    public Task<string> GuardarAsync(byte[] bytes, DateTime fecha)
+    {
+        var nombre = $"{fecha:yyyy/MM/dd}/{Datos.Count + 1:D32}.jpg";
+        Datos[nombre] = bytes;
+        return Task.FromResult(nombre);
+    }
+
+    public Task<(byte[] Bytes, string Mime)?> LeerAsync(string nombre) =>
+        Task.FromResult(Datos.TryGetValue(nombre, out var b) ? ((byte[], string)?)(b, "image/jpeg") : null);
+}
+
+// Guarda en memoria los fichajes y devuelve el último tipo como lo haría la hoja
+public class StorageEnMemoria : IFichajeStorageStrategy
+{
+    public List<FichajeDto> Guardados { get; } = new();
+
+    public Task GuardarAsync(FichajeDto fichaje) { Guardados.Add(fichaje); return Task.CompletedTask; }
+
+    public Task<string> ObtenerUltimoTipoFichajeAsync(string nombreCompleto) =>
+        Task.FromResult(Guardados.LastOrDefault(f => f.NombreCompleto == nombreCompleto)?.TipoFichaje ?? "Salida");
+
+    public Task<List<FichajeDto>> ObtenerFichajesAsync() => Task.FromResult(Guardados.ToList());
+}
+
 public class LiquidacionFalso : ILiquidacionRepositorio
 {
     public ParametrosLiquidacion Parametros { get; set; } = new();
@@ -230,6 +270,9 @@ public class Entorno
     public FichajesFalso Fichajes { get; } = new();
     public LiquidacionFalso LiquidacionRepo { get; } = new();
     public AparienciaFalso AparienciaRepo { get; } = new();
+    public ConfiguracionFichajeFalso ConfigFichajeRepo { get; } = new();
+    public AlmacenFotosFalso Fotos { get; } = new();
+    public StorageEnMemoria StorageFichajes { get; } = new();
     public RelojFalso Reloj { get; } = new();
 
     public BitacoraService Bitacora { get; }
@@ -243,6 +286,8 @@ public class Entorno
     public FichajesAdminService FichajesAdmin { get; }
     public LiquidacionService Liquidacion { get; }
     public AparienciaService Apariencia { get; }
+    public ConfiguracionFichajeService ConfigFichaje { get; }
+    public FichajeService Fichaje { get; }
 
     public const string PinAdmin = "1111", PinAna = "2222", PinBeto = "3333";
 
@@ -273,6 +318,11 @@ public class Entorno
         Liquidacion = new LiquidacionService(Jornadas, LiquidacionRepo, Empleados, Bitacora, Reloj);
         Apariencia = new AparienciaService(AparienciaRepo, Bitacora, new Microsoft.Extensions.Caching.Memory.MemoryCache(
             new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()));
+
+        var opciones = Microsoft.Extensions.Options.Options.Create(new FichajeOptions());
+        ConfigFichaje = new ConfiguracionFichajeService(ConfigFichajeRepo, Bitacora, new Microsoft.Extensions.Caching.Memory.MemoryCache(
+            new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()), opciones);
+        Fichaje = new FichajeService(StorageFichajes, Array.Empty<IFichajeObserver>(), new BloqueoPorClave(), ConfigFichaje, Fotos, opciones);
     }
 
     // Costo 4 (el mínimo de BCrypt) para que los tests no tarden

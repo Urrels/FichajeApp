@@ -3,6 +3,7 @@ using FichajeApp.Api.Autorizacion;
 using FichajeApp.Api.Dominio.Seguridad;
 using FichajeApp.Api.Repositorios;
 using FichajeApp.Api.Services;
+using FichajeApp.Api.Storage;
 
 namespace FichajeApp.Api.Controllers;
 
@@ -16,11 +17,24 @@ public class SupervisorController : ControllerBase
 
     private readonly ConsultaFichajesService _consulta;
     private readonly IEmpleadosRepositorio _empleados;
+    private readonly IAlmacenFotos _fotos;
 
-    public SupervisorController(ConsultaFichajesService consulta, IEmpleadosRepositorio empleados)
+    public SupervisorController(ConsultaFichajesService consulta, IEmpleadosRepositorio empleados, IAlmacenFotos fotos)
     {
         _consulta = consulta;
         _empleados = empleados;
+        _fotos = fotos;
+    }
+
+    // GET api/supervisor/foto?archivo=2026/10/29/<id>.jpg  -> la foto de un fichaje (solo supervisores)
+    [HttpGet("foto")]
+    public async Task<IActionResult> Foto([FromQuery] string archivo)
+    {
+        var foto = await _fotos.LeerAsync(archivo ?? "");
+        if (foto is null) return NotFound(new { mensaje = "La foto no existe" });
+
+        Response.Headers.CacheControl = "private,max-age=3600";
+        return File(foto.Value.Bytes, foto.Value.Mime);
     }
 
     // GET api/supervisor/fichajes?desde=2026-10-01&hasta=2026-10-31&empleado=Nombre

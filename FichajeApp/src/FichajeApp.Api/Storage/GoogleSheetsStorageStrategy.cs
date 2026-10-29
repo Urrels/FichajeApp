@@ -10,7 +10,7 @@ namespace FichajeApp.Api.Storage;
 public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
 {
     private readonly GoogleSheetsClient _sheets;
-    private const string Range = "Fichajes!A:J"; // hoja "Fichajes"
+    private const string Range = "Fichajes!A:O"; // hoja "Fichajes" (K a N: correcciones, O: foto)
 
     public GoogleSheetsStorageStrategy(GoogleSheetsClient sheets)
     {
@@ -34,8 +34,12 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
                     SinFormula(fichaje.Motivo),
                     fichaje.Precision.HasValue ? Math.Round(fichaje.Precision.Value) : "",
                     SinFormula(fichaje.Direccion),
-                    string.Create(CultureInfo.InvariantCulture,
-                        $"https://www.google.com/maps?q={fichaje.Latitud},{fichaje.Longitud}")
+                    fichaje.Latitud == 0 && fichaje.Longitud == 0
+                        ? ""
+                        : string.Create(CultureInfo.InvariantCulture,
+                            $"https://www.google.com/maps?q={fichaje.Latitud},{fichaje.Longitud}"),
+                    "", "", "", "", // K a N: las completa la corrección de un administrador
+                    fichaje.Foto ?? ""
                 }
             }
         };
@@ -80,7 +84,8 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
                 Lugar = row.Count > 5 ? row[5]?.ToString() ?? "" : "",
                 Motivo = row.Count > 6 && !string.IsNullOrWhiteSpace(row[6]?.ToString()) ? row[6].ToString() : null,
                 Precision = row.Count > 7 && TryNumero(row[7], out var prec) ? prec : null,
-                Direccion = row.Count > 8 && !string.IsNullOrWhiteSpace(row[8]?.ToString()) ? row[8].ToString() : null
+                Direccion = row.Count > 8 && !string.IsNullOrWhiteSpace(row[8]?.ToString()) ? row[8].ToString() : null,
+                Foto = row.Count > 14 && !string.IsNullOrWhiteSpace(row[14]?.ToString()) ? row[14].ToString() : null
             });
         }
 

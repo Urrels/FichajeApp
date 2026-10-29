@@ -12,10 +12,11 @@ public static class NombresPermisos
     public const string CorregirFichajes = "Corregir fichajes";
     public const string LiquidarHoras = "Liquidar horas";
     public const string GestionarApariencia = "Gestionar apariencia";
+    public const string ConfigurarFichaje = "Configurar fichaje";
 
     // Los que dan acceso al área de administración
     public static readonly string[] DeAdministracion =
-        { AdministrarUsuarios, GestionRoles, VerBitacora, CorregirFichajes, LiquidarHoras, GestionarApariencia };
+        { AdministrarUsuarios, GestionRoles, VerBitacora, CorregirFichajes, LiquidarHoras, GestionarApariencia, ConfigurarFichaje };
 }
 
 // A qué pantalla va cada usuario al entrar

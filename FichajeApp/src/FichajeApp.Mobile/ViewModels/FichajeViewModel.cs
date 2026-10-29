@@ -84,17 +84,44 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         Procesando = true;
         MostrarMapa = false;
 
+        // Cómo ficha este cliente: con o sin ubicación, con o sin foto
+        var config = await _apiService.ObtenerConfiguracionFichajeAsync();
+
         // El permiso se resuelve primero y solo, para no superponer diálogos del sistema.
-        Estado = "Obteniendo ubicación...";
-        if (!await _geoService.PedirPermisoAsync())
+        if (config.PideUbicacion)
         {
-            Estado = "Permiso de ubicación denegado";
-            Procesando = false;
-            return;
+            Estado = "Obteniendo ubicación...";
+            if (!await _geoService.PedirPermisoAsync())
+            {
+                Estado = "Permiso de ubicación denegado";
+                Procesando = false;
+                return;
+            }
+        }
+
+        // La foto se saca antes de empezar a buscar el GPS, así el usuario no espera dos cosas a la vez
+        string? foto = null;
+        if (config.PideFoto)
+        {
+            Estado = "Sacate una foto...";
+            try { foto = await FotoFichaje.TomarAsync(); }
+            catch (Exception ex)
+            {
+                if (config.FotoObligatoria) { Estado = $"No se pudo usar la cámara: {ex.Message}"; Procesando = false; return; }
+            }
+
+            if (foto is null && config.FotoObligatoria)
+            {
+                Estado = "Este fichaje requiere una foto.";
+                Procesando = false;
+                return;
+            }
         }
 
         // Ubicación y biometría corren en paralelo: el GPS se obtiene mientras el usuario se autentica.
-        var ubicacionTask = _geoService.ObtenerUbicacionAsync();
+        var ubicacionTask = config.PideUbicacion
+            ? _geoService.ObtenerUbicacionAsync()
+            : Task.FromResult(new UbicacionResultado(true, 0, 0, null, false, null, string.Empty));
         Estado = "Verificá tu identidad...";
         var (bioExito, bioMensaje) = await _biometricService.AutenticarAsync();
         var ubicacion = await ubicacionTask;
@@ -109,7 +136,8 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
             Longitud = ubicacion.Lon,
             Precision = ubicacion.Precision,
             EsUbicacionFalsa = ubicacion.EsFalsa,
-            Direccion = ubicacion.Direccion
+            Direccion = ubicacion.Direccion,
+            FotoBase64 = foto
         };
         var resultado = await _apiService.RegistrarFichajeAsync(fichaje);
 
@@ -136,7 +164,7 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         Estado = resultado.Mensaje;
         if (resultado.Exito)
         {
-            MostrarUbicacion(ubicacion.Lat, ubicacion.Lon);
+            if (config.PideUbicacion) MostrarUbicacion(ubicacion.Lat, ubicacion.Lon);
             await ActualizarProximoAsync();
         }
         Procesando = false;

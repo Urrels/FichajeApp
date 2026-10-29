@@ -56,10 +56,13 @@ builder.Services.AddSingleton<IHistorialUsuariosRepositorio, HistorialUsuariosSh
 builder.Services.AddSingleton<IFichajesRepositorio, FichajesSheetsRepositorio>();
 builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSheetsRepositorio>();
 builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSheetsRepositorio>();
+builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSheetsRepositorio>();
+builder.Services.AddSingleton<IAlmacenFotos, AlmacenFotosEnDisco>();
 
 // Servicios de negocio de la administración
 builder.Services.AddSingleton<BitacoraService>();
 builder.Services.AddSingleton<AparienciaService>();
+builder.Services.AddSingleton<ConfiguracionFichajeService>();
 builder.Services.AddSingleton<PermisosService>();
 builder.Services.AddSingleton<GuardaAdministracion>();
 builder.Services.AddSingleton<HistorialUsuariosService>();

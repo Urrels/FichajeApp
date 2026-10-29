@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FichajeApp.Mobile.Views.ConfigFichajePage"
+             Title="Cómo se ficha"
+             BackgroundColor="{DynamicResource ColorFondo}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label FontSize="12"
+                   Text="Elegí qué se pide al fichar en tu empresa. Se aplica a todos los teléfonos en el próximo fichaje." />
+
+            <Label Text="Ubicación" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Border Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                <Label Text="{Binding UbicacionTexto}" TextColor="{DynamicResource ColorTexto}" />
+            </Border>
+            <Button Text="Cambiar ubicación" Clicked="OnUbicacion" />
+
+            <Label Text="Foto" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Border Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                <Label Text="{Binding FotoTexto}" TextColor="{DynamicResource ColorTexto}" />
+            </Border>
+            <Button Text="Cambiar foto" Clicked="OnFoto" />
+            <Label FontSize="11"
+                   Text="Las fotos se guardan en el servidor y solo las ve un supervisor desde el panel. Avisales a tus empleados que se les saca una foto al fichar." />
+
+            <Button Text="Guardar" Clicked="OnGuardar" Margin="0,12,0,0"
+                    IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
+            <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
+            <Label Text="{Binding Estado}" HorizontalTextAlignment="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

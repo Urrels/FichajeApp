@@ -16,6 +16,7 @@
             <Button x:Name="FichajesButton" Text="Corregir fichajes" Clicked="OnFichajes" IsVisible="False" />
             <Button x:Name="LiquidacionButton" Text="Liquidación de horas" Clicked="OnLiquidacion" IsVisible="False" />
             <Button x:Name="AparienciaButton" Text="Apariencia" Clicked="OnApariencia" IsVisible="False" />
+            <Button x:Name="ConfigFichajeButton" Text="Cómo se ficha (ubicación y foto)" Clicked="OnConfigFichaje" IsVisible="False" />
 
             <BoxView HeightRequest="1" Color="Gray" Opacity="0.4" />
 

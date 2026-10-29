@@ -28,6 +28,9 @@ public static class MauiProgram
         builder.Services.AddTransient<ConfiguracionViewModel>();
         builder.Services.AddTransient<ConfiguracionPage>();
         builder.Services.AddTransient<AyudaClavePage>();
+        builder.Services.AddTransient<ConfigFichajeViewModel>();
+        builder.Services.AddTransient<ConfigFichajePage>();
+        builder.Services.AddTransient<FotoFichajePage>();
         builder.Services.AddSingleton<ApiService>();
         builder.Services.AddSingleton<IGeolocationService, GeolocationService>();
         builder.Services.AddSingleton<IBiometricService, BiometricService>();
