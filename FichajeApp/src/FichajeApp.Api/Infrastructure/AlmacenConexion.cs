@@ -8,7 +8,8 @@ namespace FichajeApp.Api.Infrastructure;
 // También guarda la clave de instalación que protege la pantalla de configuración.
 public class AlmacenConexion
 {
-    private sealed record Guardado(string SpreadsheetId, string CredencialesProtegidas);
+    // La credencial es null cuando el servidor ya trae la suya (GoogleSheets:CredentialsPath): solo se guarda la planilla
+    private sealed record Guardado(string SpreadsheetId, string? CredencialesProtegidas);
 
     private readonly string _archivo;
     private readonly string _archivoClave;
@@ -27,16 +28,18 @@ public class AlmacenConexion
         _claveConfigurada = claveConfigurada;
     }
 
-    public (string SpreadsheetId, string CredencialesJson)? Leer()
+    public (string SpreadsheetId, string? CredencialesJson)? Leer()
     {
         if (!File.Exists(_archivo)) return null;
 
         var g = JsonSerializer.Deserialize<Guardado>(File.ReadAllText(_archivo));
-        return g is null ? null : (g.SpreadsheetId, _protector.Unprotect(g.CredencialesProtegidas));
+        if (g is null) return null;
+        return (g.SpreadsheetId, g.CredencialesProtegidas is null ? null : _protector.Unprotect(g.CredencialesProtegidas));
     }
 
-    public void Guardar(string spreadsheetId, string credencialesJson) =>
-        File.WriteAllText(_archivo, JsonSerializer.Serialize(new Guardado(spreadsheetId, _protector.Protect(credencialesJson))));
+    public void Guardar(string spreadsheetId, string? credencialesJson) =>
+        File.WriteAllText(_archivo, JsonSerializer.Serialize(new Guardado(spreadsheetId,
+            credencialesJson is null ? null : _protector.Protect(credencialesJson))));
 
     // Clave que hay que escribir en la app para configurar la conexión. Si no se definió Setup:Clave,
     // se genera una al azar la primera vez y queda en datos/clave-instalacion.txt (y en el log de la API).

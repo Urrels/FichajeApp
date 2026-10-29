@@ -152,8 +152,7 @@ se puede cambiar en runtime**: lo fija Android al instalar, así que solo cambia
 ### Conectar Google Sheets desde la app
 
 Cada cliente conecta su propia planilla sin tocar archivos del servidor: en el login, **Conectar mi planilla de Google**
-(aparece sola si el servidor todavía no está configurado). Se carga la **clave de instalación**, el link de la planilla, el
-`.json` de la cuenta de servicio y los datos del primer administrador. La API (`POST /api/configuracion/google`) prueba el
+(aparece sola si el servidor todavía no está configurado). Se carga el link de la planilla, los datos del primer administrador y la **clave de instalación**; la cuenta de servicio (`.json`) la pone una vez quien instala el servidor (`GoogleSheets:CredentialsPath`) y la app muestra el correo con el que hay que compartir la planilla (si el servidor no tiene ninguna, se carga desde la app). La API (`POST /api/configuracion/google`) prueba el
 acceso contra Google, guarda la credencial **cifrada en el servidor** (`datos/`, fuera de git) y crea las pestañas.
 La clave de instalación es `Setup:Clave` o, si no se definió, una que la API genera y escribe en el log y en
 `datos/clave-instalacion.txt`. Lo que haya en `appsettings` (`GoogleSheets:*`) sigue funcionando como alternativa.

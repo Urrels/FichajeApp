@@ -19,19 +19,23 @@ La app de Play Store no puede hablar con `localhost` ni con `http://` (Android l
   despliegues. Se puede mover con `Setup__Carpeta`. Si se pierde, hay que volver a cargar la conexión desde la app.
 - Una instancia por cliente (la caché está en memoria; con varias instancias hay que cambiarla).
 
-## 2. Conectar la planilla de Google (lo hace cada cliente, una vez)
+## 2. Conectar la planilla de Google
 
+### Una sola vez, la hace quien instala el servidor (vos): la cuenta de servicio
 1. En <https://console.cloud.google.com> crear un proyecto y activar **Google Sheets API** (APIs y servicios → Biblioteca).
-2. IAM y administración → **Cuentas de servicio** → crear una → pestaña **Claves** → *Agregar clave* → JSON. Se descarga un `.json`.
-3. Crear una planilla de Google Sheets vacía y **compartirla como Editor** con el correo de la cuenta de servicio
-   (`client_email` del `.json`, termina en `.iam.gserviceaccount.com`).
-4. Abrir la app → en el login, **Conectar mi planilla de Google** (aparece sola si el servidor no está configurado).
-5. Completar: *clave de instalación* (la imprime la API al arrancar y está en `datos/clave-instalacion.txt`),
-   link de la planilla, el archivo `.json`, y los datos del primer administrador (nombre, email, PIN de 4 dígitos).
-6. **Probar y guardar**: la API comprueba el acceso, crea las pestañas y al administrador. Ya se puede iniciar sesión.
+2. IAM y administración → **Cuentas de servicio** → crear una → pestaña **Claves** → *Agregar clave* → JSON.
+3. Poner ese archivo en el servidor y apuntar `GoogleSheets__CredentialsPath` a él (por ejemplo `credentials/service-account.json`).
+   Con una cuenta por cliente o una sola para todos: a Google le da igual, lo que separa a los clientes es cada planilla.
+4. Dale al cliente la **clave de instalación** (`Setup__Clave`, o la que imprime la API al arrancar y está en `datos/clave-instalacion.txt`).
 
+### Lo que hace cada cliente (no necesita ningún archivo)
+1. Abrir la app → en el login, **Conectar mi planilla de Google** (aparece sola si el servidor todavía no tiene planilla).
+2. Crear una planilla de Google Sheets vacía y **compartirla como Editor** con el correo que muestra la pantalla (botón *Copiar correo*).
+3. Pegar el link de la planilla, cargar los datos del primer administrador (nombre, email, PIN de 4 dígitos) y la clave de instalación.
+4. **Probar y guardar**: la API comprueba el acceso, crea las pestañas y al administrador. Ya se puede iniciar sesión.
+
+Si el servidor no tiene ninguna cuenta de servicio, la misma pantalla pide el archivo `.json` (se guarda cifrado en el servidor).
 Si falla, el mensaje dice qué falta: planilla no compartida, API de Sheets sin activar, link incorrecto, etc.
-
 ## 3. Identidad de la app (por cliente)
 
 - `src/FichajeApp.Mobile/Clientes/<cliente>/`: `cliente.json` (nombre, `apiBaseUrl` con tu `https://…/api`, colores),

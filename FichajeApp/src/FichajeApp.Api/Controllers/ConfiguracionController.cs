@@ -18,7 +18,7 @@ public class ConfiguracionController : ControllerBase
 
     // La app lo consulta al abrir: si falta configurar, lleva a la pantalla de configuración
     [HttpGet("estado")]
-    public IActionResult Estado() => Ok(new { configurada = _conexion.Configurada });
+    public IActionResult Estado() => Ok(new { configurada = _conexion.Configurada, cuentaDeServicio = _conexion.CuentaDeServicio });
 
     [HttpPost("google")]
     [EnableRateLimiting("login")]

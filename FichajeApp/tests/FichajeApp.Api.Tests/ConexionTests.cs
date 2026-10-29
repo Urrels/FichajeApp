@@ -152,6 +152,60 @@ public class ConexionTests : IDisposable
         Assert.Equal(0, probador.Llamadas); // se valida antes de ir a Google
     }
 
+    // Servidor con su propia cuenta de servicio (GoogleSheets:CredentialsPath), sin planilla todavía
+    private (ConexionService Servicio, GoogleSheetsClient Cliente, AlmacenConexion Almacen, string Json) ArmarConCredencialDelServidor()
+    {
+        Directory.CreateDirectory(_carpeta);
+        var json = Credenciales("servidor@proyecto.iam.gserviceaccount.com");
+        var ruta = Path.Combine(_carpeta, "service-account.json");
+        File.WriteAllText(ruta, json);
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["GoogleSheets:CredentialsPath"] = ruta,
+            ["GoogleSheets:SpreadsheetId"] = "TU_SPREADSHEET_ID"
+        }).Build();
+        var almacen = NuevoAlmacen("CLAVE123");
+        var cliente = new GoogleSheetsClient(config, almacen, NullLogger<GoogleSheetsClient>.Instance);
+        var servicio = new ConexionService(cliente, almacen, new ProbadorFalso(), new InicializadorFalso(), NullLogger<ConexionService>.Instance);
+        return (servicio, cliente, almacen, json);
+    }
+
+    [Fact]
+    public async Task ConCredencialEnElServidor_ElClienteSoloPegaElLink_YSabeConQuienCompartir()
+    {
+        var (servicio, cliente, almacen, _) = ArmarConCredencialDelServidor();
+
+        Assert.False(cliente.Configurado);
+        Assert.Equal("servidor@proyecto.iam.gserviceaccount.com", servicio.CuentaDeServicio);
+
+        await servicio.ConfigurarAsync(new ConfigurarConexionRequest { Planilla = IdPlanilla });
+
+        Assert.True(cliente.Configurado);
+        Assert.Equal(IdPlanilla, cliente.SpreadsheetId);
+        // Solo se guarda la planilla: la credencial sigue siendo la del servidor
+        Assert.Null(almacen.Leer()!.Value.CredencialesJson);
+
+        var otroArranque = new GoogleSheetsClient(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["GoogleSheets:CredentialsPath"] = Path.Combine(_carpeta, "service-account.json")
+        }).Build(), almacen, NullLogger<GoogleSheetsClient>.Instance);
+        Assert.Equal(IdPlanilla, otroArranque.SpreadsheetId);
+    }
+
+    [Fact]
+    public async Task SinCredencialEnElServidor_NiEnLaApp_SeExplicaQueFalta()
+    {
+        var (servicio, cliente, _, _, _) = Armar();
+
+        Assert.Null(servicio.CuentaDeServicio);
+        var ex = await Assert.ThrowsAsync<ConexionInvalidaException>(() =>
+            servicio.ConfigurarAsync(new ConfigurarConexionRequest { Planilla = IdPlanilla }));
+
+        Assert.Contains("cuenta de servicio", ex.Message);
+        Assert.False(cliente.Configurado);
+    }
+
     [Fact]
     public async Task AlReiniciar_LaConexionGuardadaSeRecupera()
     {

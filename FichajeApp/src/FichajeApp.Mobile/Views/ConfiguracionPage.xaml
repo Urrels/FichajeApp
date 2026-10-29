@@ -9,26 +9,43 @@
         <VerticalStackLayout Padding="16" Spacing="10">
 
             <Label Text="Conectá tu planilla de Google" FontSize="20" FontAttributes="Bold" />
-            <Label FontSize="12"
-                   Text="1) Creá una cuenta de servicio en Google Cloud y descargá su archivo .json. 2) Creá una planilla de Google Sheets y compartila como Editor con el correo que figura en ese archivo (client_email). 3) Completá estos datos. La credencial se guarda cifrada en tu servidor, no en el teléfono." />
 
-            <Label Text="Clave de instalación" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Label Text="La muestra el servidor al arrancar (y está en la carpeta datos/clave-instalacion.txt)." FontSize="11" />
-            <Entry Text="{Binding Clave}" IsPassword="True" Placeholder="Clave de instalación" />
+            <!-- Caso normal: el servidor ya tiene la cuenta de servicio -->
+            <VerticalStackLayout IsVisible="{Binding ServidorTieneCredencial}" Spacing="8">
+                <Label FontAttributes="Bold" Text="Paso 1: creá una planilla" />
+                <Label FontSize="12" Text="Entrá a Google Sheets con tu cuenta y creá una planilla nueva y vacía (el nombre da igual)." />
+
+                <Label FontAttributes="Bold" Text="Paso 2: compartila con este correo, como Editor" Margin="0,6,0,0" />
+                <Border Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                    <Label Text="{Binding CuentaDeServicio}" FontSize="13" TextColor="{DynamicResource ColorTexto}" />
+                </Border>
+                <Button Text="Copiar correo" Clicked="OnCopiarCorreo" />
+
+                <Label FontAttributes="Bold" Text="Paso 3: completá los datos" Margin="0,6,0,0" />
+            </VerticalStackLayout>
+
+            <!-- Servidor sin cuenta de servicio: hay que cargar el .json -->
+            <VerticalStackLayout IsVisible="{Binding PideCredencial}" Spacing="8">
+                <Label FontSize="12"
+                       Text="Este servidor no tiene una cuenta de servicio de Google. Pedile el archivo .json a quien lo instaló (o creá una en Google Cloud), y compartí tu planilla como Editor con el correo que figura en ese archivo (client_email)." />
+                <Label Text="Credencial de la cuenta de servicio" FontAttributes="Bold" />
+                <Button Text="Elegir archivo .json" Clicked="OnElegirArchivo" />
+                <Editor Text="{Binding Credenciales}" HeightRequest="90" Placeholder="…o pegá acá el contenido del archivo"
+                        IsVisible="{Binding MuestraEditor}" />
+                <Label Text="✔ Credencial cargada" IsVisible="{Binding CredencialesCargadas}" />
+            </VerticalStackLayout>
 
             <Label Text="Planilla" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Entry Text="{Binding Planilla}" Placeholder="Link o ID de la planilla" Keyboard="Url" />
-
-            <Label Text="Credencial de la cuenta de servicio" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Button Text="Elegir archivo .json" Clicked="OnElegirArchivo" />
-            <Editor Text="{Binding Credenciales}" HeightRequest="90" Placeholder="…o pegá acá el contenido del archivo"
-                    IsVisible="{Binding CredencialesCargadas, Converter={StaticResource InvertedBoolConverter}}" />
-            <Label Text="✔ Credencial cargada" IsVisible="{Binding CredencialesCargadas}" />
+            <Entry Text="{Binding Planilla}" Placeholder="Link de tu planilla" Keyboard="Url" />
 
             <Label Text="Primer administrador (solo si la planilla es nueva)" FontAttributes="Bold" Margin="0,8,0,0" />
             <Entry Text="{Binding NombreAdmin}" Placeholder="Nombre y apellido" />
             <Entry Text="{Binding EmailAdmin}" Placeholder="Email" Keyboard="Email" />
             <Entry Text="{Binding PinAdmin}" Placeholder="PIN (4 dígitos)" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
+
+            <Label Text="Clave de instalación" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Label Text="Te la da quien instaló el servidor." FontSize="11" />
+            <Entry Text="{Binding Clave}" IsPassword="True" Placeholder="Clave de instalación" />
 
             <Button Text="Probar y guardar" Clicked="OnGuardar" Margin="0,8,0,0"
                     IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
