@@ -43,9 +43,9 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
                     fichaje.Longitud,
                     fichaje.TipoFichaje,
                     fichaje.Lugar,
-                    fichaje.Motivo ?? "",
+                    SinFormula(fichaje.Motivo),
                     fichaje.Precision.HasValue ? Math.Round(fichaje.Precision.Value) : "",
-                    fichaje.Direccion ?? "",
+                    SinFormula(fichaje.Direccion),
                     string.Create(CultureInfo.InvariantCulture,
                         $"https://www.google.com/maps?q={fichaje.Latitud},{fichaje.Longitud}")
                 }
@@ -56,6 +56,14 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
         appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
 
         await appendRequest.ExecuteAsync();
+    }
+
+    // Se escribe con USERENTERED: un texto del usuario que empiece con = + - @ se ejecutaría como fórmula
+    // de la planilla (por ejemplo =IMPORTXML). El apóstrofe inicial lo fuerza a quedar como texto.
+    private static string SinFormula(string? texto)
+    {
+        texto = texto?.Trim() ?? "";
+        return texto.Length > 0 && "=+-@".Contains(texto[0]) ? "'" + texto : texto;
     }
 
     public async Task<List<FichajeDto>> ObtenerFichajesAsync()

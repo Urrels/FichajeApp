@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using FichajeApp.Api.Models;
+using FichajeApp.Api.Servicios;
 using FichajeApp.Api.Services;
 
 namespace FichajeApp.Api.Controllers;
@@ -8,31 +10,41 @@ namespace FichajeApp.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly GoogleSheetsEmpleadosService _empleadosService;
+    private readonly LoginService _loginService;
     private readonly JwtService _jwtService;
 
-    public AuthController(GoogleSheetsEmpleadosService empleadosService, JwtService jwtService)
+    public AuthController(LoginService loginService, JwtService jwtService)
     {
-        _empleadosService = empleadosService;
+        _loginService = loginService;
         _jwtService = jwtService;
     }
 
+    // Limitado por IP (ver "login" en Program.cs): un PIN de 4 dígitos se prueba entero en minutos sin límite
     [HttpPost("login")]
+    [EnableRateLimiting("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto login)
     {
-        var empleado = await _empleadosService.BuscarPorEmailAsync(login.Email);
+        var resultado = await _loginService.AutenticarAsync(login.Email, login.Pin);
 
-        if (empleado is null || !BCrypt.Net.BCrypt.Verify(login.Pin, empleado.PinHash))
-            return Unauthorized(new { mensaje = "Email o PIN incorrecto" });
-
-        var token = _jwtService.GenerarToken(empleado);
-
-        return Ok(new LoginResponseDto
+        switch (resultado.Resultado)
         {
-            Token = token,
-            NombreCompleto = empleado.NombreCompleto,
-            EmpleadoId = empleado.Id,
-            Rol = empleado.Rol
-        });
+            case LoginResultado.UsuarioBloqueado:
+                return Unauthorized(new { mensaje = "Usuario bloqueado por intentos fallidos. Pedile a un administrador que lo desbloquee." });
+
+            case LoginResultado.Exito:
+                var empleado = resultado.Empleado!;
+                return Ok(new LoginResponseDto
+                {
+                    Token = _jwtService.GenerarToken(empleado, resultado.Roles, resultado.Permisos),
+                    NombreCompleto = empleado.NombreCompleto,
+                    EmpleadoId = empleado.Id,
+                    Rol = resultado.Roles.FirstOrDefault() ?? "Empleado",
+                    Roles = resultado.Roles,
+                    Permisos = resultado.Permisos
+                });
+
+            default:
+                return Unauthorized(new { mensaje = "Email o PIN incorrecto" });
+        }
     }
 }
