@@ -1,6 +1,7 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using FichajeApp.Api.Autorizacion;
+using FichajeApp.Api.Dominio.Seguridad;
 using FichajeApp.Api.Models;
 using FichajeApp.Api.Services;
 
@@ -8,7 +9,7 @@ namespace FichajeApp.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[RequierePermiso(CatalogoPermisos.FicharAsistencia)]
 public class FichajeController : ControllerBase
 {
     private readonly FichajeService _fichajeService;

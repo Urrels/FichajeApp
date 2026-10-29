@@ -1,24 +1,26 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using FichajeApp.Api.Autorizacion;
+using FichajeApp.Api.Dominio.Seguridad;
+using FichajeApp.Api.Repositorios;
 using FichajeApp.Api.Services;
 
 namespace FichajeApp.Api.Controllers;
 
-// Solo para empleados con Rol = "Supervisor" (claim de rol del JWT)
+// Solo para quien tiene el permiso "Ver panel de supervisor" (claim "permiso" del JWT)
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Supervisor")]
+[RequierePermiso(CatalogoPermisos.VerPanelSupervisor)]
 public class SupervisorController : ControllerBase
 {
     private const int MaxDias = 62;
 
     private readonly ConsultaFichajesService _consulta;
-    private readonly GoogleSheetsEmpleadosService _empleadosService;
+    private readonly IEmpleadosRepositorio _empleados;
 
-    public SupervisorController(ConsultaFichajesService consulta, GoogleSheetsEmpleadosService empleadosService)
+    public SupervisorController(ConsultaFichajesService consulta, IEmpleadosRepositorio empleados)
     {
         _consulta = consulta;
-        _empleadosService = empleadosService;
+        _empleados = empleados;
     }
 
     // GET api/supervisor/fichajes?desde=2026-10-01&hasta=2026-10-31&empleado=Nombre
@@ -45,7 +47,7 @@ public class SupervisorController : ControllerBase
     [HttpGet("empleados")]
     public async Task<IActionResult> Empleados()
     {
-        var empleados = await _empleadosService.ObtenerEmpleadosAsync();
+        var empleados = await _empleados.ListarAsync();
         return Ok(empleados.Where(e => e.Activo).Select(e => e.NombreCompleto).OrderBy(n => n).ToList());
     }
 }

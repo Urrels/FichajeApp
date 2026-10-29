@@ -11,5 +11,7 @@ public class LoginResponseDto
     public string Token { get; set; } = default!;
     public string NombreCompleto { get; set; } = default!;
     public int EmpleadoId { get; set; }
-    public string Rol { get; set; } = "Empleado";
+    public string Rol { get; set; } = "Empleado"; // rol principal, solo para mostrar
+    public List<string> Roles { get; set; } = new();
+    public List<string> Permisos { get; set; } = new();
 }
