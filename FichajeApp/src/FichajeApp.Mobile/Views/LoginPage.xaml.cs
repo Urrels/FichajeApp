@@ -26,7 +26,7 @@ public partial class LoginPage : ContentPage
         if (_yaOfrecioConfigurar) return;
         _yaOfrecioConfigurar = true;
 
-        if (await _configuracion.ConfiguradaAsync() == false)
+        if ((await _configuracion.EstadoAsync())?.Configurada == false)
             await Shell.Current.GoToAsync(nameof(ConfiguracionPage));
     }
 

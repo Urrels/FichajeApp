@@ -19,13 +19,29 @@ public class ConfiguracionViewModel : VmBase
 
     public string Clave { get => _clave; set => Set(ref _clave, value); }
     public string Planilla { get => _planilla; set => Set(ref _planilla, value); }
-    public string Credenciales { get => _credenciales; set { if (Set(ref _credenciales, value)) Notificar(nameof(CredencialesCargadas)); } }
+    public string Credenciales { get => _credenciales; set { if (Set(ref _credenciales, value)) { Notificar(nameof(CredencialesCargadas)); Notificar(nameof(MuestraEditor)); } } }
     public string NombreAdmin { get => _nombreAdmin; set => Set(ref _nombreAdmin, value); }
     public string EmailAdmin { get => _emailAdmin; set => Set(ref _emailAdmin, value); }
     public string PinAdmin { get => _pinAdmin; set => Set(ref _pinAdmin, value); }
 
     // No se muestra el contenido de la credencial una vez cargada
     public bool CredencialesCargadas => !string.IsNullOrWhiteSpace(Credenciales);
+
+    // Lo normal: el servidor ya tiene la cuenta de servicio y el cliente solo comparte su planilla con este correo
+    private string? _cuentaDeServicio;
+    public string? CuentaDeServicio { get => _cuentaDeServicio; private set { if (Set(ref _cuentaDeServicio, value)) { Notificar(nameof(ServidorTieneCredencial)); Notificar(nameof(PideCredencial)); Notificar(nameof(MuestraEditor)); } } }
+    public bool ServidorTieneCredencial => !string.IsNullOrEmpty(CuentaDeServicio);
+    public bool PideCredencial => !ServidorTieneCredencial;
+    public bool MuestraEditor => PideCredencial && !CredencialesCargadas;
+
+    public async Task CargarEstadoAsync() => CuentaDeServicio = (await _api.EstadoAsync())?.CuentaDeServicio;
+
+    public async Task CopiarCorreoAsync()
+    {
+        if (string.IsNullOrEmpty(CuentaDeServicio)) return;
+        await Clipboard.Default.SetTextAsync(CuentaDeServicio);
+        Estado = "Correo copiado. Compartí tu planilla con él como Editor.";
+    }
 
     public event Action? Guardada;
 
@@ -57,7 +73,7 @@ public class ConfiguracionViewModel : VmBase
     {
         if (string.IsNullOrWhiteSpace(Clave)) { Estado = "Escribí la clave de instalación."; return; }
         if (string.IsNullOrWhiteSpace(Planilla)) { Estado = "Pegá el link o el ID de tu planilla."; return; }
-        if (!CredencialesCargadas) { Estado = "Cargá el archivo .json de la cuenta de servicio."; return; }
+        if (PideCredencial && !CredencialesCargadas) { Estado = "Cargá el archivo .json de la cuenta de servicio."; return; }
 
         Estado = "Probando la conexión con Google...";
         var (exito, mensaje) = await _api.GuardarAsync(new

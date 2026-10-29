@@ -88,6 +88,9 @@ public class ConexionService
 
     public bool Configurada => _cliente.Configurado;
 
+    // Correo con el que hay que compartir la planilla; null si el servidor no tiene credencial (se carga desde la app)
+    public string? CuentaDeServicio => _cliente.CorreoCuentaServicio;
+
     public bool ClaveCorrecta(string? clave)
     {
         var esperada = Encoding.UTF8.GetBytes(_almacen.ClaveDeInstalacion());
@@ -131,8 +134,15 @@ public class ConexionService
     public async Task<string> ConfigurarAsync(ConfigurarConexionRequest r)
     {
         var id = ExtraerIdDePlanilla(r.Planilla);
-        var correo = ValidarCredenciales(r.Credenciales);
-        var credenciales = r.Credenciales!.Trim();
+
+        // Lo normal: la cuenta de servicio ya la puso quien instaló el servidor y el cliente solo comparte su planilla.
+        // Si el servidor no tiene ninguna, hay que cargar la credencial desde la app.
+        var cargadaDesdeLaApp = !string.IsNullOrWhiteSpace(r.Credenciales);
+        if (!cargadaDesdeLaApp && !_cliente.TieneCredenciales)
+            throw new ConexionInvalidaException("Este servidor no tiene una cuenta de servicio de Google. Cargá el archivo .json o pedíselo a quien instaló el servidor.");
+
+        var credenciales = cargadaDesdeLaApp ? r.Credenciales!.Trim() : _cliente.Credenciales!;
+        var correo = ValidarCredenciales(credenciales);
 
         NuevoAdministrador? admin = null;
         if (!string.IsNullOrWhiteSpace(r.EmailAdministrador) || !string.IsNullOrWhiteSpace(r.PinAdministrador)
@@ -152,7 +162,7 @@ public class ConexionService
         {
             await _probador.ProbarAsync(id, credenciales);
 
-            _almacen.Guardar(id, credenciales);
+            _almacen.Guardar(id, cargadaDesdeLaApp ? credenciales : null);
             _cliente.Conectar(id, credenciales);
             await _inicializador.InicializarAsync(admin);
             return correo;
