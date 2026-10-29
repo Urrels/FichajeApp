@@ -138,6 +138,17 @@ duplicar, mover, eliminar), **Bitácora**, **Corregir fichajes** (entradas sin s
 **Liquidación de horas** (calcular, revisar por empleado, aprobar excedentes, cerrar el período, marcar como pagado,
 compartir el CSV, y configurar parámetros, valor hora y feriados). Cada usuario puede **cambiar su PIN** y **cerrar sesión**.
 Las acciones se hacen con diálogos del sistema: es la versión mínima, sin pantallas de formulario por cada operación.
+
+### Apariencia editable por el administrador
+
+Con el permiso **Gestionar apariencia** (el rol Administrador lo recibe solo al reiniciar la API), Administración →
+**Apariencia** permite cambiar el nombre, los tres colores (principal, texto sobre el principal y acento) y el logo,
+con vista previa. Se guarda en la pestaña `Apariencia` de la planilla (se crea sola) y todos los usuarios lo ven al abrir
+la app (`GET /api/apariencia`, público; `PUT /api/admin/apariencia`, con permiso). Lo guardado pisa lo que trae
+`cliente.json`, y "Volver a los originales" lo borra. Se valida el formato `#RRGGBB`, un contraste mínimo del texto
+sobre el color principal, y el logo (PNG/JPG, hasta 150 KB; la app lo achica a 256 px). **El ícono del launcher no
+se puede cambiar en runtime**: lo fija Android al instalar, así que solo cambia con un nuevo build del cliente.
+
 ## Varios clientes (una API por cliente)
 
 Cada cliente tiene su propia instancia de la API y su propia planilla. Por instancia se

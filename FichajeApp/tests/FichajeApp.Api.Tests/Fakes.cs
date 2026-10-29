@@ -155,6 +155,21 @@ public class FichajesFalso : IFichajesRepositorio
     }
 }
 
+public class AparienciaFalso : IAparienciaRepositorio
+{
+    public AparienciaGuardada Datos { get; private set; } = new();
+    public int Guardados { get; private set; }
+
+    public Task<AparienciaGuardada> ObtenerAsync() => Task.FromResult(Datos);
+
+    public Task GuardarAsync(AparienciaGuardada apariencia)
+    {
+        Datos = apariencia;
+        Guardados++;
+        return Task.CompletedTask;
+    }
+}
+
 public class LiquidacionFalso : ILiquidacionRepositorio
 {
     public ParametrosLiquidacion Parametros { get; set; } = new();
@@ -214,6 +229,7 @@ public class Entorno
     public HistorialFalso HistorialRepo { get; } = new();
     public FichajesFalso Fichajes { get; } = new();
     public LiquidacionFalso LiquidacionRepo { get; } = new();
+    public AparienciaFalso AparienciaRepo { get; } = new();
     public RelojFalso Reloj { get; } = new();
 
     public BitacoraService Bitacora { get; }
@@ -226,6 +242,7 @@ public class Entorno
     public JornadasService Jornadas { get; }
     public FichajesAdminService FichajesAdmin { get; }
     public LiquidacionService Liquidacion { get; }
+    public AparienciaService Apariencia { get; }
 
     public const string PinAdmin = "1111", PinAna = "2222", PinBeto = "3333";
 
@@ -254,6 +271,8 @@ public class Entorno
         Jornadas = new JornadasService(Fichajes, Empleados);
         FichajesAdmin = new FichajesAdminService(Jornadas, Fichajes, Empleados, LiquidacionRepo, Bitacora, Reloj);
         Liquidacion = new LiquidacionService(Jornadas, LiquidacionRepo, Empleados, Bitacora, Reloj);
+        Apariencia = new AparienciaService(AparienciaRepo, Bitacora, new Microsoft.Extensions.Caching.Memory.MemoryCache(
+            new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()));
     }
 
     // Costo 4 (el mínimo de BCrypt) para que los tests no tarden

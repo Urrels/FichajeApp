@@ -19,6 +19,7 @@ public static class Planilla
     public const string ExcedentesAprobados = "ExcedentesAprobados";
     public const string Liquidaciones = "Liquidaciones";
     public const string LiquidacionDias = "LiquidacionDias";
+    public const string Apariencia = "Apariencia";
 
     public static readonly IReadOnlyDictionary<string, string[]> Encabezados = new Dictionary<string, string[]>
     {
@@ -32,6 +33,7 @@ public static class Planilla
         [ValorHora] = new[] { "EmpleadoId", "Valor", "VigenteDesde", "CargadoPor" },
         [Feriados] = new[] { "Fecha", "Descripcion" },
         [ExcedentesAprobados] = new[] { "Empleado", "Fecha", "AprobadoPor" },
+        [Apariencia] = new[] { "Clave", "Valor" },
         [Liquidaciones] = new[] { "Id", "Desde", "Hasta", "Estado", "CerradaPor", "FechaCierre", "PagadaPor", "FechaPago" },
         [LiquidacionDias] = new[]
         {

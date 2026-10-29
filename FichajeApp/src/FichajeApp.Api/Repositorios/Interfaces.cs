@@ -53,6 +53,12 @@ public interface IFichajesRepositorio
     Task AgregarManualAsync(string empleado, string tipo, DateTime fechaHora, string motivo, string corregidoPor, DateTime ahora);
 }
 
+public interface IAparienciaRepositorio
+{
+    Task<AparienciaGuardada> ObtenerAsync();
+    Task GuardarAsync(AparienciaGuardada apariencia);
+}
+
 public interface ILiquidacionRepositorio
 {
     Task<ParametrosLiquidacion> ObtenerParametrosAsync();

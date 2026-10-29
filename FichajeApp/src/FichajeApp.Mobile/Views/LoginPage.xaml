@@ -13,7 +13,7 @@
                              BackgroundColor="{DynamicResource ColorPrimario}"
                              Padding="24,72,24,56"
                              Spacing="12">
-            <Image Source="logo" HeightRequest="72" WidthRequest="72" HorizontalOptions="Center" />
+            <Image Source="{DynamicResource LogoCliente}" HeightRequest="72" WidthRequest="72" HorizontalOptions="Center" />
             <Label Text="{DynamicResource NombreCliente}"
                    TextColor="{DynamicResource ColorPrimarioTexto}"
                    FontSize="26" FontAttributes="Bold"

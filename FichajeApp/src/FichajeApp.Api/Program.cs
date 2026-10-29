@@ -47,9 +47,11 @@ builder.Services.AddSingleton<IBitacoraRepositorio, BitacoraSheetsRepositorio>()
 builder.Services.AddSingleton<IHistorialUsuariosRepositorio, HistorialUsuariosSheetsRepositorio>();
 builder.Services.AddSingleton<IFichajesRepositorio, FichajesSheetsRepositorio>();
 builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSheetsRepositorio>();
+builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSheetsRepositorio>();
 
 // Servicios de negocio de la administración
 builder.Services.AddSingleton<BitacoraService>();
+builder.Services.AddSingleton<AparienciaService>();
 builder.Services.AddSingleton<PermisosService>();
 builder.Services.AddSingleton<GuardaAdministracion>();
 builder.Services.AddSingleton<HistorialUsuariosService>();

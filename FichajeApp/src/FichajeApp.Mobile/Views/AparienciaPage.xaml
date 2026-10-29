@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FichajeApp.Mobile.Views.AparienciaPage"
+             Title="Apariencia">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="Los cambios los ven todos los usuarios. El ícono de la app en la pantalla de inicio del teléfono no se cambia desde acá: lo fija Android al instalarla."
+                   FontSize="12" />
+
+            <Label Text="Nombre que se muestra" FontAttributes="Bold" />
+            <Entry Text="{Binding Nombre}" MaxLength="40" Placeholder="Nombre de la empresa" />
+
+            <Label Text="Colores" FontAttributes="Bold" Margin="0,6,0,0" />
+
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                <BoxView Color="{Binding PrimarioColor}" WidthRequest="36" HeightRequest="36" CornerRadius="18" VerticalOptions="Center" />
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Principal (cabeceras y botones)" FontSize="12" />
+                    <Entry Text="{Binding Primario}" MaxLength="7" Placeholder="#RRGGBB" />
+                </VerticalStackLayout>
+                <Button Grid.Column="2" Text="Paleta" Clicked="OnPaletaPrincipal" VerticalOptions="End" />
+            </Grid>
+
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                <BoxView Color="{Binding TextoColor}" WidthRequest="36" HeightRequest="36" CornerRadius="18" VerticalOptions="Center" />
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Texto sobre el principal" FontSize="12" />
+                    <Entry Text="{Binding Texto}" MaxLength="7" Placeholder="#RRGGBB" />
+                </VerticalStackLayout>
+                <Button Grid.Column="2" Text="Paleta" Clicked="OnPaletaTexto" VerticalOptions="End" />
+            </Grid>
+
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                <BoxView Color="{Binding AcentoColor}" WidthRequest="36" HeightRequest="36" CornerRadius="18" VerticalOptions="Center" />
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="Acento (indicadores)" FontSize="12" />
+                    <Entry Text="{Binding Acento}" MaxLength="7" Placeholder="#RRGGBB" />
+                </VerticalStackLayout>
+                <Button Grid.Column="2" Text="Paleta" Clicked="OnPaletaAcento" VerticalOptions="End" />
+            </Grid>
+
+            <Label Text="{Binding Aviso}" IsVisible="{Binding HayAviso}" TextColor="#C62828" FontSize="12" />
+
+            <Label Text="Logo" FontAttributes="Bold" Margin="0,6,0,0" />
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <Border WidthRequest="96" HeightRequest="96" StrokeShape="RoundRectangle 12" BackgroundColor="#DDDDDD">
+                    <Image Source="{Binding Logo}" Aspect="AspectFit" />
+                </Border>
+                <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                    <Button Text="Elegir imagen" Clicked="OnElegirLogo" />
+                    <Button Text="Usar el logo original" Clicked="OnQuitarLogo" />
+                </VerticalStackLayout>
+            </Grid>
+            <Label Text="Se achica solo a 256 px. Mejor si es cuadrada, con fondo transparente (PNG)." FontSize="11" />
+
+            <Label Text="{Binding Estado}" FontSize="12" />
+
+            <Button Text="Ver cómo queda" Clicked="OnVistaPrevia" />
+            <Button Text="Guardar" Clicked="OnGuardar" IsEnabled="{Binding PuedeGuardar}" />
+            <Button Text="Volver a los originales" Clicked="OnRestaurar" />
+            <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

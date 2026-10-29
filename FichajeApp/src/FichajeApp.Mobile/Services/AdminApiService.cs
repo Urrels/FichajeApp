@@ -253,6 +253,13 @@ public class AdminApiService
     public Task<ResultadoConsulta<Respuesta>> CargarFichajeManual(string empleado, DateTime ingreso, DateTime egreso, string motivo) =>
         Pedir<Respuesta>(HttpMethod.Post, "admin/fichajes/manual", new { empleado, ingreso, egreso, motivo });
 
+    // ---- Apariencia ----
+    // Lo que llega vacío vuelve al valor del cliente. El logo solo cambia si se manda uno (base64) o se pide quitarlo.
+    public Task<ResultadoConsulta<Respuesta>> GuardarApariencia(string? nombre, string? colorPrimario, string? colorPrimarioTexto,
+        string? colorAcento, string? logoBase64, bool quitarLogo) =>
+        Pedir<Respuesta>(HttpMethod.Put, "admin/apariencia",
+            new { nombre, colorPrimario, colorPrimarioTexto, colorAcento, logoBase64, quitarLogo });
+
     // ---- Liquidación ----
     public Task<ResultadoConsulta<ResultadoCalculo>> Calcular(DateTime desde, DateTime hasta) =>
         Pedir<ResultadoCalculo>(HttpMethod.Get, $"admin/liquidacion/calcular?desde={Formato.Fecha(desde)}&hasta={Formato.Fecha(hasta)}");

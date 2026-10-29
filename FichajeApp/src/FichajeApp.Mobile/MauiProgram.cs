@@ -22,6 +22,7 @@ public static class MauiProgram
         // NOTA: SessionManager NO se registra acá — es un Singleton clásico (GoF),
         // se accede vía SessionManager.Instance, no necesita el contenedor de DI.
         builder.Services.AddSingleton<IClienteService, ClienteService>();
+        builder.Services.AddSingleton<AparienciaService>();
         builder.Services.AddSingleton<AuthService>();
         builder.Services.AddSingleton<ApiService>();
         builder.Services.AddSingleton<IGeolocationService, GeolocationService>();
@@ -38,6 +39,7 @@ public static class MauiProgram
         builder.Services.AddTransient<BitacoraViewModel>();
         builder.Services.AddTransient<FichajesAdminViewModel>();
         builder.Services.AddTransient<LiquidacionViewModel>();
+        builder.Services.AddTransient<AparienciaViewModel>();
         builder.Services.AddTransient<AdminPage>();
         builder.Services.AddTransient<UsuariosPage>();
         builder.Services.AddTransient<RolesPage>();
@@ -45,6 +47,7 @@ public static class MauiProgram
         builder.Services.AddTransient<FichajesAdminPage>();
         builder.Services.AddTransient<LiquidacionPage>();
         builder.Services.AddTransient<CambiarPinPage>();
+        builder.Services.AddTransient<AparienciaPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();
