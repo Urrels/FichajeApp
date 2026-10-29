@@ -71,7 +71,7 @@ public class ConfiguracionViewModel : VmBase
 
     public Task GuardarAsync() => ConEspera(async () =>
     {
-        if (string.IsNullOrWhiteSpace(Clave)) { Estado = "Escribí la clave de instalación."; return; }
+        if (string.IsNullOrWhiteSpace(Clave)) { Estado = "Escribí el código de activación."; return; }
         if (string.IsNullOrWhiteSpace(Planilla)) { Estado = "Pegá el link o el ID de tu planilla."; return; }
         if (PideCredencial && !CredencialesCargadas) { Estado = "Cargá el archivo .json de la cuenta de servicio."; return; }
 

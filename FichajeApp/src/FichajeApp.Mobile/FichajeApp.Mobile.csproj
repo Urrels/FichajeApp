@@ -82,6 +82,9 @@
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 
+		<!-- Ilustraciones de la ayuda de la clave de instalación -->
+		<MauiImage Include="Resources\Ayuda\*.svg" BaseSize="320,170" />
+
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
 		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />

@@ -100,7 +100,7 @@ public class ConexionService
 
     // Sale en el log al arrancar sin conexión, para que quien instala el servidor sepa qué clave poner en la app
     public void AnunciarClave() =>
-        _log.LogWarning("Conexión con Google Sheets sin configurar. Clave de instalación para la app: {Clave}", _almacen.ClaveDeInstalacion());
+        _log.LogWarning("Conexión con Google Sheets sin configurar. Código de activación para la app: {Clave}", _almacen.ClaveDeInstalacion());
 
     public static string ExtraerIdDePlanilla(string? texto)
     {
