@@ -25,4 +25,9 @@
     <ProjectReference Include="..\..\src\FichajeApp.Api\FichajeApp.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Código puro de la app móvil (sin MAUI): se prueba desde acá -->
+    <Compile Include="..\..\src\FichajeApp.Mobile\Services\DireccionServidor.cs" Link="Mobile\DireccionServidor.cs" />
+  </ItemGroup>
+
 </Project>

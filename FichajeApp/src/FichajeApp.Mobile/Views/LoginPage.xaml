@@ -13,7 +13,12 @@
                              BackgroundColor="{DynamicResource ColorPrimario}"
                              Padding="24,72,24,56"
                              Spacing="12">
-            <Image Source="{DynamicResource LogoCliente}" HeightRequest="72" WidthRequest="72" HorizontalOptions="Center" />
+            <Image Source="{DynamicResource LogoCliente}" HeightRequest="72" WidthRequest="72" HorizontalOptions="Center">
+                <!-- Ajuste oculto: 5 toques seguidos permiten cambiar la dirección del servidor (ver OnLogoTapped) -->
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnLogoTapped" />
+                </Image.GestureRecognizers>
+            </Image>
             <Label Text="{DynamicResource NombreCliente}"
                    TextColor="{DynamicResource ColorPrimarioTexto}"
                    FontSize="26" FontAttributes="Bold"
@@ -65,6 +70,10 @@
                 <Label Text="{Binding Estado}"
                        HorizontalOptions="Center"
                        HorizontalTextAlignment="Center"
+                       TextColor="{DynamicResource ColorTextoSuave}" />
+
+                <Label x:Name="ServidorLabel" IsVisible="False" FontSize="11"
+                       HorizontalOptions="Center" HorizontalTextAlignment="Center"
                        TextColor="{DynamicResource ColorTextoSuave}" />
 
                 <Button Text="Conectar mi planilla de Google"

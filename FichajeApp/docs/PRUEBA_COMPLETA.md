@@ -17,6 +17,8 @@ borrar la carpeta `src/FichajeApp.Api/datos` y reiniciar la API.
 - [ ] Desde Administración → "Conexión con Google Sheets" se puede volver a abrir (solo el administrador).
 - [ ] Sin sesión de administrador, intentar reconectar con el código **ya no funciona** ("La planilla ya está conectada…").
 
+- [ ] (Teléfono) 5 toques al logo del login cambian la dirección del servidor; una dirección mala se rechaza y una caída avisa "Guardada, pero no responde"; vacía vuelve a la original.
+
 ## B. Usuarios y roles
 - [ ] Administración → Usuarios: crear dos empleados y un supervisor; el empleado entra y ve solo "Fichar".
 - [ ] El supervisor ve el panel de supervisor; el empleado no ve Administración.
