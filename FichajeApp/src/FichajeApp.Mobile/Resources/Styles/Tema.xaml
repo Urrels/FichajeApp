@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Tokens de diseño. Los valores marcados "del cliente" se pisan al iniciar
+         con los de Clientes/<cliente>/cliente.json (ver ClienteService.AplicarTema). -->
+
+    <x:String x:Key="NombreCliente">Fichaje</x:String>
+
+    <!-- del cliente -->
+    <Color x:Key="ColorPrimario">#1B5E9B</Color>
+    <Color x:Key="ColorPrimarioTexto">#FFFFFF</Color>
+    <Color x:Key="ColorAcento">#F5A623</Color>
+
+    <!-- fijos -->
+    <Color x:Key="ColorFondo">#F4F6F8</Color>
+    <Color x:Key="ColorSuperficie">#FFFFFF</Color>
+    <Color x:Key="ColorTexto">#1C2530</Color>
+    <Color x:Key="ColorTextoSuave">#6B7785</Color>
+    <Color x:Key="ColorBorde">#DDE3EA</Color>
+
+</ResourceDictionary>

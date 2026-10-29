@@ -8,8 +8,8 @@ namespace FichajeApp.Mobile.ViewModels;
 // reaccionar automáticamente cuando la sesión finaliza (ej. token vencido).
 public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
 {
-    private readonly GeolocationService _geoService;
-    private readonly BiometricService _biometricService;
+    private readonly IGeolocationService _geoService;
+    private readonly IBiometricService _biometricService;
     private readonly ApiService _apiService;
 
     private string _nombreCompleto = string.Empty;
@@ -20,10 +20,10 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
 
     public event Action? SesionFinalizada;
 
-    public FichajeViewModel(ApiService apiService)
+    public FichajeViewModel(ApiService apiService, IGeolocationService geoService, IBiometricService biometricService)
     {
-        _geoService = new GeolocationService();
-        _biometricService = new BiometricService();
+        _geoService = geoService;
+        _biometricService = biometricService;
         _apiService = apiService;
 
         SessionManager.Instance.Suscribir(this);
@@ -74,13 +74,23 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         Procesando = true;
         MostrarMapa = false;
 
+        // El permiso se resuelve primero y solo, para no superponer diálogos del sistema.
         Estado = "Obteniendo ubicación...";
-        var ubicacion = await _geoService.ObtenerUbicacionAsync();
-        if (!ubicacion.Exito) { Estado = ubicacion.Mensaje; Procesando = false; return; }
+        if (!await _geoService.PedirPermisoAsync())
+        {
+            Estado = "Permiso de ubicación denegado";
+            Procesando = false;
+            return;
+        }
 
+        // Ubicación y biometría corren en paralelo: el GPS se obtiene mientras el usuario se autentica.
+        var ubicacionTask = _geoService.ObtenerUbicacionAsync();
         Estado = "Verificá tu identidad...";
         var (bioExito, bioMensaje) = await _biometricService.AutenticarAsync();
+        var ubicacion = await ubicacionTask;
+
         if (!bioExito) { Estado = bioMensaje; Procesando = false; return; }
+        if (!ubicacion.Exito) { Estado = ubicacion.Mensaje; Procesando = false; return; }
 
         Estado = "Registrando fichaje...";
         var fichaje = new FichajeRequest

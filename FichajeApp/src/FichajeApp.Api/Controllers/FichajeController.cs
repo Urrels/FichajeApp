@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using FichajeApp.Api.Autorizacion;
 using FichajeApp.Api.Dominio.Seguridad;
 using FichajeApp.Api.Models;
+using FichajeApp.Api.Repositorios;
 using FichajeApp.Api.Services;
 
 namespace FichajeApp.Api.Controllers;
@@ -12,13 +13,12 @@ namespace FichajeApp.Api.Controllers;
 [RequierePermiso(CatalogoPermisos.FicharAsistencia)]
 public class FichajeController : ControllerBase
 {
-    private readonly FichajeService _fichajeService;
-    private readonly GoogleSheetsEmpleadosService _empleadosService;
+    private readonly IFichajeService _fichajeService;
+    private readonly IEmpleadosRepositorio _empleadosService;
+    private readonly ISitiosService _sitiosService;
 
-    private readonly GoogleSheetsSitiosService _sitiosService;
-
-    public FichajeController(FichajeService fichajeService, GoogleSheetsEmpleadosService empleadosService,
-        GoogleSheetsSitiosService sitiosService)
+    public FichajeController(IFichajeService fichajeService, IEmpleadosRepositorio empleadosService,
+        ISitiosService sitiosService)
     {
         _fichajeService = fichajeService;
         _empleadosService = empleadosService;

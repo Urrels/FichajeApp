@@ -138,3 +138,23 @@ duplicar, mover, eliminar), **Bitácora**, **Corregir fichajes** (entradas sin s
 **Liquidación de horas** (calcular, revisar por empleado, aprobar excedentes, cerrar el período, marcar como pagado,
 compartir el CSV, y configurar parámetros, valor hora y feriados). Cada usuario puede **cambiar su PIN** y **cerrar sesión**.
 Las acciones se hacen con diálogos del sistema: es la versión mínima, sin pantallas de formulario por cada operación.
+## Varios clientes (una API por cliente)
+
+Cada cliente tiene su propia instancia de la API y su propia planilla. Por instancia se
+configuran por variables de entorno: `GoogleSheets__SpreadsheetId`,
+`GoogleSheets__CredentialsPath`, `Jwt__Secret` (distinto en cada una),
+`Fichaje__ModoUbicacion`, `Fichaje__PrecisionMaxMetros`, `Fichaje__CacheMinutos`.
+
+La app móvil se compila **una vez por cliente** (cada una con su ícono, nombre, colores y URL
+de API). Cada cliente tiene una carpeta `src/FichajeApp.Mobile/Clientes/<cliente>/` con
+`cliente.json`, `appicon.svg`, `appiconfg.svg` y `logo.svg`. Los colores del tema
+(`Resources/Styles/Tema.xaml`) se pisan al iniciar con los de `cliente.json`.
+Las propiedades del `.csproj` y los comandos de build están en
+`FichajeApp.Mobile.Clientes.csproj.snippet.txt`:
+
+```bash
+dotnet publish -f net8.0-android -c Release -p:Cliente=clientea
+```
+
+Para sumar un cliente: copiar una carpeta de `Clientes/`, editar su `cliente.json` y
+reemplazar los SVG (los actuales son placeholders), y agregar su bloque al `.csproj`.

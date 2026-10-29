@@ -1,11 +1,5 @@
 namespace FichajeApp.Mobile.Services;
 
-public static class ApiConfig
-{
-    // Reemplazar por la URL real del backend. En emulador Android usar 10.0.2.2 en vez de localhost.
-    public const string BaseUrl = "http://10.0.2.2:5224/api";
-}
-
 // Nombres de los permisos del catálogo del servidor (deben coincidir con CatalogoPermisos de la API)
 public static class NombresPermisos
 {

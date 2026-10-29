@@ -38,12 +38,14 @@ public class ApiService
 {
     private readonly HttpClient _httpClient;
     private readonly AuthService _authService;
-    private const string BaseUrl = ApiConfig.BaseUrl;
+    private readonly IClienteService _clientes;
+    private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(15);
 
-    public ApiService(AuthService authService)
+    public ApiService(AuthService authService, IClienteService clientes)
     {
         _httpClient = new HttpClient();
         _authService = authService;
+        _clientes = clientes;
     }
 
     // --- Consultas de supervisor ---
@@ -74,7 +76,7 @@ public class ApiService
             }
 
             // Header por request: el HttpClient es compartido y no se muta
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"{BaseUrl}/{ruta}");
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{_clientes.BaseUrl}/{ruta}");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
@@ -123,10 +125,15 @@ public class ApiService
                 return new ResultadoFichaje(false, "Sesión expirada, iniciá sesión de nuevo");
             }
 
-            _httpClient.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", token);
+            // Header por request: el HttpClient es compartido y no se muta
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_clientes.BaseUrl}/fichaje")
+            {
+                Content = JsonContent.Create(fichaje)
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/fichaje", fichaje);
+            using var cts = new CancellationTokenSource(Timeout);
+            using var response = await _httpClient.SendAsync(request, cts.Token);
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
@@ -146,6 +153,11 @@ public class ApiService
             var error = await response.Content.ReadFromJsonAsync<Dictionary<string, string?>>();
             var requiereMotivo = error?.GetValueOrDefault("codigo") == "MOTIVO_REQUERIDO";
             return new ResultadoFichaje(false, error?.GetValueOrDefault("mensaje") ?? "Error al fichar", requiereMotivo);
+        }
+        catch (OperationCanceledException)
+        {
+            // Sin reintento automático: el POST no es idempotente y un reintento podría duplicar el fichaje.
+            return new ResultadoFichaje(false, "El servidor no respondió a tiempo. Revisá tu conexión y verificá si el fichaje quedó registrado.");
         }
         catch (Exception ex)
         {
