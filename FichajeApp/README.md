@@ -166,6 +166,20 @@ guarda solo el nombre del archivo en la columna `O`. La app la achica a 640 px (
 El supervisor ve la foto tocando el fichaje en su panel (`GET /api/supervisor/foto`, con permiso de supervisor).
 Detrás de `IAlmacenFotos`, así que pasar a Amazon S3 u otro almacenamiento es cambiar una clase. **Hay que hacer copia de seguridad
 de la carpeta `datos/`** y avisar a los empleados que se les saca una foto (es un dato personal).
+### Modo kiosco: un teléfono compartido por sucursal
+
+Para empresas donde varios empleados fichan desde el mismo teléfono (la huella no sirve: identifica al dueño del teléfono):
+
+1. En Administración → Usuarios, crear una cuenta por sucursal (por ejemplo "Sucursal Centro", con un email y PIN propios)
+   y asignarle el rol **Kiosco** (permiso *Fichar en kiosco*; el rol se crea solo al iniciar la API).
+2. Iniciar sesión **una vez** en el teléfono de esa sucursal con esa cuenta. La sesión dura 30 días y se guarda en el teléfono;
+   la baja o el bloqueo de la cuenta la cortan igual.
+3. El teléfono muestra la lista de empleados con lo que les toca (Entrada o Salida). Cada uno toca su nombre, escribe su PIN
+   personal y, si el cliente pidió foto, se saca la selfie. El fichaje queda **a nombre del empleado** y con **el nombre de la
+   sucursal como lugar** (sin ubicación GPS).
+
+El PIN tiene el mismo control que el login: 3 errores bloquean al empleado hasta que un administrador lo desbloquee. Un PIN
+incorrecto responde 400 (no 401) para no cerrar la sesión del teléfono. La cuenta de la sucursal no ficha por sí misma.
 ### Conectar Google Sheets desde la app
 
 Cada cliente conecta su propia planilla sin tocar archivos del servidor: en el login, **Conectar mi planilla de Google**

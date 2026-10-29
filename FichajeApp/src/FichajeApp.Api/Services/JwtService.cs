@@ -21,7 +21,7 @@ public class JwtService
     // El token lleva los roles y los permisos del usuario: los endpoints se protegen por permiso.
     // Un cambio de roles se ve en el próximo inicio de sesión; la baja o el bloqueo se aplican enseguida
     // (ver OnTokenValidated en Program.cs).
-    public string GenerarToken(EmpleadoDto empleado, IEnumerable<string> roles, IEnumerable<string> permisos)
+    public string GenerarToken(EmpleadoDto empleado, IEnumerable<string> roles, IEnumerable<string> permisos, TimeSpan? vida = null)
     {
         var claims = new List<Claim>
         {
@@ -39,7 +39,7 @@ public class JwtService
             issuer: _issuer,
             audience: _issuer,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(12),
+            expires: DateTime.UtcNow.Add(vida ?? TimeSpan.FromHours(12)),
             signingCredentials: creds
         );
 

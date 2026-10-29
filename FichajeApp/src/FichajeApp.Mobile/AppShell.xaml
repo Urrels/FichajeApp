@@ -13,9 +13,16 @@
                   FlyoutItemIsVisible="False"
                   ContentTemplate="{DataTemplate views:LoginPage}" />
 
-    <ShellContent Title="Fichar"
+    <ShellContent x:Name="FichajeItem"
+                  Title="Fichar"
                   Route="FichajePage"
                   ContentTemplate="{DataTemplate views:FichajePage}" />
+
+    <!-- Teléfono compartido de una sucursal: cada empleado ficha con su nombre y PIN -->
+    <ShellContent Title="Kiosco"
+                  Route="KioscoPage"
+                  FlyoutItemIsVisible="False"
+                  ContentTemplate="{DataTemplate views:KioscoPage}" />
 
     <!-- Solo visible para supervisores (ver AppShell.xaml.cs) -->
     <ShellContent x:Name="SupervisorItem"

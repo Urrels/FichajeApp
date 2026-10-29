@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FichajeApp.Mobile.Views.KioscoPage"
+             Title="Kiosco"
+             Shell.NavBarIsVisible="False"
+             Shell.FlyoutBehavior="Disabled"
+             BackgroundColor="{DynamicResource ColorFondo}">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+
+        <!-- Cabecera: empresa y sucursal -->
+        <VerticalStackLayout Grid.Row="0" BackgroundColor="{DynamicResource ColorPrimario}" Padding="24,48,24,20" Spacing="2">
+            <Label Text="{DynamicResource NombreCliente}" TextColor="{DynamicResource ColorPrimarioTexto}" Opacity="0.85" FontSize="14" />
+            <Label Text="{Binding Sucursal}" TextColor="{DynamicResource ColorPrimarioTexto}" FontSize="24" FontAttributes="Bold" />
+            <Label Text="Tocá tu nombre para fichar" TextColor="{DynamicResource ColorPrimarioTexto}" Opacity="0.85" FontSize="13" />
+        </VerticalStackLayout>
+
+        <Entry Grid.Row="1" Margin="16,12,16,4" Placeholder="Buscar mi nombre" Text="{Binding Busqueda}" />
+
+        <!-- Lista de empleados -->
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Empleados}" SelectionMode="Single"
+                        SelectionChanged="OnEmpleado" Margin="16,0">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="0,4" Padding="14,12" StrokeShape="RoundRectangle 12"
+                            BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="{Binding Nombre}" FontSize="17" VerticalOptions="Center" TextColor="{DynamicResource ColorTexto}" />
+                            <Label Grid.Column="1" Text="{Binding Proximo}" FontAttributes="Bold" VerticalOptions="Center"
+                                   TextColor="{DynamicResource ColorAcento}" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- PIN del empleado elegido -->
+        <Border Grid.Row="3" Margin="16,8" Padding="16" StrokeShape="RoundRectangle 16" IsVisible="{Binding HayElegido}"
+                BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorPrimario}">
+            <VerticalStackLayout Spacing="10">
+                <Label Text="{Binding TituloPin}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource ColorTexto}" />
+                <Entry Text="{Binding Pin}" Placeholder="Tu PIN" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Button Text="Cancelar" Clicked="OnCancelar" BackgroundColor="Transparent" TextColor="{DynamicResource ColorTexto}" />
+                    <Button Grid.Column="1" Text="Confirmar" Clicked="OnConfirmar"
+                            IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+
+        <VerticalStackLayout Grid.Row="4" Margin="16,0,16,12" Spacing="6">
+            <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
+            <Label Text="{Binding Estado}" HorizontalTextAlignment="Center" FontAttributes="Bold" TextColor="{DynamicResource ColorTexto}" />
+            <Button Text="Cerrar sesión del teléfono" Clicked="OnCerrarSesion" FontSize="11"
+                    BackgroundColor="Transparent" TextColor="{DynamicResource ColorTextoSuave}" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

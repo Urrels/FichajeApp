@@ -63,6 +63,7 @@ builder.Services.AddSingleton<IAlmacenFotos, AlmacenFotosEnDisco>();
 builder.Services.AddSingleton<BitacoraService>();
 builder.Services.AddSingleton<AparienciaService>();
 builder.Services.AddSingleton<ConfiguracionFichajeService>();
+builder.Services.AddScoped<KioscoService>();
 builder.Services.AddSingleton<PermisosService>();
 builder.Services.AddSingleton<GuardaAdministracion>();
 builder.Services.AddSingleton<HistorialUsuariosService>();

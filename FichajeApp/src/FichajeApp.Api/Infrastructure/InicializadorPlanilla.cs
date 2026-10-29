@@ -63,6 +63,7 @@ public class InicializadorPlanilla : IHostedService, IInicializadorPlanilla
         await SembrarPermisosAsync();
         await SembrarRolesAsync();
         await AsegurarPermisosDelAdministradorAsync();
+        await AsegurarRolKioscoAsync();
         await SembrarParametrosAsync();
         if (nuevo is not null) await CrearPrimerAdministradorAsync(nuevo);
         await MigrarAsignacionesAsync();
@@ -146,6 +147,19 @@ public class InicializadorPlanilla : IHostedService, IInicializadorPlanilla
 
         await _roles.GuardarPermisosDeRolAsync(admin.Id, catalogo);
         _log.LogInformation("El rol Administrador recibió los permisos nuevos del catálogo.");
+    }
+
+    // Las planillas que ya tenían roles no recibieron el rol Kiosco al sembrarse: se crea una sola vez
+    private async Task AsegurarRolKioscoAsync()
+    {
+        if ((await _roles.ListarRolesAsync()).Any(r => r.Nombre == CatalogoPermisos.RolKiosco)) return;
+
+        var permiso = (await _roles.ListarPermisosAsync()).FirstOrDefault(p => p.Nombre == CatalogoPermisos.FicharEnKiosco);
+        if (permiso is null) return;
+
+        int id = await _roles.InsertarRolAsync(CatalogoPermisos.RolKiosco, null, protegido: false);
+        await _roles.GuardarPermisosDeRolAsync(id, new[] { permiso.Id });
+        _log.LogInformation("Se creó el rol Kiosco.");
     }
 
     private async Task SembrarParametrosAsync()
