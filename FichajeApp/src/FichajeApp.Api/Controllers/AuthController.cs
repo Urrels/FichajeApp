@@ -31,7 +31,8 @@ public class AuthController : ControllerBase
         {
             Token = token,
             NombreCompleto = empleado.NombreCompleto,
-            EmpleadoId = empleado.Id
+            EmpleadoId = empleado.Id,
+            Rol = empleado.Rol
         });
     }
 }

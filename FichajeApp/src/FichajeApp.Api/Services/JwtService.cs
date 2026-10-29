@@ -23,7 +23,8 @@ public class JwtService
         {
             new Claim(ClaimTypes.NameIdentifier, empleado.Id.ToString()),
             new Claim(ClaimTypes.Name, empleado.NombreCompleto),
-            new Claim(ClaimTypes.Email, empleado.Email)
+            new Claim(ClaimTypes.Email, empleado.Email),
+            new Claim(ClaimTypes.Role, empleado.Rol)
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));

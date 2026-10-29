@@ -14,7 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="credentials\service-account.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('credentials\service-account.json')" />
+    <!-- El SDK Web ya incluye los *.json como Content: Update solo agrega la copia al output (Include duplicaba el item). -->
+    <Content Update="credentials\service-account.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

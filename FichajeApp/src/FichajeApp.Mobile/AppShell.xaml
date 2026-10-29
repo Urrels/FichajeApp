@@ -10,4 +10,11 @@
     <ShellContent Route="FichajePage"
                   ContentTemplate="{DataTemplate views:FichajePage}" />
 
+    <!-- Solo visible para supervisores (ver AppShell.xaml.cs) -->
+    <ShellContent x:Name="SupervisorItem"
+                  Title="Supervisor"
+                  Route="SupervisorPage"
+                  FlyoutItemIsVisible="False"
+                  ContentTemplate="{DataTemplate views:SupervisorPage}" />
+
 </Shell>

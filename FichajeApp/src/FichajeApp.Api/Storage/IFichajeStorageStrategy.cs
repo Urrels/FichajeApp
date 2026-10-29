@@ -10,4 +10,7 @@ public interface IFichajeStorageStrategy
 {
     Task GuardarAsync(FichajeDto fichaje);
     Task<string> ObtenerUltimoTipoFichajeAsync(string nombreCompleto);
+
+    // Todos los fichajes registrados (para las consultas del supervisor)
+    Task<List<FichajeDto>> ObtenerFichajesAsync();
 }

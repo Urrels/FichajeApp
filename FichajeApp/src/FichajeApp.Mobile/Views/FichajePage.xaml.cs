@@ -20,6 +20,11 @@ public partial class FichajePage : ContentPage
         await _viewModel.FicharAsync();
     }
 
+    private async void OnAbrirMapsClicked(object sender, EventArgs e)
+    {
+        await _viewModel.AbrirEnMapsAsync();
+    }
+
     private async void OnSesionFinalizada()
     {
         await Shell.Current.GoToAsync("//LoginPage");

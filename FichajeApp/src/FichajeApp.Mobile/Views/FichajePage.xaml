@@ -18,5 +18,10 @@
 
         <Label Text="{Binding Estado}" HorizontalOptions="Center" />
 
+        <!-- Aparece después de un fichaje exitoso -->
+        <Button Text="Ver en Google Maps"
+                Clicked="OnAbrirMapsClicked"
+                IsVisible="{Binding MostrarMapa}" />
+
     </VerticalStackLayout>
 </ContentPage>

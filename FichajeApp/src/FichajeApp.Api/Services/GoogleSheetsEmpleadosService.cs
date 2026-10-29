@@ -10,7 +10,7 @@ public class GoogleSheetsEmpleadosService
 {
     private readonly SheetsService _sheetsService;
     private readonly string _spreadsheetId;
-    private const string Range = "Empleados!A2:E"; // Id, NombreCompleto, Email, PinHash, Activo
+    private const string Range = "Empleados!A2:F"; // Id, NombreCompleto, Email, PinHash, Activo, Rol (opcional)
 
     public GoogleSheetsEmpleadosService(IConfiguration config)
     {
@@ -46,7 +46,10 @@ public class GoogleSheetsEmpleadosService
                 NombreCompleto = row[1].ToString()!,
                 Email = row[2].ToString()!,
                 PinHash = row[3].ToString()!,
-                Activo = row[4].ToString()!.Equals("TRUE", StringComparison.OrdinalIgnoreCase)
+                Activo = row[4].ToString()!.Equals("TRUE", StringComparison.OrdinalIgnoreCase),
+                Rol = row.Count > 5 && string.Equals(row[5]?.ToString()?.Trim(), "Supervisor", StringComparison.OrdinalIgnoreCase)
+                    ? "Supervisor"
+                    : "Empleado"
             });
         }
 

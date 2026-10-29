@@ -58,6 +58,66 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
         await appendRequest.ExecuteAsync();
     }
 
+    public async Task<List<FichajeDto>> ObtenerFichajesAsync()
+    {
+        var request = _sheetsService.Spreadsheets.Values.Get(_spreadsheetId, Range);
+        // Valores crudos: números y fechas no dependen del idioma de la planilla
+        request.ValueRenderOption = SpreadsheetsResource.ValuesResource.GetRequest.ValueRenderOptionEnum.UNFORMATTEDVALUE;
+        var response = await request.ExecuteAsync();
+
+        var fichajes = new List<FichajeDto>();
+        if (response.Values is null) return fichajes;
+
+        foreach (var row in response.Values)
+        {
+            if (row.Count < 5) continue;
+            if (!TryFecha(row[1], out var fecha) || !TryNumero(row[2], out var lat) || !TryNumero(row[3], out var lon))
+                continue; // encabezado o fila mal cargada
+
+            fichajes.Add(new FichajeDto
+            {
+                NombreCompleto = row[0]?.ToString() ?? "",
+                FechaHora = fecha,
+                Latitud = lat,
+                Longitud = lon,
+                TipoFichaje = row[4]?.ToString() ?? "",
+                Lugar = row.Count > 5 ? row[5]?.ToString() ?? "" : "",
+                Motivo = row.Count > 6 && !string.IsNullOrWhiteSpace(row[6]?.ToString()) ? row[6].ToString() : null,
+                Precision = row.Count > 7 && TryNumero(row[7], out var prec) ? prec : null,
+                Direccion = row.Count > 8 && !string.IsNullOrWhiteSpace(row[8]?.ToString()) ? row[8].ToString() : null
+            });
+        }
+
+        return fichajes;
+    }
+
+    private static bool TryNumero(object? valor, out double numero)
+    {
+        switch (valor)
+        {
+            case double d: numero = d; return true;
+            case string s:
+                return double.TryParse(s.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out numero);
+            default: numero = 0; return false;
+        }
+    }
+
+    // Sheets devuelve la fecha como número de serie (días desde 1899-12-30) o como texto
+    private static bool TryFecha(object? valor, out DateTime fecha)
+    {
+        switch (valor)
+        {
+            case double serie:
+                var bruta = new DateTime(1899, 12, 30).AddDays(serie);
+                // El número de serie es un double: se redondea al segundo más cercano
+                fecha = new DateTime((bruta.Ticks + TimeSpan.TicksPerSecond / 2) / TimeSpan.TicksPerSecond * TimeSpan.TicksPerSecond);
+                return true;
+            case string s:
+                return DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out fecha);
+            default: fecha = default; return false;
+        }
+    }
+
     public async Task<string> ObtenerUltimoTipoFichajeAsync(string nombreCompleto)
     {
         var request = _sheetsService.Spreadsheets.Values.Get(_spreadsheetId, Range);

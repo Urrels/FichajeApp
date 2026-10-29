@@ -21,6 +21,7 @@ builder.Services.AddSingleton<IFichajeStorageStrategy, GoogleSheetsStorageStrate
 builder.Services.AddSingleton<IFichajeObserver, LogFichajeObserver>();
 
 builder.Services.AddScoped<FichajeService>();
+builder.Services.AddSingleton<ConsultaFichajesService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

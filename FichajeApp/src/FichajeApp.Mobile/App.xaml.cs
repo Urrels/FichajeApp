@@ -17,6 +17,8 @@ public partial class App : Application
     {
         // Restaura el token guardado en SecureStorage y puebla el Singleton SessionManager
         var haySesion = await _authService.RestaurarSesionAsync();
-        await Shell.Current.GoToAsync(haySesion ? "//FichajePage" : "//LoginPage");
+        var destino = !haySesion ? "//LoginPage"
+            : SessionManager.Instance.EsSupervisor ? "//SupervisorPage" : "//FichajePage";
+        await Shell.Current.GoToAsync(destino);
     }
 }

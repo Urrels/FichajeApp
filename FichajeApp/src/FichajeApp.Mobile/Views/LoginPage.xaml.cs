@@ -22,6 +22,7 @@ public partial class LoginPage : ContentPage
 
     private async void OnLoginExitoso()
     {
-        await Shell.Current.GoToAsync("//FichajePage");
+        // El supervisor entra directo a su panel; desde el menú puede ir a fichar
+        await Shell.Current.GoToAsync(SessionManager.Instance.EsSupervisor ? "//SupervisorPage" : "//FichajePage");
     }
 }

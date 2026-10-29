@@ -19,7 +19,9 @@ public sealed class SessionManager
     public string? Token { get; private set; }
     public string? NombreCompleto { get; private set; }
     public int? EmpleadoId { get; private set; }
+    public string Rol { get; private set; } = "Empleado";
     public bool EstaLogueado => !string.IsNullOrEmpty(Token);
+    public bool EsSupervisor => Rol == "Supervisor";
 
     public void Suscribir(ISessionObserver observer)
     {
@@ -32,11 +34,12 @@ public sealed class SessionManager
         _observers.Remove(observer);
     }
 
-    public void IniciarSesion(string token, string nombreCompleto, int empleadoId)
+    public void IniciarSesion(string token, string nombreCompleto, int empleadoId, string rol = "Empleado")
     {
         Token = token;
         NombreCompleto = nombreCompleto;
         EmpleadoId = empleadoId;
+        Rol = rol;
 
         foreach (var observer in _observers)
             observer.OnSesionIniciada(nombreCompleto);
@@ -47,6 +50,7 @@ public sealed class SessionManager
         Token = null;
         NombreCompleto = null;
         EmpleadoId = null;
+        Rol = "Empleado";
 
         foreach (var observer in _observers)
             observer.OnSesionFinalizada();
