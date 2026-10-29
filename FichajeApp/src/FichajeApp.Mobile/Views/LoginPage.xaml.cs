@@ -7,13 +7,30 @@ public partial class LoginPage : ContentPage
 {
     private readonly LoginViewModel _viewModel;
 
-    public LoginPage(AuthService authService)
+    private readonly ConfiguracionApiService _configuracion;
+    private bool _yaOfrecioConfigurar;
+
+    public LoginPage(AuthService authService, ConfiguracionApiService configuracion)
     {
         InitializeComponent();
+        _configuracion = configuracion;
         _viewModel = new LoginViewModel(authService);
         _viewModel.LoginExitoso += OnLoginExitoso;
         BindingContext = _viewModel;
     }
+
+    // Servidor recién instalado: lleva directo a conectar la planilla (una sola vez por apertura de la app)
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        if (_yaOfrecioConfigurar) return;
+        _yaOfrecioConfigurar = true;
+
+        if (await _configuracion.ConfiguradaAsync() == false)
+            await Shell.Current.GoToAsync(nameof(ConfiguracionPage));
+    }
+
+    private async void OnConfigurarClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(ConfiguracionPage));
 
     private async void OnLoginClicked(object sender, EventArgs e)
     {

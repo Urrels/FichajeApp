@@ -21,8 +21,18 @@ public static class Planilla
     public const string LiquidacionDias = "LiquidacionDias";
     public const string Apariencia = "Apariencia";
 
+    public const string Sitios = "Sitios";
+
+    // Las tres primeras ya existían en las planillas viejas (no se tocan); en una planilla vacía se crean con estos encabezados
     public static readonly IReadOnlyDictionary<string, string[]> Encabezados = new Dictionary<string, string[]>
     {
+        [Empleados] = new[] { "Id", "NombreCompleto", "Email", "PinHash", "Activo", "Rol", "IntentosFallidos", "Bloqueado" },
+        [Fichajes] = new[]
+        {
+            "Nombre", "FechaHora", "Lat", "Lon", "Tipo", "Lugar", "Motivo", "Precision", "Direccion", "Mapa",
+            "Corregido", "MotivoCorreccion", "CorregidoPor", "FechaCorreccion"
+        },
+        [Sitios] = new[] { "Nombre", "Latitud", "Longitud", "RadioMetros" },
         [Roles] = new[] { "Id", "Nombre", "PadreId", "Protegido" },
         [Permisos] = new[] { "Id", "Nombre" },
         [RolPermiso] = new[] { "RolId", "PermisoId" },

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FichajeApp.Mobile.Views.ConfiguracionPage"
+             Title="Conectar Google Sheets"
+             BackgroundColor="{DynamicResource ColorFondo}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+
+            <Label Text="Conectá tu planilla de Google" FontSize="20" FontAttributes="Bold" />
+            <Label FontSize="12"
+                   Text="1) Creá una cuenta de servicio en Google Cloud y descargá su archivo .json. 2) Creá una planilla de Google Sheets y compartila como Editor con el correo que figura en ese archivo (client_email). 3) Completá estos datos. La credencial se guarda cifrada en tu servidor, no en el teléfono." />
+
+            <Label Text="Clave de instalación" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Label Text="La muestra el servidor al arrancar (y está en la carpeta datos/clave-instalacion.txt)." FontSize="11" />
+            <Entry Text="{Binding Clave}" IsPassword="True" Placeholder="Clave de instalación" />
+
+            <Label Text="Planilla" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Entry Text="{Binding Planilla}" Placeholder="Link o ID de la planilla" Keyboard="Url" />
+
+            <Label Text="Credencial de la cuenta de servicio" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Button Text="Elegir archivo .json" Clicked="OnElegirArchivo" />
+            <Editor Text="{Binding Credenciales}" HeightRequest="90" Placeholder="…o pegá acá el contenido del archivo"
+                    IsVisible="{Binding CredencialesCargadas, Converter={StaticResource InvertedBoolConverter}}" />
+            <Label Text="✔ Credencial cargada" IsVisible="{Binding CredencialesCargadas}" />
+
+            <Label Text="Primer administrador (solo si la planilla es nueva)" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Entry Text="{Binding NombreAdmin}" Placeholder="Nombre y apellido" />
+            <Entry Text="{Binding EmailAdmin}" Placeholder="Email" Keyboard="Email" />
+            <Entry Text="{Binding PinAdmin}" Placeholder="PIN (4 dígitos)" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
+
+            <Button Text="Probar y guardar" Clicked="OnGuardar" Margin="0,8,0,0"
+                    IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
+            <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
+            <Label Text="{Binding Estado}" HorizontalTextAlignment="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

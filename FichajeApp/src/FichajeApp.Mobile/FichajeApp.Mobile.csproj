@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net8.0-android;net8.0-ios;net8.0-maccatalyst</TargetFrameworks>
@@ -46,6 +46,30 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
+	</PropertyGroup>
+
+	<!-- Identidad de la app por cliente: ApplicationId y título son lo que ve Play Store y el launcher.
+	     Cambiar el ApplicationId por el dominio propio ANTES de publicar: no se puede cambiar después. -->
+	<PropertyGroup Condition="'$(Cliente)' == 'dev'">
+		<ApplicationId>com.tuempresa.fichaje.dev</ApplicationId>
+		<ApplicationTitle>Fichaje (dev)</ApplicationTitle>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Cliente)' == 'clientea'">
+		<ApplicationId>com.tuempresa.fichaje.clientea</ApplicationId>
+		<ApplicationTitle>Fichaje Cliente A</ApplicationTitle>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Cliente)' == 'clienteb'">
+		<ApplicationId>com.tuempresa.fichaje.clienteb</ApplicationId>
+		<ApplicationTitle>Fichaje Cliente B</ApplicationTitle>
+	</PropertyGroup>
+
+	<!-- Release para Play Store: un .aab firmado con el keystore del cliente (keystores\<cliente>.keystore).
+	     Las contraseñas NO van acá: se pasan por línea de comandos (ver docs/PLAY_STORE.md) -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Release' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<AndroidPackageFormat>aab</AndroidPackageFormat>
+		<AndroidKeyStore>True</AndroidKeyStore>
+		<AndroidSigningKeyStore>keystores\$(Cliente).keystore</AndroidSigningKeyStore>
+		<AndroidSigningKeyAlias>$(Cliente)</AndroidSigningKeyAlias>
 	</PropertyGroup>
 
 	<ItemGroup>

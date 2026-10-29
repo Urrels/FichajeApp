@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
@@ -21,6 +22,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.Configure<FichajeOptions>(builder.Configuration.GetSection(FichajeOptions.Seccion));
+
+// La conexión con Google Sheets se puede configurar desde la app: se guarda cifrada en esta carpeta del servidor
+var carpetaDeDatos = builder.Configuration["Setup:Carpeta"] ?? Path.Combine(builder.Environment.ContentRootPath, "datos");
+builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(carpetaDeDatos, "llaves")));
+builder.Services.AddSingleton<AlmacenConexion>();
+builder.Services.AddSingleton<IProbadorConexion, ProbadorConexionGoogle>();
+builder.Services.AddSingleton<ConexionService>();
 
 // Una sola conexión a Google Sheets, un reloj inyectable (se reemplaza en las pruebas) y un lock por empleado
 builder.Services.AddSingleton<GoogleSheetsClient>();
@@ -63,7 +71,9 @@ builder.Services.AddSingleton<FichajesAdminService>();
 builder.Services.AddSingleton<LiquidacionService>();
 
 // Crea las pestañas y los datos iniciales de la administración al arrancar
-builder.Services.AddHostedService<InicializadorPlanilla>();
+builder.Services.AddSingleton<InicializadorPlanilla>();
+builder.Services.AddSingleton<IInicializadorPlanilla>(sp => sp.GetRequiredService<InicializadorPlanilla>());
+builder.Services.AddHostedService(sp => sp.GetRequiredService<InicializadorPlanilla>());
 
 // Strategy: hoy Google Sheets. Para sumar otra, se registra otra implementación acá.
 builder.Services.AddSingleton<GoogleSheetsStorageStrategy>();
@@ -153,11 +163,25 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Sin conexión configurada, cualquier pedido que necesite la planilla responde 503 con un mensaje claro
+app.Use(async (contexto, siguiente) =>
+{
+    try { await siguiente(); }
+    catch (ConexionNoConfiguradaException ex) when (!contexto.Response.HasStarted)
+    {
+        contexto.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        await contexto.Response.WriteAsJsonAsync(new { mensaje = ex.Message, codigo = "SIN_CONFIGURAR" });
+    }
+});
+
 app.UseHttpsRedirection();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+if (!app.Environment.IsEnvironment("Testing") && !app.Services.GetRequiredService<GoogleSheetsClient>().Configurado)
+    app.Services.GetRequiredService<ConexionService>().AnunciarClave();
 
 app.Run();
 
