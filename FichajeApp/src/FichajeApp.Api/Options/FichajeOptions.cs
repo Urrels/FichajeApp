@@ -12,5 +12,8 @@ public class FichajeOptions
     // Tiempo de vida en caché del padrón de empleados y de la hoja Sitios
     public int CacheMinutos { get; set; } = 2;
 
+    // Días que se conservan las fotos de los fichajes; pasado ese tiempo se borran solas (0 = no borrar nunca)
+    public int FotosRetencionDias { get; set; } = 90;
+
     public bool ModoLibre => string.Equals(ModoUbicacion, "Libre", StringComparison.OrdinalIgnoreCase);
 }

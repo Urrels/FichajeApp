@@ -101,7 +101,16 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
 
         // La foto se saca antes de empezar a buscar el GPS, así el usuario no espera dos cosas a la vez
         string? foto = null;
-        if (config.PideFoto)
+        if (config.PideFoto && !await AvisoFoto.ConfirmarAsync(SessionManager.Instance.EmpleadoId ?? 0, config.RetencionDias))
+        {
+            if (config.FotoObligatoria)
+            {
+                Estado = "Para fichar con foto tenés que estar de acuerdo. Consultalo con tu empresa.";
+                Procesando = false;
+                return;
+            }
+        }
+        else if (config.PideFoto)
         {
             Estado = "Sacate una foto...";
             try { foto = await FotoFichaje.TomarAsync(); }

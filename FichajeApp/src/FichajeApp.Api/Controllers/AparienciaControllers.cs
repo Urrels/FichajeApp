@@ -58,7 +58,7 @@ public class ConfiguracionFichajeAdminController : AdminControllerBase
     public async Task<IActionResult> Obtener()
     {
         var c = await _configuracion.ObtenerAsync();
-        return Ok(new { ubicacion = c.Ubicacion, foto = c.Foto });
+        return Ok(new { ubicacion = c.Ubicacion, foto = c.Foto, retencionDias = c.RetencionFotosDias });
     }
 
     [HttpPut]

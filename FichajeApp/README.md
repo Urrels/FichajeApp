@@ -166,6 +166,8 @@ guarda solo el nombre del archivo en la columna `O`. La app la achica a 640 px (
 El supervisor ve la foto tocando el fichaje en su panel (`GET /api/supervisor/foto`, con permiso de supervisor).
 Detrás de `IAlmacenFotos`, así que pasar a Amazon S3 u otro almacenamiento es cambiar una clase. **Hay que hacer copia de seguridad
 de la carpeta `datos/`** y avisar a los empleados que se les saca una foto (es un dato personal).
+**Retención y consentimiento.** Las fotos se borran solas pasado `Fichaje:FotosRetencionDias` días (90 por defecto; `0` = no borrar nunca): un proceso en segundo plano lo revisa al arrancar la API y una vez por día. El supervisor que abre una foto ya borrada ve un aviso. La primera vez que cada empleado ficha con foto en un teléfono, la app le muestra qué se hace con su foto, quién la ve y cuánto se guarda, y le pide que esté de acuerdo; si no acepta no se le saca la foto (con foto obligatoria, no ficha). Es un aviso informativo: el consentimiento que exija tu legislación laboral y de datos personales es responsabilidad de la empresa.
+
 ### Modo kiosco: un teléfono compartido por sucursal
 
 Para empresas donde varios empleados fichan desde el mismo teléfono (la huella no sirve: identifica al dueño del teléfono):

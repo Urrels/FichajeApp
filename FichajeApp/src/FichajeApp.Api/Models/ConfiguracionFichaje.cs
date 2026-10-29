@@ -19,6 +19,9 @@ public class ConfiguracionFichaje
 
     public string Ubicacion { get; set; } = UbicacionLibre;
     public string Foto { get; set; } = FotoNo;
+
+    // Cuánto tiempo se guardan las fotos (lo define el servidor, no el administrador); 0 = para siempre
+    public int RetencionFotosDias { get; set; }
 }
 
 public class GuardarConfiguracionFichajeRequest

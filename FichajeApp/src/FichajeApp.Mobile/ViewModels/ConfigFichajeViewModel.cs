@@ -29,6 +29,11 @@ public class ConfigFichajeViewModel : VmBase
     public string Ubicacion { get => _ubicacion; private set { if (Set(ref _ubicacion, value)) Notificar(nameof(UbicacionTexto)); } }
     public string Foto { get => _foto; private set { if (Set(ref _foto, value)) Notificar(nameof(FotoTexto)); } }
 
+    private int _retencionDias = 90;
+    public string RetencionTexto => _retencionDias > 0
+        ? $"Las fotos se borran solas a los {_retencionDias} días (lo define el servidor)."
+        : "Las fotos no se borran nunca (lo define el servidor).";
+
     public string UbicacionTexto => Ubicaciones.FirstOrDefault(u => u.Value == Ubicacion).Key ?? Ubicacion;
     public string FotoTexto => Fotos.FirstOrDefault(f => f.Value == Foto).Key ?? Foto;
 
@@ -39,6 +44,8 @@ public class ConfigFichajeViewModel : VmBase
 
         Ubicacion = r.Datos.Ubicacion;
         Foto = r.Datos.Foto;
+        _retencionDias = r.Datos.RetencionDias;
+        Notificar(nameof(RetencionTexto));
         Estado = string.Empty;
     });
 

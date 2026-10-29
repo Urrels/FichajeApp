@@ -31,12 +31,14 @@ public class ConfiguracionFichajeService
         (await _cache.GetOrCreateAsync(ClaveCache, async entrada =>
         {
             entrada.AbsoluteExpirationRelativeToNow = Vida;
-            return await _repositorio.ObtenerAsync() ?? new ConfiguracionFichaje
+            var config = await _repositorio.ObtenerAsync() ?? new ConfiguracionFichaje
             {
                 // Lo de appsettings (Fichaje:ModoUbicacion) sigue valiendo mientras nadie lo cambie desde la app
                 Ubicacion = _opciones.ModoLibre ? ConfiguracionFichaje.UbicacionLibre : ConfiguracionFichaje.UbicacionSedeFija,
                 Foto = ConfiguracionFichaje.FotoNo
             };
+            config.RetencionFotosDias = _opciones.FotosRetencionDias;
+            return config;
         }))!;
 
     public async Task GuardarAsync(string actor, GuardarConfiguracionFichajeRequest r)

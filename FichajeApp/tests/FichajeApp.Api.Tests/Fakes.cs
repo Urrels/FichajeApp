@@ -195,6 +195,13 @@ public class AlmacenFotosFalso : IAlmacenFotos
 
     public Task<(byte[] Bytes, string Mime)?> LeerAsync(string nombre) =>
         Task.FromResult(Datos.TryGetValue(nombre, out var b) ? ((byte[], string)?)(b, "image/jpeg") : null);
+
+    public Task<int> EliminarAnterioresAsync(DateTime fecha)
+    {
+        var viejas = Datos.Keys.Where(n => DateTime.ParseExact(n[..10], "yyyy/MM/dd", null) < fecha.Date).ToList();
+        viejas.ForEach(n => Datos.Remove(n));
+        return Task.FromResult(viejas.Count);
+    }
 }
 
 // Guarda en memoria los fichajes y devuelve el último tipo como lo haría la hoja
