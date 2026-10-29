@@ -20,6 +20,7 @@ public partial class ConfiguracionPage : ContentPage
         await _viewModel.CargarEstadoAsync();
     }
 
+    private async void OnAyudaClave(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(AyudaClavePage));
     private async void OnCopiarCorreo(object sender, EventArgs e) => await _viewModel.CopiarCorreoAsync();
     private async void OnElegirArchivo(object sender, EventArgs e) => await _viewModel.ElegirArchivoAsync();
     private async void OnGuardar(object sender, EventArgs e) => await _viewModel.GuardarAsync();
