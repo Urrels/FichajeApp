@@ -25,6 +25,21 @@ public class FichajeController : ControllerBase
         _sitiosService = sitiosService;
     }
 
+    // Qué va a ser el próximo fichaje del usuario (Entrada o Salida), para mostrarlo antes de fichar
+    [HttpGet("estado")]
+    public async Task<IActionResult> Estado()
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        if (string.IsNullOrEmpty(email))
+            return Unauthorized();
+
+        var empleado = await _empleadosService.BuscarPorEmailAsync(email);
+        if (empleado is null)
+            return NotFound(new { mensaje = "Empleado no encontrado" });
+
+        return Ok(new { proximo = await _fichajeService.ProximoTipoAsync(empleado.NombreCompleto) });
+    }
+
     [HttpPost]
     public async Task<IActionResult> RegistrarFichaje([FromBody] FichajeRequestDto request)
     {

@@ -16,11 +16,23 @@ public class LiquidacionViewModel : VmBase
     {
         _api = api;
 
-        // Por defecto, la semana pasada completa (lunes a domingo)
-        var hoy = DateTime.Today;
-        int desdeElLunes = ((int)hoy.DayOfWeek + 6) % 7;
-        _desde = hoy.AddDays(-desdeElLunes - 7);
-        _hasta = _desde.AddDays(6);
+        // Hasta hoy, y desde el 1 del mes; al abrir la pantalla se ajusta a "después de la última liquidación"
+        _hasta = DateTime.Today;
+        _desde = new DateTime(_hasta.Year, _hasta.Month, 1);
+    }
+
+    // Se puede liquidar cuando se quiera: el período sugerido empieza el día siguiente a la última liquidación
+    public async Task SugerirPeriodoAsync()
+    {
+        var r = await _api.Liquidaciones();
+        if (!r.Exito || r.Datos is null || r.Datos.Count == 0) return;
+
+        var siguiente = r.Datos.Max(l => l.Hasta).Date.AddDays(1);
+        if (siguiente <= DateTime.Today)
+        {
+            Desde = siguiente;
+            Hasta = DateTime.Today;
+        }
     }
 
     public ObservableCollection<ResumenEmpleadoItem> Resumen { get; } = new();

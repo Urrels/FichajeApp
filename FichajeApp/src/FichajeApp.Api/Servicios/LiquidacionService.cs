@@ -59,8 +59,9 @@ public class LiquidacionService
     public async Task<PeriodoLiquidado> CerrarAsync(string actor, DateTime desde, DateTime hasta)
     {
         ValidarRango(desde, hasta);
-        if (hasta.Date >= Ahora.Date)
-            throw new InvalidOperationException("Solo se puede liquidar un período que ya terminó.");
+        // Se puede liquidar hasta hoy; si alguien sigue adentro (entrada sin salida) el chequeo de incompletos lo frena
+        if (hasta.Date > Ahora.Date)
+            throw new InvalidOperationException("No se puede liquidar una fecha futura.");
 
         await _cierre.WaitAsync();
         try

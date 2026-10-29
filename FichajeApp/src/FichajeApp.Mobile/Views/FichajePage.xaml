@@ -25,10 +25,10 @@
         <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" Spacing="24" Padding="24">
 
             <Grid HorizontalOptions="Center" VerticalOptions="Center">
-                <Button Text="Fichar"
+                <Button Text="{Binding TextoBoton}"
                         WidthRequest="200" HeightRequest="200"
                         CornerRadius="100"
-                        FontSize="30" FontAttributes="Bold"
+                        FontSize="24" FontAttributes="Bold"
                         BackgroundColor="{DynamicResource ColorPrimario}"
                         TextColor="{DynamicResource ColorPrimarioTexto}"
                         Clicked="OnFicharClicked"

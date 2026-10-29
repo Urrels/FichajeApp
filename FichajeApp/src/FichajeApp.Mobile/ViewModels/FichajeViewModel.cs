@@ -17,6 +17,7 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
     private bool _procesando;
     private bool _mostrarMapa;
     private string? _enlaceMaps;
+    private string? _proximo;
 
     public event Action? SesionFinalizada;
 
@@ -40,6 +41,15 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
     {
         get => _estado;
         set { _estado = value; OnPropertyChanged(); }
+    }
+
+    // Lo que va a ser el próximo fichaje: se muestra en el botón para saber si se está entrando o saliendo
+    public string TextoBoton => _proximo is null ? "Fichar" : $"Fichar {_proximo.ToLowerInvariant()}";
+
+    public async Task ActualizarProximoAsync()
+    {
+        _proximo = await _apiService.ObtenerProximoTipoAsync() ?? _proximo;
+        OnPropertyChanged(nameof(TextoBoton));
     }
 
     public bool Procesando
@@ -125,7 +135,10 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
 
         Estado = resultado.Mensaje;
         if (resultado.Exito)
+        {
             MostrarUbicacion(ubicacion.Lat, ubicacion.Lon);
+            await ActualizarProximoAsync();
+        }
         Procesando = false;
     }
 

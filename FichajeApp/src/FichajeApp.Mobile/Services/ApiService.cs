@@ -64,6 +64,13 @@ public class ApiService
     public Task<ResultadoConsulta<List<string>>> ObtenerEmpleadosAsync() =>
         GetAsync<List<string>>("supervisor/empleados");
 
+    // "Entrada" o "Salida": lo que va a registrar el próximo fichaje del usuario
+    public async Task<string?> ObtenerProximoTipoAsync()
+    {
+        var r = await GetAsync<Dictionary<string, string>>("fichaje/estado");
+        return r.Exito ? r.Datos?.GetValueOrDefault("proximo") : null;
+    }
+
     private async Task<ResultadoConsulta<T>> GetAsync<T>(string ruta)
     {
         try
