@@ -31,7 +31,7 @@ public static class Planilla
         [Fichajes] = new[]
         {
             "Nombre", "FechaHora", "Lat", "Lon", "Tipo", "Lugar", "Motivo", "Precision", "Direccion", "Mapa",
-            "Corregido", "MotivoCorreccion", "CorregidoPor", "FechaCorreccion"
+            "Corregido", "MotivoCorreccion", "CorregidoPor", "FechaCorreccion", "Foto"
         },
         [Sitios] = new[] { "Nombre", "Latitud", "Longitud", "RadioMetros" },
         [ConfigFichaje] = new[] { "Clave", "Valor" },
