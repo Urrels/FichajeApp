@@ -23,8 +23,7 @@ public class LoginResponse
 public class AuthService
 {
     private readonly HttpClient _httpClient;
-
-    private const string BaseUrl = ApiConfig.BaseUrl;
+    private readonly IClienteService _clientes;
 
     private const string TokenKey = "auth_token";
     private const string NombreKey = "auth_nombre";
@@ -32,16 +31,17 @@ public class AuthService
     private const string RolKey = "auth_rol";
     private const string PermisosKey = "auth_permisos";
 
-    public AuthService()
+    public AuthService(IClienteService clientes)
     {
         _httpClient = new HttpClient();
+        _clientes = clientes;
     }
 
     public async Task<(bool exito, string mensaje)> LoginAsync(string email, string pin)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}/auth/login",
+            var response = await _httpClient.PostAsJsonAsync($"{_clientes.BaseUrl}/auth/login",
                 new LoginRequest { Email = email, Pin = pin });
 
             if (!response.IsSuccessStatusCode)

@@ -184,13 +184,17 @@ public static class Formato
 // Los errores del servidor ({ mensaje }) llegan ya como texto para mostrar al usuario.
 public class AdminApiService
 {
-    private const string BaseUrl = ApiConfig.BaseUrl;
     private static readonly TimeSpan Espera = TimeSpan.FromSeconds(30);
 
     private readonly HttpClient _http = new();
     private readonly AuthService _auth;
+    private readonly IClienteService _clientes;
 
-    public AdminApiService(AuthService auth) => _auth = auth;
+    public AdminApiService(AuthService auth, IClienteService clientes)
+    {
+        _auth = auth;
+        _clientes = clientes;
+    }
 
     // ---- Usuarios ----
     public Task<ResultadoConsulta<PaginaDatos<UsuarioAdmin>>> ListarUsuarios(string? busqueda, int pagina = 1, int tamanio = 100) =>
@@ -333,7 +337,7 @@ public class AdminApiService
         }
 
         error = null;
-        var pedido = new HttpRequestMessage(metodo, $"{BaseUrl}/{ruta}");
+        var pedido = new HttpRequestMessage(metodo, $"{_clientes.BaseUrl}/{ruta}");
         pedido.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         if (cuerpo != null) pedido.Content = JsonContent.Create(cuerpo);
         return pedido;

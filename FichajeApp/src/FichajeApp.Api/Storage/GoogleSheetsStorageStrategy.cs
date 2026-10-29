@@ -1,32 +1,19 @@
 using System.Globalization;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
+using FichajeApp.Api.Infrastructure;
 using FichajeApp.Api.Models;
 
 namespace FichajeApp.Api.Storage;
 
 public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
 {
-    private readonly SheetsService _sheetsService;
-    private readonly string _spreadsheetId;
+    private readonly GoogleSheetsClient _sheets;
     private const string Range = "Fichajes!A:J"; // hoja "Fichajes"
 
-    public GoogleSheetsStorageStrategy(IConfiguration config)
+    public GoogleSheetsStorageStrategy(GoogleSheetsClient sheets)
     {
-        var credentialPath = config["GoogleSheets:CredentialsPath"];
-        _spreadsheetId = config["GoogleSheets:SpreadsheetId"]!;
-
-        var credential = GoogleCredential
-            .FromFile(credentialPath)
-            .CreateScoped(SheetsService.Scope.Spreadsheets);
-
-        _sheetsService = new SheetsService(new BaseClientService.Initializer
-        {
-            HttpClientInitializer = credential,
-            ApplicationName = "FichajeApp"
-        });
+        _sheets = sheets;
     }
 
     public async Task GuardarAsync(FichajeDto fichaje)
@@ -52,7 +39,7 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
             }
         };
 
-        var appendRequest = _sheetsService.Spreadsheets.Values.Append(valueRange, _spreadsheetId, Range);
+        var appendRequest = _sheets.Service.Spreadsheets.Values.Append(valueRange, _sheets.SpreadsheetId, Range);
         appendRequest.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
 
         await appendRequest.ExecuteAsync();
@@ -68,7 +55,7 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
 
     public async Task<List<FichajeDto>> ObtenerFichajesAsync()
     {
-        var request = _sheetsService.Spreadsheets.Values.Get(_spreadsheetId, Range);
+        var request = _sheets.Service.Spreadsheets.Values.Get(_sheets.SpreadsheetId, Range);
         // Valores crudos: números y fechas no dependen del idioma de la planilla
         request.ValueRenderOption = SpreadsheetsResource.ValuesResource.GetRequest.ValueRenderOptionEnum.UNFORMATTEDVALUE;
         var response = await request.ExecuteAsync();
@@ -128,7 +115,7 @@ public class GoogleSheetsStorageStrategy : IFichajeStorageStrategy
 
     public async Task<string> ObtenerUltimoTipoFichajeAsync(string nombreCompleto)
     {
-        var request = _sheetsService.Spreadsheets.Values.Get(_spreadsheetId, Range);
+        var request = _sheets.Service.Spreadsheets.Values.Get(_sheets.SpreadsheetId, Range);
         var response = await request.ExecuteAsync();
 
         if (response.Values is null || response.Values.Count == 0)

@@ -21,8 +21,12 @@ public static class MauiProgram
 
         // NOTA: SessionManager NO se registra acá — es un Singleton clásico (GoF),
         // se accede vía SessionManager.Instance, no necesita el contenedor de DI.
+        builder.Services.AddSingleton<IClienteService, ClienteService>();
         builder.Services.AddSingleton<AuthService>();
         builder.Services.AddSingleton<ApiService>();
+        builder.Services.AddSingleton<IGeolocationService, GeolocationService>();
+        builder.Services.AddSingleton<IBiometricService, BiometricService>();
+        builder.Services.AddTransient<FichajeViewModel>();
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<FichajePage>();
         builder.Services.AddTransient<SupervisorPage>();

@@ -1,0 +1,45 @@
+Una app por cliente: cada build elige su carpeta en Clientes/<cliente>/ con
+    cliente.json  -> nombre, URL de la API y colores
+    appicon.svg   -> fondo del ícono del launcher
+    appiconfg.svg -> primer plano del ícono del launcher
+    logo.svg      -> logo de la cabecera dentro de la app
+
+Agregar al .csproj de FichajeApp.Mobile (y quitar/reemplazar el <MauiIcon> del template):
+
+  <PropertyGroup>
+    <!-- Cliente por defecto; se cambia con: dotnet publish -p:Cliente=clienteb -->
+    <Cliente Condition="'$(Cliente)' == ''">dev</Cliente>
+  </PropertyGroup>
+
+  <!-- Identidad de la app por cliente: ApplicationId y título son lo que ve Play Store y el launcher -->
+  <PropertyGroup Condition="'$(Cliente)' == 'clientea'">
+    <ApplicationId>com.tuempresa.fichaje.clientea</ApplicationId>
+    <ApplicationTitle>Fichaje Cliente A</ApplicationTitle>
+    <AndroidSigningKeyStore>keystores/clientea.keystore</AndroidSigningKeyStore>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Cliente)' == 'clienteb'">
+    <ApplicationId>com.tuempresa.fichaje.clienteb</ApplicationId>
+    <ApplicationTitle>Fichaje Cliente B</ApplicationTitle>
+    <AndroidSigningKeyStore>keystores/clienteb.keystore</AndroidSigningKeyStore>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Cliente)' == 'dev'">
+    <ApplicationId>com.tuempresa.fichaje.dev</ApplicationId>
+    <ApplicationTitle>Fichaje (dev)</ApplicationTitle>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiIcon Include="Clientes\$(Cliente)\appicon.svg" ForegroundFile="Clientes\$(Cliente)\appiconfg.svg" Color="#512BD4" />
+    <MauiImage Include="Clientes\$(Cliente)\logo.svg" Link="Resources\Images\logo.svg" BaseSize="96,96" />
+    <!-- Config del cliente embebida; ClienteService la lee con el nombre lógico "cliente.json" -->
+    <EmbeddedResource Include="Clientes\$(Cliente)\cliente.json" LogicalName="cliente.json" />
+  </ItemGroup>
+
+Compilar un cliente:
+
+  dotnet publish -f net8.0-android -c Release -p:Cliente=clientea
+  dotnet publish -f net8.0-android -c Release -p:Cliente=clienteb
+
+Notas:
+  - Cada cliente es una app distinta en Play Console: su propio ApplicationId, su propio keystore
+    y su propio ApplicationVersion (conviene subirlos juntos para no desincronizarlos).
+  - El "Color" de MauiIcon es el tinte de fondo si el SVG no lo cubre; el SVG de fondo ya lo cubre.
