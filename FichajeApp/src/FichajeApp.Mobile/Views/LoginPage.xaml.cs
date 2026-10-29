@@ -22,7 +22,7 @@ public partial class LoginPage : ContentPage
 
     private async void OnLoginExitoso()
     {
-        // El supervisor entra directo a su panel; desde el menú puede ir a fichar
-        await Shell.Current.GoToAsync(SessionManager.Instance.EsSupervisor ? "//SupervisorPage" : "//FichajePage");
+        // El supervisor y el administrador entran directo a su panel; desde el menú pueden ir a fichar
+        await Shell.Current.GoToAsync(Navegacion.RutaInicial());
     }
 }

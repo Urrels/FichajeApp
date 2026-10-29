@@ -5,9 +5,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
 using FichajeApp.Api.Autorizacion;
+using FichajeApp.Api.Concurrency;
 using FichajeApp.Api.Infrastructure;
 using FichajeApp.Api.Observers;
+using FichajeApp.Api.Options;
 using FichajeApp.Api.Repositorios;
 using FichajeApp.Api.Servicios;
 using FichajeApp.Api.Services;
@@ -17,15 +20,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
+builder.Services.Configure<FichajeOptions>(builder.Configuration.GetSection(FichajeOptions.Seccion));
 
-// Una sola conexión a Google Sheets y un reloj inyectable (se reemplaza en las pruebas)
+// Una sola conexión a Google Sheets, un reloj inyectable (se reemplaza en las pruebas) y un lock por empleado
 builder.Services.AddSingleton<GoogleSheetsClient>();
 builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<BloqueoPorClave>();
 
-// Servicios de datos (Google Sheets)
+// Servicios de datos (Google Sheets). Decorator: la lista de empleados se cachea unos segundos
+// (se invalida sola al escribir), porque cada pedido autenticado y cada fichaje la consultan.
 builder.Services.AddSingleton<GoogleSheetsEmpleadosService>();
-builder.Services.AddSingleton<IEmpleadosRepositorio>(sp => sp.GetRequiredService<GoogleSheetsEmpleadosService>());
+builder.Services.AddSingleton<IEmpleadosRepositorio>(sp => new CachedEmpleadosRepositorio(
+    sp.GetRequiredService<GoogleSheetsEmpleadosService>(),
+    sp.GetRequiredService<IMemoryCache>()));
 builder.Services.AddSingleton<GoogleSheetsSitiosService>();
+builder.Services.AddSingleton<ISitiosRepository>(sp => new CachedSitiosRepository(
+    sp.GetRequiredService<GoogleSheetsSitiosService>(),
+    sp.GetRequiredService<IMemoryCache>(),
+    sp.GetRequiredService<IOptions<FichajeOptions>>()));
+builder.Services.AddSingleton<ISitiosService, SitiosService>();
 builder.Services.AddSingleton<JwtService>();
 
 // Repositorios de la administración (detrás de interfaces: hoy Sheets, mañana una base de datos)
@@ -51,12 +64,15 @@ builder.Services.AddSingleton<LiquidacionService>();
 builder.Services.AddHostedService<InicializadorPlanilla>();
 
 // Strategy: hoy Google Sheets. Para sumar otra, se registra otra implementación acá.
-builder.Services.AddSingleton<IFichajeStorageStrategy, GoogleSheetsStorageStrategy>();
+builder.Services.AddSingleton<GoogleSheetsStorageStrategy>();
+builder.Services.AddSingleton<IFichajeStorageStrategy>(sp => new CachedFichajeStorage(
+    sp.GetRequiredService<GoogleSheetsStorageStrategy>(),
+    sp.GetRequiredService<IMemoryCache>()));
 
 // Observer: se pueden registrar varios observers; todos se inyectan como IEnumerable<IFichajeObserver>
 builder.Services.AddSingleton<IFichajeObserver, LogFichajeObserver>();
 
-builder.Services.AddScoped<FichajeService>();
+builder.Services.AddScoped<IFichajeService, FichajeService>();
 builder.Services.AddSingleton<ConsultaFichajesService>();
 
 builder.Services.AddEndpointsApiExplorer();

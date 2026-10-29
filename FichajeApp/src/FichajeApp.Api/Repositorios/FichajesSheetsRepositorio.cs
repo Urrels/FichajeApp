@@ -1,8 +1,10 @@
 using System.Globalization;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
+using Microsoft.Extensions.Caching.Memory;
 using FichajeApp.Api.Infrastructure;
 using FichajeApp.Api.Models;
+using FichajeApp.Api.Storage;
 
 namespace FichajeApp.Api.Repositorios;
 
@@ -15,11 +17,13 @@ public class FichajesSheetsRepositorio : IFichajesRepositorio
     private static readonly SemaphoreSlim _escritura = new(1, 1);
 
     private readonly GoogleSheetsClient _cliente;
+    private readonly IMemoryCache _cache;
     private readonly HojaSheets _hoja;
 
-    public FichajesSheetsRepositorio(GoogleSheetsClient cliente)
+    public FichajesSheetsRepositorio(GoogleSheetsClient cliente, IMemoryCache cache)
     {
         _cliente = cliente;
+        _cache = cache;
         _hoja = new HojaSheets(cliente, Planilla.Fichajes);
     }
 
@@ -75,6 +79,9 @@ public class FichajesSheetsRepositorio : IFichajesRepositorio
                 Limpiar(corregidoPor),
                 HojaSheets.FechaHora(ahora)
             });
+
+            // El "último tipo del día" cacheado ya no vale: se mueve la hora de un evento
+            CachedFichajeStorage.InvalidarUltimoTipo(_cache, actual.NombreCompleto, actual.FechaHora, nuevaFechaHora);
         }
         finally { _escritura.Release(); }
     }
@@ -94,6 +101,8 @@ public class FichajesSheetsRepositorio : IFichajesRepositorio
             pedido.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
             pedido.InsertDataOption = SpreadsheetsResource.ValuesResource.AppendRequest.InsertDataOptionEnum.INSERTROWS;
             await pedido.ExecuteAsync();
+
+            CachedFichajeStorage.InvalidarUltimoTipo(_cache, empleado, fechaHora);
         }
         finally { _escritura.Release(); }
     }

@@ -3,15 +3,23 @@ namespace FichajeApp.Mobile.Services;
 public record UbicacionResultado(
     bool Exito, double Lat, double Lon, double? Precision, bool EsFalsa, string? Direccion, string Mensaje);
 
-public class GeolocationService
+public class GeolocationService : IGeolocationService
 {
+    // Se pide el permiso antes y por separado, para no superponer su diálogo con otros del sistema.
+    public async Task<bool> PedirPermisoAsync()
+    {
+        var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+        if (status != PermissionStatus.Granted)
+            status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+        return status == PermissionStatus.Granted;
+    }
+
     // Se pide la ubicación solo al fichar: la app no rastrea en segundo plano.
     public async Task<UbicacionResultado> ObtenerUbicacionAsync()
     {
         try
         {
-            var status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
-            if (status != PermissionStatus.Granted)
+            if (!await PedirPermisoAsync())
                 return Fallo("Permiso de ubicación denegado");
 
             var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10));
@@ -31,12 +39,15 @@ public class GeolocationService
         }
     }
 
-    // La dirección es opcional: si falla el geocoding el fichaje sigue igual.
+    // La dirección es opcional: si falla o tarda más de 3 s, el fichaje sigue sin ella.
     private static async Task<string?> ObtenerDireccionAsync(double lat, double lon)
     {
         try
         {
-            var placemarks = await Geocoding.Default.GetPlacemarksAsync(lat, lon);
+            var geocoding = Geocoding.Default.GetPlacemarksAsync(lat, lon);
+            if (await Task.WhenAny(geocoding, Task.Delay(TimeSpan.FromSeconds(3))) != geocoding)
+                return null;
+            var placemarks = await geocoding;
             var p = placemarks?.FirstOrDefault();
             if (p is null) return null;
 

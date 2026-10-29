@@ -2,26 +2,75 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FichajeApp.Mobile.Views.FichajePage"
-             Title="Fichaje">
+             Title="Fichaje"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{DynamicResource ColorFondo}">
 
-    <VerticalStackLayout Padding="30" Spacing="20" VerticalOptions="Center">
+    <Grid RowDefinitions="Auto,*,Auto">
 
-        <Label Text="Registro de Fichaje" FontSize="24" HorizontalOptions="Center" />
+        <!-- Cabecera: cliente y empleado -->
+        <VerticalStackLayout Grid.Row="0"
+                             BackgroundColor="{DynamicResource ColorPrimario}"
+                             Padding="24,64,24,32"
+                             Spacing="4">
+            <Label Text="{DynamicResource NombreCliente}"
+                   TextColor="{DynamicResource ColorPrimarioTexto}"
+                   Opacity="0.85" FontSize="14" />
+            <Label Text="{Binding NombreCompleto, StringFormat='Hola, {0}'}"
+                   TextColor="{DynamicResource ColorPrimarioTexto}"
+                   FontSize="24" FontAttributes="Bold" />
+        </VerticalStackLayout>
 
-        <Label Text="{Binding NombreCompleto}" FontSize="18" HorizontalOptions="Center" FontAttributes="Bold" />
+        <!-- Botón principal de fichaje -->
+        <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" Spacing="24" Padding="24">
 
-        <Button Text="Fichar"
-                Clicked="OnFicharClicked"
-                IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
+            <Grid HorizontalOptions="Center" VerticalOptions="Center">
+                <Button Text="Fichar"
+                        WidthRequest="200" HeightRequest="200"
+                        CornerRadius="100"
+                        FontSize="30" FontAttributes="Bold"
+                        BackgroundColor="{DynamicResource ColorPrimario}"
+                        TextColor="{DynamicResource ColorPrimarioTexto}"
+                        Clicked="OnFicharClicked"
+                        IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
+                <ActivityIndicator IsRunning="{Binding Procesando}"
+                                   IsVisible="{Binding Procesando}"
+                                   Color="{DynamicResource ColorAcento}"
+                                   WidthRequest="48" HeightRequest="48"
+                                   VerticalOptions="End" Margin="0,0,0,24"
+                                   InputTransparent="True" />
+            </Grid>
 
-        <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
+            <Label Text="Se pedirá tu ubicación y tu huella o PIN del teléfono solo al fichar."
+                   HorizontalTextAlignment="Center"
+                   FontSize="12"
+                   TextColor="{DynamicResource ColorTextoSuave}" />
+        </VerticalStackLayout>
 
-        <Label Text="{Binding Estado}" HorizontalOptions="Center" />
+        <VerticalStackLayout Grid.Row="2" Margin="24,0,24,24" Spacing="10">
 
-        <!-- Aparece después de un fichaje exitoso -->
-        <Button Text="Ver en Google Maps"
-                Clicked="OnAbrirMapsClicked"
-                IsVisible="{Binding MostrarMapa}" />
+            <!-- Estado del último intento -->
+            <Border Padding="16,12"
+                    BackgroundColor="{DynamicResource ColorSuperficie}"
+                    Stroke="{DynamicResource ColorBorde}"
+                    StrokeShape="RoundRectangle 14">
+                <Label Text="{Binding Estado}"
+                       HorizontalTextAlignment="Center"
+                       TextColor="{DynamicResource ColorTexto}" />
+            </Border>
 
-    </VerticalStackLayout>
+            <!-- Aparece después de un fichaje exitoso -->
+            <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" Text="Ver en Google Maps"
+                    Clicked="OnAbrirMapsClicked"
+                    IsVisible="{Binding MostrarMapa}" />
+
+            <!-- Esta pantalla no tiene barra superior: el supervisor/administrador vuelve a su panel desde acá -->
+            <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" x:Name="PanelButton" Text="Volver a mi panel" Clicked="OnVolverAlPanel" IsVisible="False" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" x:Name="PinButton" Text="Cambiar PIN" Clicked="OnCambiarPin" IsVisible="False" />
+                <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" Grid.Column="1" Text="Cerrar sesión" Clicked="OnCerrarSesion" />
+            </Grid>
+        </VerticalStackLayout>
+    </Grid>
 </ContentPage>

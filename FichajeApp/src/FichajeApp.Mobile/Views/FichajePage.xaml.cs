@@ -7,13 +7,30 @@ public partial class FichajePage : ContentPage
 {
     private readonly FichajeViewModel _viewModel;
 
-    public FichajePage(ApiService apiService)
+    private readonly AuthService _authService;
+
+    public FichajePage(FichajeViewModel viewModel, AuthService authService)
     {
         InitializeComponent();
-        _viewModel = new FichajeViewModel(apiService);
+        _authService = authService;
+        _viewModel = viewModel;
         _viewModel.SesionFinalizada += OnSesionFinalizada;
         BindingContext = _viewModel;
     }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        var sesion = SessionManager.Instance;
+        PinButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarPin);
+        PanelButton.IsVisible = sesion.EsSupervisor || sesion.EsAdministrador;
+    }
+
+    private async void OnVolverAlPanel(object sender, EventArgs e) => await Shell.Current.GoToAsync(Navegacion.RutaInicial());
+
+    private async void OnCambiarPin(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(CambiarPinPage));
+
+    private void OnCerrarSesion(object sender, EventArgs e) => _authService.Logout();
 
     private async void OnFicharClicked(object sender, EventArgs e)
     {

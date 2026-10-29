@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FichajeApp.Mobile.Views.UsuariosPage"
+             Title="Usuarios">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="12" RowSpacing="8">
+
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Entry Placeholder="Buscar por nombre o email" Text="{Binding Busqueda}" ReturnType="Search" Completed="OnBuscar" />
+            <Button Grid.Column="1" Text="Nuevo" Clicked="OnNuevo" />
+        </Grid>
+
+        <Label Grid.Row="1" Text="{Binding Estado}" FontSize="12" />
+
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Usuarios}" SelectionMode="Single" SelectionChanged="OnSeleccion">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <VerticalStackLayout Padding="6,6">
+                        <Label Text="{Binding NombreCompleto}" FontAttributes="Bold" />
+                        <Label Text="{Binding Detalle}" FontSize="12" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <ActivityIndicator Grid.Row="3" IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
+    </Grid>
+</ContentPage>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FichajeApp.Mobile.Views.BitacoraPage"
+             Title="Bitácora">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="12" RowSpacing="8">
+
+        <VerticalStackLayout Spacing="6">
+            <Entry Placeholder="Usuario (email)" Text="{Binding Usuario}" Keyboard="Email" />
+            <Entry Placeholder="Acción (ej. LOGIN, ROL_, FICHAJE)" Text="{Binding Accion}" />
+            <Button Text="Buscar" Clicked="OnBuscar" />
+        </VerticalStackLayout>
+
+        <Label Grid.Row="1" Text="{Binding Estado}" FontSize="12" />
+
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Entradas}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <VerticalStackLayout Padding="6,5">
+                        <Label Text="{Binding Accion}" FontAttributes="Bold" />
+                        <Label Text="{Binding Texto}" FontSize="12" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <VerticalStackLayout Grid.Row="3" Spacing="6">
+            <Button Text="Cargar más" Clicked="OnMas" IsVisible="{Binding HayMas}" />
+            <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

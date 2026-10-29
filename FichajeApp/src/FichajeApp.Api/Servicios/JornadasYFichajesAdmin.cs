@@ -132,6 +132,28 @@ public class FichajesAdminService
         await _bitacora.RegistrarAsync(actor, "FICHAJE_CORREGIDO:" + entrada.NombreCompleto);
     }
 
+    // Una salida sin entrada no se puede pagar ni se puede "corregir" (no hay entrada que tocar):
+    // se agrega la entrada que faltó.
+    public async Task CompletarEntradaAsync(string actor, int salidaId, DateTime ingreso, string motivo)
+    {
+        motivo = ValidarMotivo(motivo);
+
+        var salida = await _fichajes.ObtenerAsync(salidaId);
+        if (salida is null || salida.Tipo != "Salida")
+            throw new InvalidOperationException("La salida indicada no existe.");
+
+        var (_, huerfanos) = await _jornadas.ObtenerAsync(salida.FechaHora.Date, salida.FechaHora.Date, salida.NombreCompleto);
+        if (huerfanos.All(h => h.Id != salidaId))
+            throw new InvalidOperationException("Esa salida ya tiene su entrada.");
+
+        ValidarOrden(ingreso, salida.FechaHora);
+        await ValidarPeriodoAbiertoAsync(ingreso.Date, salida.FechaHora.Date);
+        await ValidarSinSuperposicionAsync(salida.NombreCompleto, ingreso, salida.FechaHora, ignorarEntradaId: 0);
+
+        await _fichajes.AgregarManualAsync(salida.NombreCompleto, "Entrada", ingreso, motivo, actor, Ahora);
+        await _bitacora.RegistrarAsync(actor, "FICHAJE_CORREGIDO:" + salida.NombreCompleto);
+    }
+
     // Carga una jornada completa que nunca se fichó (por ejemplo, se cortó el celular)
     public async Task AgregarManualAsync(string actor, string empleado, DateTime ingreso, DateTime egreso, string motivo)
     {

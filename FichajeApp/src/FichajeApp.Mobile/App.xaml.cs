@@ -6,9 +6,10 @@ public partial class App : Application
 {
     private readonly AuthService _authService;
 
-    public App(AuthService authService)
+    public App(AuthService authService, IClienteService clientes)
     {
         InitializeComponent();
+        clientes.AplicarTema();
         _authService = authService;
         MainPage = new AppShell();
     }
@@ -17,8 +18,6 @@ public partial class App : Application
     {
         // Restaura el token guardado en SecureStorage y puebla el Singleton SessionManager
         var haySesion = await _authService.RestaurarSesionAsync();
-        var destino = !haySesion ? "//LoginPage"
-            : SessionManager.Instance.EsSupervisor ? "//SupervisorPage" : "//FichajePage";
-        await Shell.Current.GoToAsync(destino);
+        await Shell.Current.GoToAsync(haySesion ? Navegacion.RutaInicial() : "//LoginPage");
     }
 }

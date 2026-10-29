@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using FichajeApp.Api.Autorizacion;
 using FichajeApp.Api.Dominio.Liquidacion;
 using FichajeApp.Api.Dominio.Seguridad;
+using FichajeApp.Api.Repositorios;
 using FichajeApp.Api.Servicios;
 
 namespace FichajeApp.Api.Controllers;
@@ -29,6 +30,17 @@ public abstract class AdminControllerBase : ControllerBase
 {
     // Quién hace el cambio (queda en la bitácora y en el historial): el email del token
     protected string Actor => User.FindFirst(ClaimTypes.Email)?.Value ?? "desconocido";
+}
+
+public record EmpleadoResumenDto(int Id, string Nombre);
+
+// Empleados activos (id y nombre), para los selectores de la app
+public static class EmpleadosActivos
+{
+    public static async Task<List<EmpleadoResumenDto>> ListarAsync(IEmpleadosRepositorio empleados) =>
+        (await empleados.ListarAsync()).Where(e => e.Activo)
+            .OrderBy(e => e.NombreCompleto, StringComparer.OrdinalIgnoreCase)
+            .Select(e => new EmpleadoResumenDto(e.Id, e.NombreCompleto)).ToList();
 }
 
 // ---- Cuenta propia ----
@@ -212,10 +224,28 @@ public class BitacoraController : AdminControllerBase
 public class FichajesAdminController : AdminControllerBase
 {
     private readonly FichajesAdminService _fichajes;
-    public FichajesAdminController(FichajesAdminService fichajes) => _fichajes = fichajes;
+    private readonly IEmpleadosRepositorio _empleados;
+
+    public FichajesAdminController(FichajesAdminService fichajes, IEmpleadosRepositorio empleados)
+    {
+        _fichajes = fichajes;
+        _empleados = empleados;
+    }
 
     public record CorregirRequest(int EntradaId, DateTime Ingreso, DateTime Egreso, string Motivo);
     public record ManualRequest(string Empleado, DateTime Ingreso, DateTime Egreso, string Motivo);
+    public record CompletarEntradaRequest(int SalidaId, DateTime Ingreso, string Motivo);
+
+    // Para el selector de empleado de la carga manual (este permiso no incluye listar usuarios)
+    [HttpGet("empleados")]
+    public async Task<IActionResult> Empleados() => Ok(await EmpleadosActivos.ListarAsync(_empleados));
+
+    [HttpPost("completar-entrada")]
+    public async Task<IActionResult> CompletarEntrada([FromBody] CompletarEntradaRequest r)
+    {
+        await _fichajes.CompletarEntradaAsync(Actor, r.SalidaId, r.Ingreso, r.Motivo);
+        return Ok(new { mensaje = "Entrada cargada" });
+    }
 
     [HttpGet("incompletos")]
     public async Task<IActionResult> Incompletos([FromQuery] DateTime desde, [FromQuery] DateTime hasta, [FromQuery] bool soloVencidos = false) =>
@@ -243,7 +273,17 @@ public class FichajesAdminController : AdminControllerBase
 public class LiquidacionController : AdminControllerBase
 {
     private readonly LiquidacionService _liquidacion;
-    public LiquidacionController(LiquidacionService liquidacion) => _liquidacion = liquidacion;
+    private readonly IEmpleadosRepositorio _empleados;
+
+    public LiquidacionController(LiquidacionService liquidacion, IEmpleadosRepositorio empleados)
+    {
+        _liquidacion = liquidacion;
+        _empleados = empleados;
+    }
+
+    // Para el selector de empleado del valor hora (este permiso no incluye listar usuarios)
+    [HttpGet("empleados")]
+    public async Task<IActionResult> Empleados() => Ok(await EmpleadosActivos.ListarAsync(_empleados));
 
     public record PeriodoRequest(DateTime Desde, DateTime Hasta);
     public record ExcedenteRequest(string Empleado, DateTime Fecha);

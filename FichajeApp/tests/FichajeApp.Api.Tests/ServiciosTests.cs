@@ -488,6 +488,25 @@ public class FichajesYLiquidacionTests
     }
 
     [Fact]
+    public async Task UnaSalidaSinEntrada_SeCompletaConLaEntradaQueFalto_YPermiteCerrar()
+    {
+        var e = ConFichajes();
+        e.Fichajes.Agregar("Ana Empleada", "Salida", new(2026, 10, 8, 16, 0, 0)); // salida suelta
+        var huerfana = Assert.Single(await e.FichajesAdmin.ListarIncompletosAsync(Desde, Hasta, false));
+        Assert.Equal("SalidaSinEntrada", huerfana.Tipo);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => e.Liquidacion.CerrarAsync("a", Desde, Hasta));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            e.FichajesAdmin.CompletarEntradaAsync("a", huerfana.EntradaId, new(2026, 10, 8, 17, 0, 0), "al revés"));
+        await e.FichajesAdmin.CompletarEntradaAsync("a", huerfana.EntradaId, new(2026, 10, 8, 8, 0, 0), "Olvidó fichar la entrada");
+
+        Assert.Empty(await e.FichajesAdmin.ListarIncompletosAsync(Desde, Hasta, false));
+        await e.Liquidacion.CerrarAsync("a", Desde, Hasta);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            e.FichajesAdmin.CompletarEntradaAsync("a", huerfana.EntradaId, new(2026, 10, 8, 8, 0, 0), "otra vez"));
+    }
+
+    [Fact]
     public async Task Parametros_SeValidan()
     {
         var e = ConFichajes();
