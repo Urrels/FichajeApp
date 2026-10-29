@@ -19,6 +19,8 @@ using FichajeApp.Api.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
+ConfiguracionSegura.ExigirSecretoJwt(builder.Configuration, builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"));
+
 builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.Configure<FichajeOptions>(builder.Configuration.GetSection(FichajeOptions.Seccion));
@@ -161,7 +163,23 @@ builder.Services.AddRateLimiter(opciones =>
     };
 });
 
+// Detrás de un proxy (Caddy, Railway, Render...) la IP real del usuario viene en X-Forwarded-For. Solo se activa
+// con Proxy:Confiar = true y si la API NO es accesible directamente (si no, cualquiera podría falsear su IP).
+if (builder.Configuration.GetValue<bool>("Proxy:Confiar"))
+{
+    builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(o =>
+    {
+        o.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor
+                             | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+        o.KnownNetworks.Clear();
+        o.KnownProxies.Clear();
+    });
+}
+
 var app = builder.Build();
+
+if (builder.Configuration.GetValue<bool>("Proxy:Confiar"))
+    app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment())
 {

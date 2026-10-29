@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/.vs/
+**/credentials/
+**/datos/
+**/appsettings.Development.json
+src/FichajeApp.Mobile/
+tests/
+docs/

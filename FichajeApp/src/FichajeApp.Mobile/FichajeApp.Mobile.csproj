@@ -51,15 +51,15 @@
 	<!-- Identidad de la app por cliente: ApplicationId y título son lo que ve Play Store y el launcher.
 	     Cambiar el ApplicationId por el dominio propio ANTES de publicar: no se puede cambiar después. -->
 	<PropertyGroup Condition="'$(Cliente)' == 'dev'">
-		<ApplicationId>com.tuempresa.fichaje.dev</ApplicationId>
+		<ApplicationId>io.github.urrels.fichaje.dev</ApplicationId>
 		<ApplicationTitle>Fichaje (dev)</ApplicationTitle>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Cliente)' == 'clientea'">
-		<ApplicationId>com.tuempresa.fichaje.clientea</ApplicationId>
+		<ApplicationId>io.github.urrels.fichaje.clientea</ApplicationId>
 		<ApplicationTitle>Fichaje Cliente A</ApplicationTitle>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Cliente)' == 'clienteb'">
-		<ApplicationId>com.tuempresa.fichaje.clienteb</ApplicationId>
+		<ApplicationId>io.github.urrels.fichaje.clienteb</ApplicationId>
 		<ApplicationTitle>Fichaje Cliente B</ApplicationTitle>
 	</PropertyGroup>
 

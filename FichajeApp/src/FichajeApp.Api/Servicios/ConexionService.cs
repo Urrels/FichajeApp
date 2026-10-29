@@ -91,6 +91,16 @@ public class ConexionService
     // Correo con el que hay que compartir la planilla; null si el servidor no tiene credencial (se carga desde la app)
     public string? CuentaDeServicio => _cliente.CorreoCuentaServicio;
 
+    public enum Acceso { Permitido, ClaveIncorrecta, SoloAdministrador }
+
+    // Antes de configurar manda el código de activación (quien instala el servidor se lo da al cliente). Una vez
+    // configurada, el código ya no alcanza: cambiar la planilla lo puede hacer solo un administrador con sesión iniciada.
+    public Acceso VerificarAcceso(bool esAdministrador, string? clave)
+    {
+        if (Configurada) return esAdministrador ? Acceso.Permitido : Acceso.SoloAdministrador;
+        return ClaveCorrecta(clave) ? Acceso.Permitido : Acceso.ClaveIncorrecta;
+    }
+
     public bool ClaveCorrecta(string? clave)
     {
         var esperada = Encoding.UTF8.GetBytes(_almacen.ClaveDeInstalacion());

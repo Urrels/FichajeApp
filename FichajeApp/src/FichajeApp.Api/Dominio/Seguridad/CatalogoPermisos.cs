@@ -22,11 +22,14 @@ public static class CatalogoPermisos
     // Teléfono compartido de una sucursal: cada empleado ficha eligiendo su nombre y poniendo su PIN
     public const string FicharEnKiosco = "Fichar en kiosco";
 
+    // Cambiar la planilla de Google una vez que el servidor ya está configurado
+    public const string CambiarConexion = "Cambiar conexión de Google";
+
     public static readonly string[] Todos =
     {
         AdministrarUsuarios, GestionRoles, VerBitacora, CambiarPin,
         FicharAsistencia, VerPanelSupervisor, CorregirFichajes, LiquidarHoras, GestionarApariencia, ConfigurarFichaje,
-        FicharEnKiosco
+        FicharEnKiosco, CambiarConexion
     };
 
     // Permisos sin los cuales el sistema quedaría sin administración (guarda anti-lockout)
