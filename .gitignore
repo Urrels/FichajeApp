@@ -1,0 +1,25 @@
+﻿################################################################################
+# Visual Studio + datos personales que NUNCA deben subirse al repositorio
+################################################################################
+
+/.vs
+.vs/
+
+# Compilación
+bin/
+obj/
+
+# Archivos personales de Visual Studio
+*.user
+*.suo
+launchSettings.json.user
+
+# Credenciales de la cuenta de servicio de Google (secreto: da acceso a la planilla)
+**/credentials/*.json
+
+# Configuración local de cada desarrollador (ID de la planilla, administrador inicial, etc.)
+# Se escribe en appsettings.Development.json en vez de modificar appsettings.json, que sí se versiona.
+appsettings.Development.json
+
+# Resultados de pruebas
+TestResults/
