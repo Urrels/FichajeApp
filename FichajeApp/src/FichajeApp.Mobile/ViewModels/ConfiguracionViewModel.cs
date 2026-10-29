@@ -25,6 +25,9 @@ public class ConfiguracionViewModel : VmBase
     public string PinAdmin { get => _pinAdmin; set => Set(ref _pinAdmin, value); }
 
     // No se muestra el contenido de la credencial una vez cargada
+    // Un administrador con sesión ya está autorizado; el resto necesita el código de activación
+    public bool PideClave => !SessionManager.Instance.TienePermiso(NombresPermisos.CambiarConexion);
+
     public bool CredencialesCargadas => !string.IsNullOrWhiteSpace(Credenciales);
 
     // Lo normal: el servidor ya tiene la cuenta de servicio y el cliente solo comparte su planilla con este correo
@@ -71,7 +74,7 @@ public class ConfiguracionViewModel : VmBase
 
     public Task GuardarAsync() => ConEspera(async () =>
     {
-        if (string.IsNullOrWhiteSpace(Clave)) { Estado = "Escribí el código de activación."; return; }
+        if (PideClave && string.IsNullOrWhiteSpace(Clave)) { Estado = "Escribí el código de activación."; return; }
         if (string.IsNullOrWhiteSpace(Planilla)) { Estado = "Pegá el link o el ID de tu planilla."; return; }
         if (PideCredencial && !CredencialesCargadas) { Estado = "Cargá el archivo .json de la cuenta de servicio."; return; }
 

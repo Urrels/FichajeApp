@@ -13,17 +13,17 @@ Agregar al .csproj de FichajeApp.Mobile (y quitar/reemplazar el <MauiIcon> del t
 
   <!-- Identidad de la app por cliente: ApplicationId y título son lo que ve Play Store y el launcher -->
   <PropertyGroup Condition="'$(Cliente)' == 'clientea'">
-    <ApplicationId>com.tuempresa.fichaje.clientea</ApplicationId>
+    <ApplicationId>io.github.urrels.fichaje.clientea</ApplicationId>
     <ApplicationTitle>Fichaje Cliente A</ApplicationTitle>
     <AndroidSigningKeyStore>keystores/clientea.keystore</AndroidSigningKeyStore>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cliente)' == 'clienteb'">
-    <ApplicationId>com.tuempresa.fichaje.clienteb</ApplicationId>
+    <ApplicationId>io.github.urrels.fichaje.clienteb</ApplicationId>
     <ApplicationTitle>Fichaje Cliente B</ApplicationTitle>
     <AndroidSigningKeyStore>keystores/clienteb.keystore</AndroidSigningKeyStore>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cliente)' == 'dev'">
-    <ApplicationId>com.tuempresa.fichaje.dev</ApplicationId>
+    <ApplicationId>io.github.urrels.fichaje.dev</ApplicationId>
     <ApplicationTitle>Fichaje (dev)</ApplicationTitle>
   </PropertyGroup>
 

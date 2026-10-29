@@ -35,7 +35,14 @@ public class ConfiguracionApiService
         try
         {
             using var cts = new CancellationTokenSource(Espera);
-            using var respuesta = await _http.PostAsJsonAsync($"{_clientes.BaseUrl}/configuracion/google", datos, cts.Token);
+            using var pedido = new HttpRequestMessage(HttpMethod.Post, $"{_clientes.BaseUrl}/configuracion/google")
+            {
+                Content = JsonContent.Create(datos)
+            };
+            // Con sesión de administrador se puede cambiar una planilla ya conectada; sin sesión, solo la primera configuración
+            if (!string.IsNullOrEmpty(SessionManager.Instance.Token))
+                pedido.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", SessionManager.Instance.Token);
+            using var respuesta = await _http.SendAsync(pedido, cts.Token);
 
             string? mensaje = null;
             try

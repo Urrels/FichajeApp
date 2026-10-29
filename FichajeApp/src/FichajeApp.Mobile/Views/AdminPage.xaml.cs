@@ -26,6 +26,7 @@ public partial class AdminPage : ContentPage
         LiquidacionButton.IsVisible = sesion.TienePermiso(NombresPermisos.LiquidarHoras);
         AparienciaButton.IsVisible = sesion.TienePermiso(NombresPermisos.GestionarApariencia);
         ConfigFichajeButton.IsVisible = sesion.TienePermiso(NombresPermisos.ConfigurarFichaje);
+        ConexionButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarConexion);
         PinButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarPin);
     }
 
@@ -36,6 +37,7 @@ public partial class AdminPage : ContentPage
     private async void OnLiquidacion(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(LiquidacionPage));
     private async void OnApariencia(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(AparienciaPage));
     private async void OnConfigFichaje(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(ConfigFichajePage));
+    private async void OnConexion(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(ConfiguracionPage));
     private async void OnCambiarPin(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(CambiarPinPage));
 
     private void OnCerrarSesion(object sender, EventArgs e) => _authService.Logout();

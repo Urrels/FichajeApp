@@ -17,6 +17,7 @@
             <Button x:Name="LiquidacionButton" Text="Liquidación de horas" Clicked="OnLiquidacion" IsVisible="False" />
             <Button x:Name="AparienciaButton" Text="Apariencia" Clicked="OnApariencia" IsVisible="False" />
             <Button x:Name="ConfigFichajeButton" Text="Cómo se ficha (ubicación y foto)" Clicked="OnConfigFichaje" IsVisible="False" />
+            <Button x:Name="ConexionButton" Text="Conexión con Google Sheets" Clicked="OnConexion" IsVisible="False" />
 
             <BoxView HeightRequest="1" Color="Gray" Opacity="0.4" />
 

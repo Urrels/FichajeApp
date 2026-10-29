@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using FichajeApp.Api.Autorizacion;
+using FichajeApp.Api.Dominio.Seguridad;
 using FichajeApp.Api.Servicios;
 
 namespace FichajeApp.Api.Controllers;
@@ -24,8 +26,12 @@ public class ConfiguracionController : ControllerBase
     [EnableRateLimiting("login")]
     public async Task<IActionResult> Configurar([FromBody] ConfigurarConexionRequest request)
     {
-        if (!_conexion.ClaveCorrecta(request.Clave))
+        // La autenticación corre aunque la acción sea anónima: si viene el token de un administrador, se lo reconoce
+        var acceso = _conexion.VerificarAcceso(User.HasClaim(ClaimsPermisos.Permiso, CatalogoPermisos.CambiarConexion), request.Clave);
+        if (acceso == ConexionService.Acceso.ClaveIncorrecta)
             return StatusCode(StatusCodes.Status403Forbidden, new { mensaje = "El código de activación no es correcto." });
+        if (acceso == ConexionService.Acceso.SoloAdministrador)
+            return StatusCode(StatusCodes.Status403Forbidden, new { mensaje = "La planilla ya está conectada. Para cambiarla, iniciá sesión como administrador." });
 
         try
         {

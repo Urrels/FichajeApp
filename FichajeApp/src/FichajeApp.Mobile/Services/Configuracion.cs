@@ -14,6 +14,7 @@ public static class NombresPermisos
     public const string GestionarApariencia = "Gestionar apariencia";
     public const string ConfigurarFichaje = "Configurar fichaje";
     public const string FicharEnKiosco = "Fichar en kiosco";
+    public const string CambiarConexion = "Cambiar conexión de Google";
 
     // Los que dan acceso al área de administración
     public static readonly string[] DeAdministracion =

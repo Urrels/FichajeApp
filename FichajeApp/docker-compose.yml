@@ -1,0 +1,35 @@
+# Servidor propio (un VPS): la API + Caddy, que consigue solo el certificado HTTPS.
+# Uso:  copiá .env.example a .env, completalo y corré:  docker compose up -d --build
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      Jwt__Secret: ${JWT_SECRET:?Definí JWT_SECRET en .env}
+      Setup__Clave: ${CODIGO_ACTIVACION:?Definí CODIGO_ACTIVACION en .env}
+      Fichaje__FotosRetencionDias: ${DIAS_FOTOS:-90}
+      # Opcional: si ya tenés la credencial de la cuenta de servicio, montala (si no, se carga desde la app)
+      # GoogleSheets__CredentialsPath: /secretos/service-account.json
+    # volumes:
+    #   - ./credentials/service-account.json:/secretos/service-account.json:ro
+    volumes:
+      - datos:/datos
+    # No se publica el puerto: solo Caddy puede hablarle (así nadie falsea la IP del usuario)
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMINIO: ${DOMINIO:?Definí DOMINIO en .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - api
+
+volumes:
+  datos:
+  caddy_data:

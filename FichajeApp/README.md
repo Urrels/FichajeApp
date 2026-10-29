@@ -211,3 +211,11 @@ dotnet publish -f net8.0-android -c Release -p:Cliente=clientea
 
 Para sumar un cliente: copiar una carpeta de `Clientes/`, editar su `cliente.json` y
 reemplazar los SVG (los actuales son placeholders), y agregar su bloque al `.csproj`.
+
+## Guías
+
+- [Publicar en Google Play, paso a paso](docs/PLAY_STORE.md)
+- [Poner la API en internet (Docker, HTTPS, sin dominio propio)](docs/SERVIDOR.md)
+- [Probar en un teléfono Android real](docs/TELEFONO_REAL.md)
+- [Prueba completa de punta a punta (lista para tildar)](docs/PRUEBA_COMPLETA.md)
+- [Plantilla de política de privacidad y datos para Play Console](docs/POLITICA_PRIVACIDAD_PLANTILLA.md)
