@@ -24,6 +24,11 @@ public interface IClienteService
 {
     string Nombre { get; }
     string BaseUrl { get; }
+
+    // Dirección de la API que se escribió a mano en el teléfono (ajuste oculto del login); null = la del build
+    string? ServidorPersonalizado { get; }
+    void CambiarServidor(string? url);
+
     AparienciaActual Actual { get; }
 
     // Aplica el cliente + la última apariencia conocida del servidor
@@ -37,6 +42,7 @@ public interface IClienteService
 public class ClienteService : IClienteService
 {
     private const string ClaveCache = "apariencia_remota";
+    private const string ClaveServidor = "servidor_personalizado";
 
     private readonly ClienteConfig _config;
     private AparienciaRemota? _remota; // la guardada en el servidor (la última que se conoce)
@@ -52,10 +58,40 @@ public class ClienteService : IClienteService
                   ?? throw new InvalidOperationException("cliente.json inválido.");
 
         _remota = LeerCache();
+        ServidorPersonalizado = LeerServidor();
     }
 
     public string Nombre => Actual.Nombre;
-    public string BaseUrl => _config.ApiBaseUrl;
+    public string BaseUrl => ServidorPersonalizado ?? _config.ApiBaseUrl;
+
+    public string? ServidorPersonalizado { get; private set; }
+
+    // Un mismo APK sirve para cualquier servidor: la dirección se guarda en el teléfono. La apariencia recordada era de
+    // otro servidor, así que se descarta hasta que se vuelva a pedir.
+    public void CambiarServidor(string? url)
+    {
+        ServidorPersonalizado = string.IsNullOrWhiteSpace(url) ? null : url;
+        try
+        {
+            if (ServidorPersonalizado is null) Preferences.Default.Remove(ClaveServidor);
+            else Preferences.Default.Set(ClaveServidor, ServidorPersonalizado);
+        }
+        catch { /* sin preferencias: vale hasta cerrar la app */ }
+
+        _remota = null;
+        GuardarCache(null);
+        AplicarTema();
+    }
+
+    private static string? LeerServidor()
+    {
+        try
+        {
+            var guardado = Preferences.Default.Get(ClaveServidor, string.Empty);
+            return string.IsNullOrWhiteSpace(guardado) ? null : guardado;
+        }
+        catch { return null; }
+    }
 
     public AparienciaActual Actual => Combinar(_remota);
 

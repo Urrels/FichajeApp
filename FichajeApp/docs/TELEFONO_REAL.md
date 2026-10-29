@@ -22,32 +22,41 @@ así que en el teléfono la API tiene que tener **HTTPS**. La forma más rápida
    ```powershell
    cloudflared tunnel --url http://localhost:5224
    ```
-3. Va a imprimir una dirección como `https://algo-raro.trycloudflare.com`. Cambia cada vez que lo abrís.
+3. Va a imprimir una dirección como `https://algo-raro.trycloudflare.com`. **Cambia cada vez que lo abrís.**
 4. Abrila en el navegador del teléfono con `/api/configuracion/estado` al final: tiene que mostrar `{"configurada":...}`.
-5. Poné esa dirección en `src/FichajeApp.Mobile/Clientes/dev/cliente.json`:
 
-   ```json
-   "apiBaseUrl": "https://algo-raro.trycloudflare.com/api"
-   ```
-   **No subas este cambio a git** (`git checkout Clientes/dev/cliente.json` para deshacerlo al terminar).
+### Decirle a la app cuál es la dirección (sin recompilar)
 
-(Alternativa sin túnel: usar la IP de la PC en la red wifi, por ejemplo `http://192.168.1.20:5224`. Para eso hay que permitir ese
-tráfico en `Platforms/Android/Resources/xml/network_security_config.xml`, abrir el puerto en el firewall de Windows y arrancar la API
-con `--urls http://0.0.0.0:5224`. Es más trabajo y toca un archivo protegido; por eso no la recomiendo.)
+En la pantalla de **inicio de sesión**, tocá **5 veces seguidas el logo** (en 3 segundos). Se abre "Dirección del servidor":
+
+- Pegá la dirección del túnel (`https://algo-raro.trycloudflare.com`; el `/api` se agrega solo).
+- La app comprueba que el servidor responde y te lo dice. Se guarda en el teléfono; cada vez que el túnel cambie, repetí esto.
+- Mientras uses otra dirección, el login muestra abajo "Servidor: …".
+- Para volver a la original del APK: mismo gesto y dejala **vacía**.
+
+Esto permite usar **el mismo APK** con cualquier servidor (el de pruebas, el de cada cliente). La dirección que trae el APK
+es la de `Clientes/<cliente>/cliente.json` y sigue siendo la de arranque.
+
+(Alternativa sin túnel: usar la IP de la PC en la red wifi, por ejemplo `http://192.168.1.20:5224`. Android la bloquea salvo que
+se permita en `Platforms/Android/Resources/xml/network_security_config.xml`, y además hay que abrir el puerto en el firewall.
+Es más trabajo y toca un archivo protegido; por eso no la recomiendo.)
 
 ## 3. Instalar la app
 
-**Desde Visual Studio:** elegí el teléfono en la lista de dispositivos y tocá ▶ (Depurar). Instala y abre la app sola.
-
-**Sin Visual Studio (para dársela a otra persona):**
+**Con un archivo APK (lo más cómodo, sin cable ni Visual Studio):**
 
 ```powershell
 dotnet publish src/FichajeApp.Mobile -f net8.0-android -c Release -p:Cliente=dev -p:AndroidPackageFormat=apk -p:AndroidKeyStore=False
 ```
 
-El `.apk` queda en `src/FichajeApp.Mobile/bin/Release/net8.0-android/publish/`. Se puede mandar por WhatsApp o mail, o instalar con
-`adb install archivo.apk`. En el teléfono hay que permitir "instalar apps de orígenes desconocidos" para ese programa.
+Tarda varios minutos. El archivo que hay que instalar queda en
+`src/FichajeApp.Mobile/bin/Release/net8.0-android/publish/io.github.urrels.fichaje.dev-Signed.apk` (unos 38 MB).
+Pasalo al teléfono (WhatsApp como documento, Drive, o cable), tocalo, permití "instalar apps de orígenes desconocidos"
+para ese programa y, si Play Protect avisa que la app no está verificada, elegí "Instalar de todos modos".
+Después cambiá la dirección del servidor con el gesto del logo (paso 2).
 
+**Desde Visual Studio:** elegí el teléfono en la lista de dispositivos y tocá ▶ (Depurar). Instala y abre la app sola.
+(Para esta vía también podés usar el gesto del logo; no hace falta tocar `cliente.json`.)
 ## 4. Qué probar en el teléfono (y no se puede en el emulador)
 
 - La **cámara real** (foto de fichaje) y que no se trabe al volver a la app.
