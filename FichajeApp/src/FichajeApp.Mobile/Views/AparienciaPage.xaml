@@ -46,15 +46,15 @@
 
             <Label Text="Logo" FontAttributes="Bold" Margin="0,6,0,0" />
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                <Border WidthRequest="96" HeightRequest="96" StrokeShape="RoundRectangle 12" BackgroundColor="#DDDDDD">
-                    <Image Source="{Binding Logo}" Aspect="AspectFit" />
+                <Border WidthRequest="96" HeightRequest="96" StrokeShape="Ellipse" StrokeThickness="0" Padding="0" BackgroundColor="White">
+                    <Image Source="{Binding Logo}" Aspect="AspectFill" />
                 </Border>
                 <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
                     <Button Text="Elegir imagen" Clicked="OnElegirLogo" />
                     <Button Text="Usar el logo original" Clicked="OnQuitarLogo" />
                 </VerticalStackLayout>
             </Grid>
-            <Label Text="Se achica solo a 256 px. Mejor si es cuadrada, con fondo transparente (PNG)." FontSize="11" />
+            <Label Text="Se achica solo a 256 px y se muestra en un círculo. Mejor si es cuadrada y con el dibujo centrado." FontSize="11" />
 
             <Label Text="{Binding Estado}" FontSize="12" />
 

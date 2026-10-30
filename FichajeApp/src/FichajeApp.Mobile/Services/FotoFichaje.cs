@@ -1,12 +1,10 @@
-using Microsoft.Maui.Graphics.Platform;
-
 namespace FichajeApp.Mobile.Services;
 
 // Selfie del fichaje: se saca con la cámara, se achica y se manda como base64 (JPG de ~100 KB)
 public static class FotoFichaje
 {
-    private const float LadoMaximo = 640f;
-    private const float Calidad = 0.7f;
+    private const int LadoMaximo = 640;
+    private const int Calidad = 70; // calidad JPG, de 0 a 100
 
     public static bool Disponible => MediaPicker.Default.IsCaptureSupported;
 
@@ -24,9 +22,8 @@ public static class FotoFichaje
         var foto = await MediaPicker.Default.CapturePhotoAsync(new MediaPickerOptions { Title = "Sacate una foto" });
         if (foto is null) return null;
 
-        await using var origen = await foto.OpenReadAsync();
-        using Microsoft.Maui.Graphics.IImage imagen = PlatformImage.FromStream(origen);
-        using Microsoft.Maui.Graphics.IImage chica = imagen.Downsize(LadoMaximo, true);
-        return Convert.ToBase64String(chica.AsBytes(Microsoft.Maui.Graphics.ImageFormat.Jpeg, Calidad));
+        // Se achica mientras se lee: decodificar la foto entera de la cámara agota la memoria y cierra la app
+        var bytes = await ReductorDeImagenes.ReducirAsync(foto, LadoMaximo, permitirPng: false, calidadJpeg: Calidad, pesoMaximoPng: 0);
+        return Convert.ToBase64String(bytes);
     }
 }

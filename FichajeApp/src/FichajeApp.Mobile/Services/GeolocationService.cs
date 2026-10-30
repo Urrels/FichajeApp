@@ -22,11 +22,10 @@ public class GeolocationService : IGeolocationService
             if (!await PedirPermisoAsync())
                 return Fallo("Permiso de ubicación denegado");
 
-            var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10));
-            var location = await Geolocation.Default.GetLocationAsync(request);
+            var location = await ObtenerLaMejorLecturaAsync();
 
             if (location is null)
-                return Fallo("No se pudo obtener la ubicación");
+                return Fallo("No se pudo obtener la ubicación. Activá el GPS del teléfono y probá al aire libre.");
 
             var direccion = await ObtenerDireccionAsync(location.Latitude, location.Longitude);
 
@@ -37,6 +36,35 @@ public class GeolocationService : IGeolocationService
         {
             return Fallo($"Error de ubicación: {ex.Message}");
         }
+    }
+
+    // El GPS tarda en "enganchar": la primera lectura suele ser de pocos satélites (±100 m o peor). Se toman varias lecturas
+    // seguidas durante unos segundos y se queda con la más precisa; si una ya alcanza, no se espera más.
+    private const double PrecisionSuficienteMetros = 25;
+    private static readonly TimeSpan TiempoMaximo = TimeSpan.FromSeconds(15);
+
+    private static async Task<Location?> ObtenerLaMejorLecturaAsync()
+    {
+        Location? mejor = null;
+        var inicio = DateTime.UtcNow;
+
+        while (DateTime.UtcNow - inicio < TiempoMaximo)
+        {
+            try
+            {
+                var lectura = await Geolocation.Default.GetLocationAsync(
+                    new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(5)));
+
+                if (lectura is not null && (mejor is null || (lectura.Accuracy ?? double.MaxValue) < (mejor.Accuracy ?? double.MaxValue)))
+                    mejor = lectura;
+
+                if (mejor?.Accuracy is <= PrecisionSuficienteMetros) break;
+            }
+            catch (FeatureNotEnabledException) { throw; }   // GPS apagado: no tiene sentido seguir intentando
+            catch (PermissionException) { throw; }
+            catch { /* una lectura fallida no cancela el resto */ }
+        }
+        return mejor;
     }
 
     // La dirección es opcional: si falla o tarda más de 3 s, el fichaje sigue sin ella.

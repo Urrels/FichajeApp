@@ -13,12 +13,15 @@
                              BackgroundColor="{DynamicResource ColorPrimario}"
                              Padding="24,72,24,56"
                              Spacing="12">
-            <Image Source="{DynamicResource LogoCliente}" HeightRequest="72" WidthRequest="72" HorizontalOptions="Center">
-                <!-- Ajuste oculto: 5 toques seguidos permiten cambiar la dirección del servidor (ver OnLogoTapped) -->
-                <Image.GestureRecognizers>
+            <!-- El logo se muestra redondo (círculo), también el que sube el administrador desde Apariencia.
+                 Ajuste oculto: 5 toques seguidos permiten cambiar la dirección del servidor (ver OnLogoTapped) -->
+            <Border WidthRequest="84" HeightRequest="84" HorizontalOptions="Center"
+                    StrokeShape="Ellipse" StrokeThickness="0" Padding="0" BackgroundColor="White">
+                <Image Source="{DynamicResource LogoCliente}" Aspect="AspectFill" />
+                <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnLogoTapped" />
-                </Image.GestureRecognizers>
-            </Image>
+                </Border.GestureRecognizers>
+            </Border>
             <Label Text="{DynamicResource NombreCliente}"
                    TextColor="{DynamicResource ColorPrimarioTexto}"
                    FontSize="26" FontAttributes="Bold"

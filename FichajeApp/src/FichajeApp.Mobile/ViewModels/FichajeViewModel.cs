@@ -171,6 +171,8 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         }
 
         Estado = resultado.Mensaje;
+        if (!resultado.Exito && resultado.Mensaje.Contains("lo bastante precisa", StringComparison.OrdinalIgnoreCase))
+            Estado += "\n\nSi sigue pasando al aire libre: en Ajustes → Apps → Fichaje → Permisos → Ubicación, elegí «Precisa» (no «Aproximada») y activá el GPS en modo alta precisión.";
         if (resultado.Exito)
         {
             if (config.PideUbicacion) MostrarUbicacion(ubicacion.Lat, ubicacion.Lon);
