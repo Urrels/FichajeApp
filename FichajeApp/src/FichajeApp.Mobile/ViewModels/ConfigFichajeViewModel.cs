@@ -26,8 +26,18 @@ public class ConfigFichajeViewModel : VmBase
         ["Kiosco (un teléfono por sucursal para todos los empleados)"] = "Kiosco"
     };
 
+    // Hasta cuántos metros de error del GPS se acepta un fichaje. Adentro de un edificio el GPS suele dar de 30 a 150 m.
+    private static readonly Dictionary<string, int> Precisiones = new()
+    {
+        ["Estricta · 30 m (solo al aire libre)"] = 30,
+        ["Normal · 50 m"] = 50,
+        ["Flexible · 100 m (sirve dentro de edificios)"] = 100,
+        ["Muy flexible · 200 m (casi todo pasa)"] = 200
+    };
+
     private readonly AdminApiService _api;
     private string _modo = "Personal";
+    private int _precision = 50;
     private string _ubicacion = "Libre";
     private string _foto = "No";
 
@@ -35,6 +45,9 @@ public class ConfigFichajeViewModel : VmBase
 
     public string Ubicacion { get => _ubicacion; private set { if (Set(ref _ubicacion, value)) Notificar(nameof(UbicacionTexto)); } }
     public string Modo { get => _modo; private set { if (Set(ref _modo, value)) Notificar(nameof(ModoTexto)); } }
+    public int Precision { get => _precision; private set { if (Set(ref _precision, value)) Notificar(nameof(PrecisionTexto)); } }
+    public string PrecisionTexto => Precisiones.FirstOrDefault(p => p.Value == Precision).Key ?? $"{Precision} m (definido en el servidor)";
+
     public string ModoTexto => Modos.FirstOrDefault(m => m.Value == Modo).Key ?? Modo;
 
     public string Foto { get => _foto; private set { if (Set(ref _foto, value)) Notificar(nameof(FotoTexto)); } }
@@ -55,6 +68,7 @@ public class ConfigFichajeViewModel : VmBase
         Ubicacion = r.Datos.Ubicacion;
         Foto = r.Datos.Foto;
         Modo = r.Datos.Modo;
+        Precision = r.Datos.PrecisionMaxMetros;
         _retencionDias = r.Datos.RetencionDias;
         Notificar(nameof(RetencionTexto));
         Estado = string.Empty;
@@ -64,6 +78,12 @@ public class ConfigFichajeViewModel : VmBase
     {
         var elegida = await Dialogos.Elegir("¿Se pide la ubicación?", Ubicaciones.Keys);
         if (elegida is not null) Ubicacion = Ubicaciones[elegida];
+    }
+
+    public async Task ElegirPrecisionAsync()
+    {
+        var elegida = await Dialogos.Elegir("¿Qué tan precisa tiene que ser la ubicación?", Precisiones.Keys);
+        if (elegida is not null) Precision = Precisiones[elegida];
     }
 
     public async Task ElegirModoAsync()
@@ -80,7 +100,7 @@ public class ConfigFichajeViewModel : VmBase
 
     public Task GuardarAsync() => ConEspera(async () =>
     {
-        var r = await _api.GuardarConfiguracionFichaje(Ubicacion, Foto, Modo);
+        var r = await _api.GuardarConfiguracionFichaje(Ubicacion, Foto, Modo, Precision);
         Estado = !r.Exito ? r.Mensaje
             : Modo == "Kiosco"
                 ? "Guardado. Ahora, en Usuarios, creá una cuenta por sucursal (por ejemplo \"Sucursal Centro\") y asignale el rol Kiosco."

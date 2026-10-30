@@ -22,6 +22,7 @@ public partial class FichajePage : ContentPage
     {
         base.OnAppearing();
         await _viewModel.ActualizarProximoAsync();
+        _ = _viewModel.PrepararUbicacionAsync(); // sin esperar: el GPS engancha mientras la persona se prepara
         var sesion = SessionManager.Instance;
         PinButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarPin);
         PanelButton.IsVisible = sesion.EsSupervisor || sesion.EsAdministrador;

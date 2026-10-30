@@ -37,9 +37,12 @@ public class ConfiguracionFichajeService
             {
                 // Lo de appsettings (Fichaje:ModoUbicacion) sigue valiendo mientras nadie lo cambie desde la app
                 Ubicacion = _opciones.ModoLibre ? ConfiguracionFichaje.UbicacionLibre : ConfiguracionFichaje.UbicacionSedeFija,
-                Foto = ConfiguracionFichaje.FotoNo
+                Foto = ConfiguracionFichaje.FotoNo,
+                PrecisionMaxMetros = 0 // sin elegir todavía: abajo se completa con Fichaje:PrecisionMaxMetros
             };
             config.RetencionFotosDias = _opciones.FotosRetencionDias;
+            // Sin un valor elegido por el administrador rige appsettings (Fichaje:PrecisionMaxMetros)
+            if (config.PrecisionMaxMetros <= 0) config.PrecisionMaxMetros = (int)Math.Round(_opciones.PrecisionMaxMetros);
             return config;
         }))!;
 
@@ -49,14 +52,19 @@ public class ConfiguracionFichajeService
         var foto = Elegir(r.Foto, ConfiguracionFichaje.Fotos, "foto");
         var modo = string.IsNullOrWhiteSpace(r.Modo) ? (await ObtenerAsync()).Modo : Elegir(r.Modo, ConfiguracionFichaje.Modos, "modo");
 
-        await _repositorio.GuardarAsync(new ConfiguracionFichaje { Ubicacion = ubicacion, Foto = foto, Modo = modo });
+        var precision = r.PrecisionMaxMetros ?? (await ObtenerAsync()).PrecisionMaxMetros;
+        if (precision is < ConfiguracionFichaje.PrecisionMinima or > ConfiguracionFichaje.PrecisionMaxima)
+            throw new InvalidOperationException(
+                $"La precisión del GPS tiene que estar entre {ConfiguracionFichaje.PrecisionMinima} y {ConfiguracionFichaje.PrecisionMaxima} metros.");
+
+        await _repositorio.GuardarAsync(new ConfiguracionFichaje { Ubicacion = ubicacion, Foto = foto, Modo = modo, PrecisionMaxMetros = precision });
         _cache.Remove(ClaveCache);
 
         // El rol de las cuentas de sucursal no viene de fábrica: se crea la primera vez que se activa el kiosco
         if (modo == ConfiguracionFichaje.ModoKiosco && await RolKiosco.AsegurarAsync(_roles))
             await _bitacora.RegistrarAsync(actor, "ROL_KIOSCO_CREADO");
 
-        await _bitacora.RegistrarAsync(actor, $"CONFIG_FICHAJE:{ubicacion}/{foto}/{modo}");
+        await _bitacora.RegistrarAsync(actor, $"CONFIG_FICHAJE:{ubicacion}/{foto}/{modo}/{precision}m");
     }
 
     private static string Elegir(string? valor, string[] permitidos, string cual) =>

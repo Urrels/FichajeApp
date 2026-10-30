@@ -13,7 +13,7 @@ La app de Play Store habla con la API por internet con **HTTPS**. Hace falta **u
 | `Jwt__Secret` | Clave que firma las sesiones: 32+ caracteres al azar, **distinta por cliente**. La API **se niega a arrancar en producción** con la de ejemplo. |
 | `Setup__Clave` | Código de activación que le mandás al cliente (ver README). |
 | `Fichaje__FotosRetencionDias` | Días que se guardan las fotos (90 por defecto, `0` = nunca se borran). |
-| `Fichaje__PrecisionMaxMetros` | Precisión mínima del GPS para aceptar un fichaje (50 m por defecto). Adentro de un edificio el GPS suele dar ±50 a ±200 m: si tu cliente ficha en un lugar cerrado, subila (por ejemplo 100) o usá ubicación "Ninguna" en Cómo se ficha. |
+| `Fichaje__PrecisionMaxMetros` | Valor **inicial** del error máximo del GPS que se acepta al fichar (50 m por defecto). El administrador lo cambia desde la app (Cómo se ficha → Precisión del GPS) y eso manda sobre este valor. Adentro de un edificio el GPS suele dar ±30 a ±150 m: para un cliente que ficha en un lugar cerrado conviene "Flexible" (100 m) o ubicación "Ninguna". |
 | `Proxy__Confiar=true` | Solo si hay un proxy delante (Caddy, Railway, Render…). Sin esto el límite de intentos de login vería una sola IP para todos. Ya viene activado en el `Dockerfile`. |
 | `Setup__Carpeta` | Carpeta persistente para `datos` (en el `Dockerfile`: `/datos`). |
 

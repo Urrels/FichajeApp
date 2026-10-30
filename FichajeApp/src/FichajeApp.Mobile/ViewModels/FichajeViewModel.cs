@@ -24,6 +24,8 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
     public FichajeViewModel(ApiService apiService, IGeolocationService geoService, IBiometricService biometricService)
     {
         _geoService = geoService;
+        // El avance de la búsqueda se ve en pantalla mientras se está fichando
+        _geoService.Progreso = texto => MainThread.BeginInvokeOnMainThread(() => { if (Procesando) Estado = texto; });
         _biometricService = biometricService;
         _apiService = apiService;
 
@@ -45,6 +47,13 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
 
     // Lo que va a ser el próximo fichaje: se muestra en el botón para saber si se está entrando o saliendo
     public string TextoBoton => _proximo is null ? "Fichar" : $"Fichar {_proximo.ToLowerInvariant()}";
+
+    // Al abrir la pantalla: el GPS empieza a enganchar señal para que al fichar ya esté listo
+    public async Task PrepararUbicacionAsync()
+    {
+        var config = await _apiService.ObtenerConfiguracionFichajeAsync();
+        if (config.PideUbicacion) await _geoService.PrecalentarAsync(config.PrecisionMaxMetros);
+    }
 
     public async Task ActualizarProximoAsync()
     {
@@ -129,7 +138,7 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
 
         // Ubicación y biometría corren en paralelo: el GPS se obtiene mientras el usuario se autentica.
         var ubicacionTask = config.PideUbicacion
-            ? _geoService.ObtenerUbicacionAsync()
+            ? _geoService.ObtenerUbicacionAsync(config.PrecisionMaxMetros)
             : Task.FromResult(new UbicacionResultado(true, 0, 0, null, false, null, string.Empty));
         Estado = "Verificá tu identidad...";
         var (bioExito, bioMensaje) = await _biometricService.AutenticarAsync();

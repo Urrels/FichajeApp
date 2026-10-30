@@ -17,10 +17,12 @@ public class FichajeController : ControllerBase
     private readonly IFichajeService _fichajeService;
     private readonly IEmpleadosRepositorio _empleadosService;
     private readonly ISitiosService _sitiosService;
+    private readonly ILogger<FichajeController> _log;
 
     public FichajeController(IFichajeService fichajeService, IEmpleadosRepositorio empleadosService,
-        ISitiosService sitiosService)
+        ISitiosService sitiosService, ILogger<FichajeController> log)
     {
+        _log = log;
         _fichajeService = fichajeService;
         _empleadosService = empleadosService;
         _sitiosService = sitiosService;
@@ -31,7 +33,7 @@ public class FichajeController : ControllerBase
     public async Task<IActionResult> Configuracion()
     {
         var c = await _fichajeService.ConfiguracionAsync();
-        return Ok(new { ubicacion = c.Ubicacion, foto = c.Foto, retencionDias = c.RetencionFotosDias });
+        return Ok(new { ubicacion = c.Ubicacion, foto = c.Foto, retencionDias = c.RetencionFotosDias, precisionMaxMetros = c.PrecisionMaxMetros });
     }
 
     // Qué va a ser el próximo fichaje del usuario (Entrada o Salida), para mostrarlo antes de fichar
@@ -82,7 +84,12 @@ public class FichajeController : ControllerBase
 
         var validacion = await _fichajeService.ValidarAsync(contexto);
         if (!validacion.EsValido)
+        {
+            // Queda en el registro de la API: sirve para entender por qué a alguien "no le deja fichar"
+            _log.LogWarning("Fichaje rechazado de {Email}: {Mensaje} (código {Codigo}, precisión {Precision} m, máximo {Maximo} m)",
+                email, validacion.Mensaje, validacion.Codigo ?? "-", request.Precision?.ToString("0") ?? "?", config.PrecisionMaxMetros);
             return BadRequest(new { mensaje = validacion.Mensaje, codigo = validacion.Codigo });
+        }
 
         var fichaje = await _fichajeService.RegistrarAsync(empleado!, contexto);
 
