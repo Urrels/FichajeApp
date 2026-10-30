@@ -17,6 +17,14 @@
             </Border>
             <Button Text="Cambiar ubicación" Clicked="OnUbicacion" />
 
+            <Label Text="Modo" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Border Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                <Label Text="{Binding ModoTexto}" TextColor="{DynamicResource ColorTexto}" />
+            </Border>
+            <Button Text="Cambiar modo" Clicked="OnModo" />
+            <Label FontSize="11"
+                   Text="Kiosco es para empresas donde varias personas fichan en el mismo teléfono (uno por sucursal): cada empleado toca su nombre y pone su PIN. Viene apagado; al activarlo se crea el rol Kiosco para las cuentas de sucursal." />
+
             <Label Text="Foto" FontAttributes="Bold" Margin="0,8,0,0" />
             <Border Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
                 <Label Text="{Binding FotoTexto}" TextColor="{DynamicResource ColorTexto}" />

@@ -6,7 +6,7 @@ using FichajeApp.Api.Repositorios;
 
 namespace FichajeApp.Api.Servicios;
 
-// Configuración de fichaje por cliente (ubicación y foto), editable por el administrador desde la app.
+// Configuración de fichaje por cliente (ubicación, foto y modo personal o kiosco), editable por el administrador desde la app.
 // Se cachea unos segundos porque cada fichaje la consulta.
 public class ConfiguracionFichajeService
 {
@@ -17,10 +17,12 @@ public class ConfiguracionFichajeService
     private readonly BitacoraService _bitacora;
     private readonly IMemoryCache _cache;
     private readonly FichajeOptions _opciones;
+    private readonly IRolesRepositorio _roles;
 
     public ConfiguracionFichajeService(IConfiguracionFichajeRepositorio repositorio, BitacoraService bitacora,
-        IMemoryCache cache, IOptions<FichajeOptions> opciones)
+        IMemoryCache cache, IOptions<FichajeOptions> opciones, IRolesRepositorio roles)
     {
+        _roles = roles;
         _repositorio = repositorio;
         _bitacora = bitacora;
         _cache = cache;
@@ -45,10 +47,16 @@ public class ConfiguracionFichajeService
     {
         var ubicacion = Elegir(r.Ubicacion, ConfiguracionFichaje.Ubicaciones, "ubicación");
         var foto = Elegir(r.Foto, ConfiguracionFichaje.Fotos, "foto");
+        var modo = string.IsNullOrWhiteSpace(r.Modo) ? (await ObtenerAsync()).Modo : Elegir(r.Modo, ConfiguracionFichaje.Modos, "modo");
 
-        await _repositorio.GuardarAsync(new ConfiguracionFichaje { Ubicacion = ubicacion, Foto = foto });
+        await _repositorio.GuardarAsync(new ConfiguracionFichaje { Ubicacion = ubicacion, Foto = foto, Modo = modo });
         _cache.Remove(ClaveCache);
-        await _bitacora.RegistrarAsync(actor, $"CONFIG_FICHAJE:{ubicacion}/{foto}");
+
+        // El rol de las cuentas de sucursal no viene de fábrica: se crea la primera vez que se activa el kiosco
+        if (modo == ConfiguracionFichaje.ModoKiosco && await RolKiosco.AsegurarAsync(_roles))
+            await _bitacora.RegistrarAsync(actor, "ROL_KIOSCO_CREADO");
+
+        await _bitacora.RegistrarAsync(actor, $"CONFIG_FICHAJE:{ubicacion}/{foto}/{modo}");
     }
 
     private static string Elegir(string? valor, string[] permitidos, string cual) =>

@@ -31,21 +31,37 @@ public class KioscoController : ControllerBase
         _fichaje = fichaje;
     }
 
+    // 409 y no 403/401: la app lo muestra como mensaje y no lo toma por falta de permisos ni por sesión vencida
+    private async Task<IActionResult?> SiNoEstaActivado()
+    {
+        if ((await _fichaje.ConfiguracionAsync()).Modo == ConfiguracionFichaje.ModoKiosco) return null;
+        return Conflict(new
+        {
+            mensaje = "El modo kiosco no está activado. Un administrador puede activarlo en Administración → Cómo se ficha.",
+            codigo = "KIOSCO_DESACTIVADO"
+        });
+    }
+
     // Si se pide foto (la app la saca antes de mandar el fichaje)
     [HttpGet("configuracion")]
     public async Task<IActionResult> Configuracion()
     {
+        if (await SiNoEstaActivado() is { } desactivado) return desactivado;
+
         var c = await _fichaje.ConfiguracionAsync();
         return Ok(new { foto = c.Foto, retencionDias = c.RetencionFotosDias });
     }
 
     [HttpGet("empleados")]
-    public async Task<IActionResult> Empleados() => Ok(await _kiosco.ListarAsync());
+    public async Task<IActionResult> Empleados() =>
+        await SiNoEstaActivado() ?? Ok(await _kiosco.ListarAsync());
 
     // No devuelve 401 ante un PIN incorrecto: la app lo tomaría como sesión vencida
     [HttpPost("fichaje")]
     public async Task<IActionResult> Fichar([FromBody] KioscoFichajeRequest request)
     {
+        if (await SiNoEstaActivado() is { } desactivado) return desactivado;
+
         var sucursal = User.FindFirst(ClaimTypes.Name)?.Value ?? "Kiosco";
 
         byte[]? foto = null;

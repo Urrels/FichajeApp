@@ -168,20 +168,25 @@ Detrás de `IAlmacenFotos`, así que pasar a Amazon S3 u otro almacenamiento es 
 de la carpeta `datos/`** y avisar a los empleados que se les saca una foto (es un dato personal).
 **Retención y consentimiento.** Las fotos se borran solas pasado `Fichaje:FotosRetencionDias` días (90 por defecto; `0` = no borrar nunca): un proceso en segundo plano lo revisa al arrancar la API y una vez por día. El supervisor que abre una foto ya borrada ve un aviso. La primera vez que cada empleado ficha con foto en un teléfono, la app le muestra qué se hace con su foto, quién la ve y cuánto se guarda, y le pide que esté de acuerdo; si no acepta no se le saca la foto (con foto obligatoria, no ficha). Es un aviso informativo: el consentimiento que exija tu legislación laboral y de datos personales es responsabilidad de la empresa.
 
-### Modo kiosco: un teléfono compartido por sucursal
+### Modo kiosco: un teléfono compartido por sucursal (opcional)
 
-Para empresas donde varios empleados fichan desde el mismo teléfono (la huella no sirve: identifica al dueño del teléfono):
+Para empresas donde varios empleados fichan desde el mismo teléfono (la huella no sirve: identifica al dueño del teléfono).
+**Viene apagado**: por defecto cada persona ficha con su propio usuario, y el rol de las cuentas de sucursal ni siquiera existe.
 
-1. En Administración → Usuarios, crear una cuenta por sucursal (por ejemplo "Sucursal Centro", con un email y PIN propios)
-   y asignarle el rol **Kiosco** (permiso *Fichar en kiosco*; el rol se crea solo al iniciar la API).
-2. Iniciar sesión **una vez** en el teléfono de esa sucursal con esa cuenta. La sesión dura 30 días y se guarda en el teléfono;
+1. El administrador entra a Administración → **Cómo se ficha** → **Modo** → **Kiosco** y guarda. En ese momento se crea el
+   rol **Kiosco** (permiso *Fichar en kiosco*). Volver a **Personal** apaga el kiosco; el rol y las cuentas ya creadas quedan.
+2. En Administración → Usuarios, crear una cuenta por sucursal (por ejemplo "Sucursal Centro", con un email y PIN propios)
+   y asignarle el rol **Kiosco**.
+3. Iniciar sesión **una vez** en el teléfono de esa sucursal con esa cuenta. La sesión dura 30 días y se guarda en el teléfono;
    la baja o el bloqueo de la cuenta la cortan igual.
-3. El teléfono muestra la lista de empleados con lo que les toca (Entrada o Salida). Cada uno toca su nombre, escribe su PIN
+4. El teléfono muestra la lista de empleados con lo que les toca (Entrada o Salida). Cada uno toca su nombre, escribe su PIN
    personal y, si el cliente pidió foto, se saca la selfie. El fichaje queda **a nombre del empleado** y con **el nombre de la
    sucursal como lugar** (sin ubicación GPS).
 
 El PIN tiene el mismo control que el login: 3 errores bloquean al empleado hasta que un administrador lo desbloquee. Un PIN
-incorrecto responde 400 (no 401) para no cerrar la sesión del teléfono. La cuenta de la sucursal no ficha por sí misma.
+incorrecto responde 400 (no 401) para no cerrar la sesión del teléfono. La cuenta de la sucursal no ficha por sí misma, y el
+Administrador (que tiene todos los permisos, incluido el del kiosco) **no** se trata como cuenta de sucursal: ve su panel.
+Con el modo en Personal, los endpoints del kiosco responden 409 con un mensaje que explica cómo activarlo.
 ### Conectar Google Sheets desde la app
 
 Cada cliente conecta su propia planilla sin tocar archivos del servidor: en el login, **Conectar mi planilla de Google**

@@ -53,7 +53,9 @@ public static class CatalogoPermisos
     {
         [RolAdministrador] = Todos,
         [RolSupervisor] = new[] { FicharAsistencia, VerPanelSupervisor, CorregirFichajes, CambiarPin },
-        [RolEmpleado] = new[] { FicharAsistencia, CambiarPin },
-        [RolKiosco] = new[] { FicharEnKiosco }
+        [RolEmpleado] = new[] { FicharAsistencia, CambiarPin }
     };
+
+    // El rol Kiosco NO se crea de entrada: lo crea el administrador al activar el modo kiosco (Administración → Cómo se ficha)
+    public static readonly string[] PermisosDelRolKiosco = { FicharEnKiosco };
 }

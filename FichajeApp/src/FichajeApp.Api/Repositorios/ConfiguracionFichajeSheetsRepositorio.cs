@@ -21,12 +21,14 @@ public class ConfiguracionFichajeSheetsRepositorio : IConfiguracionFichajeReposi
 
         var ubicacion = Valor("UBICACION");
         var foto = Valor("FOTO");
-        if (ubicacion is null && foto is null) return null;
+        var modo = Valor("MODO");
+        if (ubicacion is null && foto is null && modo is null) return null;
 
         return new ConfiguracionFichaje
         {
             Ubicacion = ubicacion ?? ConfiguracionFichaje.UbicacionLibre,
-            Foto = foto ?? ConfiguracionFichaje.FotoNo
+            Foto = foto ?? ConfiguracionFichaje.FotoNo,
+            Modo = modo ?? ConfiguracionFichaje.ModoPersonal // las planillas anteriores no tienen esta fila: modo personal
         };
     }
 
@@ -38,7 +40,8 @@ public class ConfiguracionFichajeSheetsRepositorio : IConfiguracionFichajeReposi
             await _hoja.ReemplazarTodoAsync(new List<IList<object>>
             {
                 new List<object> { "UBICACION", configuracion.Ubicacion },
-                new List<object> { "FOTO", configuracion.Foto }
+                new List<object> { "FOTO", configuracion.Foto },
+                new List<object> { "MODO", configuracion.Modo }
             });
         }
         finally { _escritura.Release(); }

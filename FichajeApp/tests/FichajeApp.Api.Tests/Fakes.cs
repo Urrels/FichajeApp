@@ -329,7 +329,7 @@ public class Entorno
 
         var opciones = Microsoft.Extensions.Options.Options.Create(new FichajeOptions());
         ConfigFichaje = new ConfiguracionFichajeService(ConfigFichajeRepo, Bitacora, new Microsoft.Extensions.Caching.Memory.MemoryCache(
-            new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()), opciones);
+            new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()), opciones, Roles);
         Fichaje = new FichajeService(StorageFichajes, Array.Empty<IFichajeObserver>(), new BloqueoPorClave(), ConfigFichaje, Fotos, opciones);
         Kiosco = new KioscoService(Empleados, Permisos, StorageFichajes, Login, Fichaje);
     }
@@ -348,6 +348,7 @@ public class Entorno
         var existente = Empleados.Datos.FirstOrDefault(x => x.Email == email);
         if (existente is not null) return existente;
 
+        RolKiosco.AsegurarAsync(Roles).Wait(); // el rol aparece al activar el modo kiosco
         var sucursal = Persona(Empleados.Datos.Max(x => x.Id) + 1, nombre, email, PinKiosco, "");
         Empleados.Datos.Add(sucursal);
         Roles.ReemplazarAsignacionesAsync(sucursal.Id, new[] { IdRol(CatalogoPermisos.RolKiosco) }).Wait();
