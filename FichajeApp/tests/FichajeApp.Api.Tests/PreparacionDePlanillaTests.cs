@@ -44,7 +44,7 @@ public class PreparacionDePlanillaTests : IDisposable
         var almacen = new AlmacenConexion(_carpeta, new EphemeralDataProtectionProvider(), "CODIGO");
         var cliente = new GoogleSheetsClient(new ConfigurationBuilder().Build(), almacen, NullLogger<GoogleSheetsClient>.Instance);
         var inicializador = new InicializadorQueFalla();
-        return (new ConexionService(cliente, almacen, new ProbadorOk(), inicializador, NullLogger<ConexionService>.Instance),
+        return (new ConexionService(cliente, almacen, new ProbadorOk(), inicializador, new CreadorFalso(), NullLogger<ConexionService>.Instance),
             cliente, almacen, inicializador);
     }
 
@@ -63,7 +63,7 @@ public class PreparacionDePlanillaTests : IDisposable
         Assert.False(cliente.Configurado);
         Assert.Null(almacen.Leer());
         // Reintentar: sigue valiendo el código de activación (no quedó "ya conectada")
-        Assert.Equal(ConexionService.Acceso.Permitido, servicio.VerificarAcceso(esAdministrador: false, "CODIGO"));
+        Assert.Equal(ConexionService.Acceso.Permitido, await servicio.VerificarAccesoAsync(esAdministrador: false, "CODIGO"));
 
         inicializador.Error = null;
         await servicio.ConfigurarAsync(Pedido(Planilla1));

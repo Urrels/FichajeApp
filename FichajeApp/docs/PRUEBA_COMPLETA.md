@@ -24,6 +24,8 @@ La planilla vieja no se toca.
 
 Las fotos de la prueba anterior quedan en `datos/fotos`; si querés borrarlas, borrá esa carpeta.
 ## A. Conectar la planilla (como lo haría un cliente)
+- [ ] **Todo de una vez**: con "Crear la planilla por mí" activado, escribís tu Gmail, el nombre de la empresa y los datos del administrador, tocás **Crear y conectar** y el servidor crea la planilla, la prepara y te la comparte (te llega un mail y aparece en Drive → «Compartidos conmigo»). Requiere **Google Drive API** habilitada en el proyecto de Google Cloud.
+- [ ] Si la planilla conectada se **borra** (probar borrándola en Drive), al abrir la app aparece "Conectar Google Sheets" con un aviso rojo que explica que ya no está disponible, y se puede crear una nueva con el código de activación.
 - [ ] La app, al abrir, te lleva sola a "Conectar Google Sheets" (o con el botón del login).
 - [ ] La pantalla muestra el correo de la cuenta de servicio para compartir la planilla; "Copiar correo" funciona.
 - [ ] Con la planilla **sin compartir**: el mensaje dice con qué correo hay que compartirla.

@@ -23,7 +23,7 @@ public class ProteccionConexionTests : IDisposable
     {
         var almacen = new AlmacenConexion(_carpeta, new EphemeralDataProtectionProvider(), "CODIGO");
         var cliente = new GoogleSheetsClient(new ConfigurationBuilder().Build(), almacen, NullLogger<GoogleSheetsClient>.Instance);
-        return new ConexionService(cliente, almacen, new ProbadorOk(), new InicializadorOk(), NullLogger<ConexionService>.Instance);
+        return new ConexionService(cliente, almacen, new ProbadorOk(), new InicializadorOk(), new CreadorFalso(), NullLogger<ConexionService>.Instance);
     }
 
     private static string Credenciales() => JsonSerializer.Serialize(new
@@ -38,20 +38,20 @@ public class ProteccionConexionTests : IDisposable
     });
 
     [Fact]
-    public void SinConfigurar_AlcanzaConElCodigo_AunqueNoHayaAdministrador()
+    public async Task SinConfigurar_AlcanzaConElCodigo_AunqueNoHayaAdministrador()
     {
         var s = Servicio();
 
-        Assert.Equal(ConexionService.Acceso.Permitido, s.VerificarAcceso(esAdministrador: false, "CODIGO"));
-        Assert.Equal(ConexionService.Acceso.ClaveIncorrecta, s.VerificarAcceso(false, "otro"));
-        Assert.Equal(ConexionService.Acceso.ClaveIncorrecta, s.VerificarAcceso(false, null));
+        Assert.Equal(ConexionService.Acceso.Permitido, await s.VerificarAccesoAsync(esAdministrador: false, "CODIGO"));
+        Assert.Equal(ConexionService.Acceso.ClaveIncorrecta, await s.VerificarAccesoAsync(false, "otro"));
+        Assert.Equal(ConexionService.Acceso.ClaveIncorrecta, await s.VerificarAccesoAsync(false, null));
     }
 
     [Fact]
-    public void SinConfigurar_UnAdministradorSinCodigoNoPasa()
+    public async Task SinConfigurar_UnAdministradorSinCodigoNoPasa()
     {
         // No puede existir un administrador antes de configurar: sin código no hay acceso
-        Assert.Equal(ConexionService.Acceso.ClaveIncorrecta, Servicio().VerificarAcceso(esAdministrador: true, clave: null));
+        Assert.Equal(ConexionService.Acceso.ClaveIncorrecta, await Servicio().VerificarAccesoAsync(esAdministrador: true, clave: null));
     }
 
     [Fact]
@@ -60,9 +60,9 @@ public class ProteccionConexionTests : IDisposable
         var s = Servicio();
         await Conectar(s);
 
-        Assert.Equal(ConexionService.Acceso.SoloAdministrador, s.VerificarAcceso(esAdministrador: false, "CODIGO"));
-        Assert.Equal(ConexionService.Acceso.SoloAdministrador, s.VerificarAcceso(false, null));
-        Assert.Equal(ConexionService.Acceso.Permitido, s.VerificarAcceso(esAdministrador: true, clave: null));
+        Assert.Equal(ConexionService.Acceso.SoloAdministrador, await s.VerificarAccesoAsync(esAdministrador: false, "CODIGO"));
+        Assert.Equal(ConexionService.Acceso.SoloAdministrador, await s.VerificarAccesoAsync(false, null));
+        Assert.Equal(ConexionService.Acceso.Permitido, await s.VerificarAccesoAsync(esAdministrador: true, clave: null));
     }
 
     [Fact]

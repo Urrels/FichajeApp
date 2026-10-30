@@ -20,14 +20,20 @@ public class ConfiguracionController : ControllerBase
 
     // La app lo consulta al abrir: si falta configurar, lleva a la pantalla de configuración
     [HttpGet("estado")]
-    public IActionResult Estado() => Ok(new { configurada = _conexion.Configurada, cuentaDeServicio = _conexion.CuentaDeServicio });
+    public async Task<IActionResult> Estado()
+    {
+        // "configurada" es true solo si hay una planilla conectada Y todavía existe y está compartida: si se borró,
+        // la app lo toma como "sin configurar" y ofrece volver a conectar (con el aviso de por qué)
+        var e = await _conexion.EstadoAsync();
+        return Ok(new { configurada = e.Lista, cuentaDeServicio = _conexion.CuentaDeServicio, aviso = e.Aviso });
+    }
 
     [HttpPost("google")]
     [EnableRateLimiting("login")]
     public async Task<IActionResult> Configurar([FromBody] ConfigurarConexionRequest request)
     {
         // La autenticación corre aunque la acción sea anónima: si viene el token de un administrador, se lo reconoce
-        var acceso = _conexion.VerificarAcceso(User.HasClaim(ClaimsPermisos.Permiso, CatalogoPermisos.CambiarConexion), request.Clave);
+        var acceso = await _conexion.VerificarAccesoAsync(User.HasClaim(ClaimsPermisos.Permiso, CatalogoPermisos.CambiarConexion), request.Clave);
         if (acceso == ConexionService.Acceso.ClaveIncorrecta)
             return StatusCode(StatusCodes.Status403Forbidden, new { mensaje = "El código de activación no es correcto." });
         if (acceso == ConexionService.Acceso.SoloAdministrador)
@@ -35,8 +41,12 @@ public class ConfiguracionController : ControllerBase
 
         try
         {
-            var correo = await _conexion.ConfigurarAsync(request);
-            return Ok(new { mensaje = "Conexión guardada. Ya podés iniciar sesión.", cuentaDeServicio = correo });
+            var r = await _conexion.ConfigurarAsync(request);
+            var mensaje = r.PlanillaCreadaUrl is null
+                ? "Conexión guardada. Ya podés iniciar sesión."
+                : $"Listo. Creamos la planilla «{r.PlanillaCreadaTitulo}» y te la compartimos en {r.CompartidaCon}. " +
+                  "Buscala en tu Google Drive, en «Compartidos conmigo» (o en tu mail). Ya podés iniciar sesión.";
+            return Ok(new { mensaje, cuentaDeServicio = r.CuentaDeServicio, planillaUrl = r.PlanillaCreadaUrl });
         }
         catch (ConexionInvalidaException ex)
         {

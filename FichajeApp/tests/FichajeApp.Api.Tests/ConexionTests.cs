@@ -56,7 +56,7 @@ public class ConexionTests : IDisposable
         var cliente = new GoogleSheetsClient(new ConfigurationBuilder().Build(), almacen, NullLogger<GoogleSheetsClient>.Instance);
         var probador = new ProbadorFalso();
         var inicializador = new InicializadorFalso();
-        return (new ConexionService(cliente, almacen, probador, inicializador, NullLogger<ConexionService>.Instance),
+        return (new ConexionService(cliente, almacen, probador, inicializador, new CreadorFalso(), NullLogger<ConexionService>.Instance),
             cliente, almacen, probador, inicializador);
     }
 
@@ -99,14 +99,14 @@ public class ConexionTests : IDisposable
         var (servicio, cliente, almacen, probador, inicializador) = Armar();
         var json = Credenciales();
 
-        var correo = await servicio.ConfigurarAsync(new ConfigurarConexionRequest
+        var correo = (await servicio.ConfigurarAsync(new ConfigurarConexionRequest
         {
             Planilla = $"https://docs.google.com/spreadsheets/d/{IdPlanilla}/edit",
             Credenciales = json,
             NombreAdministrador = "Dueña",
             EmailAdministrador = "duena@cliente.com",
             PinAdministrador = "4321"
-        });
+        })).CuentaDeServicio;
 
         Assert.Equal("fichaje@proyecto.iam.gserviceaccount.com", correo);
         Assert.True(cliente.Configurado);
@@ -167,7 +167,7 @@ public class ConexionTests : IDisposable
         }).Build();
         var almacen = NuevoAlmacen("CLAVE123");
         var cliente = new GoogleSheetsClient(config, almacen, NullLogger<GoogleSheetsClient>.Instance);
-        var servicio = new ConexionService(cliente, almacen, new ProbadorFalso(), new InicializadorFalso(), NullLogger<ConexionService>.Instance);
+        var servicio = new ConexionService(cliente, almacen, new ProbadorFalso(), new InicializadorFalso(), new CreadorFalso(), NullLogger<ConexionService>.Instance);
         return (servicio, cliente, almacen, json);
     }
 

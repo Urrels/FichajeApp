@@ -30,6 +30,7 @@ var carpetaDeDatos = builder.Configuration["Setup:Carpeta"] ?? Path.Combine(buil
 builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(carpetaDeDatos, "llaves")));
 builder.Services.AddSingleton<AlmacenConexion>();
 builder.Services.AddSingleton<IProbadorConexion, ProbadorConexionGoogle>();
+builder.Services.AddSingleton<ICreadorDePlanilla, CreadorDePlanillaGoogle>();
 builder.Services.AddSingleton<ConexionService>();
 
 // Una sola conexión a Google Sheets, un reloj inyectable (se reemplaza en las pruebas) y un lock por empleado

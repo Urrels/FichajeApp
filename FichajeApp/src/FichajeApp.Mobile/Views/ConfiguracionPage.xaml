@@ -10,9 +10,35 @@
 
             <Label Text="Conectá tu planilla de Google" FontSize="20" FontAttributes="Bold" />
 
-            <!-- Caso normal: el servidor ya tiene la cuenta de servicio -->
-            <VerticalStackLayout IsVisible="{Binding ServidorTieneCredencial}" Spacing="8">
-                <Label FontAttributes="Bold" Text="Paso 1: creá una planilla" />
+            <!-- Si la planilla conectada se borró o dejó de estar compartida -->
+            <Border IsVisible="{Binding HayAviso}" Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="#FDECEA" Stroke="#C62828">
+                <Label Text="{Binding Aviso}" TextColor="#8E1B14" FontSize="13" />
+            </Border>
+
+            <!-- Todo de una vez: el servidor crea la planilla, la prepara y se la comparte -->
+            <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <VerticalStackLayout>
+                        <Label Text="Crear la planilla por mí" FontAttributes="Bold" />
+                        <Label FontSize="12"
+                               Text="Recomendado: se crea una planilla nueva y vacía en Google, se prepara sola y se comparte con tu cuenta. No tenés que crear ni compartir nada." />
+                    </VerticalStackLayout>
+                    <Switch Grid.Column="1" IsToggled="{Binding CrearPlanilla}" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Crear: solo hace falta tu cuenta de Google -->
+            <VerticalStackLayout IsVisible="{Binding CrearPlanilla}" Spacing="6">
+                <Label Text="Tu cuenta de Google" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label FontSize="11" Text="Ahí se te comparte la planilla (la vas a ver en Google Drive, en «Compartidos conmigo», y te llega un mail)." />
+                <Entry Text="{Binding EmailPropietario}" Placeholder="tuemail@gmail.com" Keyboard="Email" />
+                <Label Text="Nombre de la empresa" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Entry Text="{Binding NombreEmpresa}" Placeholder="Por ejemplo: Gimnasio Sol" MaxLength="60" />
+            </VerticalStackLayout>
+
+            <!-- A mano: ya tengo una planilla. Caso normal: el servidor ya tiene la cuenta de servicio -->
+            <VerticalStackLayout IsVisible="{Binding ModoManual}" Spacing="8">
+                <Label FontAttributes="Bold" Text="Paso 1: creá una planilla" Margin="0,6,0,0" />
                 <Label FontSize="12" Text="Entrá a Google Sheets con tu cuenta y creá una planilla nueva y vacía (el nombre da igual)." />
 
                 <Label FontAttributes="Bold" Text="Paso 2: compartila con este correo, como Editor" Margin="0,6,0,0" />
@@ -21,13 +47,13 @@
                 </Border>
                 <Button Text="Copiar correo" Clicked="OnCopiarCorreo" />
 
-                <Label FontAttributes="Bold" Text="Paso 3: completá los datos" Margin="0,6,0,0" />
+                <Label FontAttributes="Bold" Text="Paso 3: pegá el link de la planilla" Margin="0,6,0,0" />
             </VerticalStackLayout>
 
             <!-- Servidor sin cuenta de servicio: hay que cargar el .json -->
             <VerticalStackLayout IsVisible="{Binding PideCredencial}" Spacing="8">
                 <Label FontSize="12"
-                       Text="Este servidor no tiene una cuenta de servicio de Google. Pedile el archivo .json a quien lo instaló (o creá una en Google Cloud), y compartí tu planilla como Editor con el correo que figura en ese archivo (client_email)." />
+                       Text="Este servidor no tiene una cuenta de servicio de Google. Pedile el archivo .json a quien lo instaló (o creá una en Google Cloud)." />
                 <Label Text="Credencial de la cuenta de servicio" FontAttributes="Bold" />
                 <Button Text="Elegir archivo .json" Clicked="OnElegirArchivo" />
                 <Editor Text="{Binding Credenciales}" HeightRequest="90" Placeholder="…o pegá acá el contenido del archivo"
@@ -35,12 +61,15 @@
                 <Label Text="✔ Credencial cargada" IsVisible="{Binding CredencialesCargadas}" />
             </VerticalStackLayout>
 
-            <Label Text="Planilla" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Entry Text="{Binding Planilla}" Placeholder="Link de tu planilla" Keyboard="Url" />
+            <VerticalStackLayout IsVisible="{Binding PideLink}" Spacing="6">
+                <Label Text="Planilla" FontAttributes="Bold" Margin="0,8,0,0" />
+                <Entry Text="{Binding Planilla}" Placeholder="Link de tu planilla" Keyboard="Url" />
+            </VerticalStackLayout>
 
-            <Label Text="Primer administrador (solo si la planilla es nueva)" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Label Text="Primer administrador" FontAttributes="Bold" Margin="0,8,0,0" />
+            <Label FontSize="11" Text="Con este usuario vas a entrar a la app para administrar todo." />
             <Entry Text="{Binding NombreAdmin}" Placeholder="Nombre y apellido" />
-            <Entry Text="{Binding EmailAdmin}" Placeholder="Email" Keyboard="Email" />
+            <Entry Text="{Binding EmailAdmin}" Placeholder="Email (si lo dejás vacío, usa tu cuenta de Google)" Keyboard="Email" />
             <Entry Text="{Binding PinAdmin}" Placeholder="PIN (4 dígitos)" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
 
             <VerticalStackLayout IsVisible="{Binding PideClave}" Spacing="6">
@@ -51,7 +80,7 @@
                         TextColor="{DynamicResource ColorTextoSuave}" FontSize="12" />
             </VerticalStackLayout>
 
-            <Button Text="Probar y guardar" Clicked="OnGuardar" Margin="0,8,0,0"
+            <Button Text="{Binding TextoBotonGuardar}" Clicked="OnGuardar" Margin="0,8,0,0"
                     IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
             <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
             <Label Text="{Binding Estado}" HorizontalTextAlignment="Center" />

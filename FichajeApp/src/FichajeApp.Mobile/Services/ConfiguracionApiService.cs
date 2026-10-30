@@ -15,7 +15,7 @@ public class ConfiguracionApiService
 
     // null si no se pudo consultar al servidor. CuentaDeServicio es el correo con el que hay que compartir la
     // planilla; viene vacío si el servidor no tiene credencial y hay que cargarla desde la app.
-    public record EstadoConexion(bool Configurada, string? CuentaDeServicio);
+    public record EstadoConexion(bool Configurada, string? CuentaDeServicio, string? Aviso = null);
 
     public async Task<EstadoConexion?> EstadoAsync()
     {
@@ -25,7 +25,8 @@ public class ConfiguracionApiService
             var r = await _http.GetFromJsonAsync<System.Text.Json.JsonElement>($"{_clientes.BaseUrl}/configuracion/estado", cts.Token);
             var cuenta = r.TryGetProperty("cuentaDeServicio", out var c) && c.ValueKind == System.Text.Json.JsonValueKind.String
                 ? c.GetString() : null;
-            return new EstadoConexion(r.GetProperty("configurada").GetBoolean(), cuenta);
+            var aviso = r.TryGetProperty("aviso", out var a) && a.ValueKind == System.Text.Json.JsonValueKind.String ? a.GetString() : null;
+            return new EstadoConexion(r.GetProperty("configurada").GetBoolean(), cuenta, aviso);
         }
         catch { return null; }
     }
