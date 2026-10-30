@@ -22,13 +22,16 @@ public class ConfiguracionFichajeSheetsRepositorio : IConfiguracionFichajeReposi
         var ubicacion = Valor("UBICACION");
         var foto = Valor("FOTO");
         var modo = Valor("MODO");
-        if (ubicacion is null && foto is null && modo is null) return null;
+        var precision = Valor("PRECISION");
+        if (ubicacion is null && foto is null && modo is null && precision is null) return null;
 
         return new ConfiguracionFichaje
         {
             Ubicacion = ubicacion ?? ConfiguracionFichaje.UbicacionLibre,
             Foto = foto ?? ConfiguracionFichaje.FotoNo,
-            Modo = modo ?? ConfiguracionFichaje.ModoPersonal // las planillas anteriores no tienen esta fila: modo personal
+            Modo = modo ?? ConfiguracionFichaje.ModoPersonal, // las planillas anteriores no tienen esta fila: modo personal
+            // 0 = sin dato: el servicio usa lo de appsettings
+            PrecisionMaxMetros = int.TryParse(precision, out var p) ? p : 0
         };
     }
 
@@ -41,7 +44,8 @@ public class ConfiguracionFichajeSheetsRepositorio : IConfiguracionFichajeReposi
             {
                 new List<object> { "UBICACION", configuracion.Ubicacion },
                 new List<object> { "FOTO", configuracion.Foto },
-                new List<object> { "MODO", configuracion.Modo }
+                new List<object> { "MODO", configuracion.Modo },
+                new List<object> { "PRECISION", configuracion.PrecisionMaxMetros }
             });
         }
         finally { _escritura.Release(); }

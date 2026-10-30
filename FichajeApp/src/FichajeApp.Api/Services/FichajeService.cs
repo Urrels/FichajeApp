@@ -45,7 +45,7 @@ public class FichajeService : IFichajeService
         var pideUbicacion = config.Ubicacion != ConfiguracionFichaje.UbicacionNinguna && contexto.LugarFijo is null;
 
         if (pideUbicacion)
-            reglas.Agregar(new ValidacionUbicacionReal(_precisionMaxMetros));
+            reglas.Agregar(new ValidacionUbicacionReal(config.PrecisionMaxMetros));
 
         if (pideUbicacion && config.Ubicacion == ConfiguracionFichaje.UbicacionLibre)
             reglas.Agregar(new ValidacionMotivoSiLugarDesconocido());

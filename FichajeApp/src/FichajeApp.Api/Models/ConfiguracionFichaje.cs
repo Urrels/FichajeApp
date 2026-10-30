@@ -27,6 +27,11 @@ public class ConfiguracionFichaje
     public string Foto { get; set; } = FotoNo;
     public string Modo { get; set; } = ModoPersonal;
 
+    // Hasta cuántos metros de error del GPS se acepta un fichaje. Lo elige el administrador; si no, rige Fichaje:PrecisionMaxMetros.
+    // Adentro de un edificio el GPS suele dar de 30 a 150 m: más bajo = más seguro, pero más fichajes rechazados.
+    public const int PrecisionMinima = 10, PrecisionMaxima = 500;
+    public int PrecisionMaxMetros { get; set; } = 50;
+
     // Cuánto tiempo se guardan las fotos (lo define el servidor, no el administrador); 0 = para siempre
     public int RetencionFotosDias { get; set; }
 }
@@ -38,4 +43,7 @@ public class GuardarConfiguracionFichajeRequest
 
     // Si no viene, se conserva el modo actual
     public string? Modo { get; set; }
+
+    // Si no viene, se conserva la precisión actual
+    public int? PrecisionMaxMetros { get; set; }
 }

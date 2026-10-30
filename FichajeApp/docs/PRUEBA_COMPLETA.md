@@ -54,7 +54,7 @@ Las fotos de la prueba anterior quedan en `datos/fotos`; si querés borrarlas, b
 - [ ] Aparece el botón "Ver en Google Maps" tras fichar.
 - [ ] Con foto obligatoria: sacar la foto y tocar la **tilde** no cierra la app (la foto se achica al leerla). Se abre **la cámara frontal dentro de la app** (botón "Sacar foto"); si el teléfono no tiene frontal o no se puede abrir, usa la cámara del sistema.
 - [ ] Ficha **dos veces seguidas** (entrada y salida, una a continuación de la otra): las dos veces toma la ubicación. Si falla, el mensaje dice por qué (GPS apagado, sin permiso o sin lectura) y se puede reintentar.
-- [ ] Al aire libre, con el GPS en alta precisión, el fichaje pasa (el GPS toma varias lecturas hasta 15 s y se queda con la mejor). Adentro puede salir "no es lo bastante precisa": es lo esperado.
+- [ ] **GPS**: al abrir la pantalla de fichar el teléfono empieza a buscar señal; al tocar el botón se ve "Buscando señal GPS… ±NN m" y baja con los segundos. Al aire libre pasa casi enseguida; adentro puede tardar hasta 30 s. Si sale "no es lo bastante precisa", Administración → Cómo se ficha → **Precisión del GPS** → Flexible (100 m) y se prueba de nuevo. Si falla, el registro de la API dice la precisión medida ("Fichaje rechazado de …").
 - [ ] El logo se ve **redondo** en el login y en la vista previa de Apariencia, también con uno subido por el administrador.
 - [ ] Cada fichaje se ve como una fila en la hoja `Fichajes`.
 

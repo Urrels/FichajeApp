@@ -15,7 +15,7 @@ public class FichajeRequest
 }
 
 // Cómo se ficha en este cliente: ubicación (Ninguna / Libre / SedeFija) y foto (No / Opcional / Obligatoria)
-public record ConfiguracionFichaje(string Ubicacion, string Foto, int RetencionDias = 90, string Modo = "Personal")
+public record ConfiguracionFichaje(string Ubicacion, string Foto, int RetencionDias = 90, string Modo = "Personal", int PrecisionMaxMetros = 50)
 {
     public static readonly ConfiguracionFichaje PorDefecto = new("Libre", "No");
     public bool PideUbicacion => Ubicacion != "Ninguna";
@@ -106,7 +106,8 @@ public class ApiService
         string Texto(string campo, string porDefecto) =>
             r.Datos.TryGetProperty(campo, out var v) && v.ValueKind == System.Text.Json.JsonValueKind.String ? v.GetString() ?? porDefecto : porDefecto;
         var dias = r.Datos.TryGetProperty("retencionDias", out var d) && d.TryGetInt32(out var n) ? n : 90;
-        return new ConfiguracionFichaje(Texto("ubicacion", "Libre"), Texto("foto", "No"), dias);
+        var precision = r.Datos.TryGetProperty("precisionMaxMetros", out var pm) && pm.TryGetInt32(out var m) ? m : 50;
+        return new ConfiguracionFichaje(Texto("ubicacion", "Libre"), Texto("foto", "No"), dias, "Personal", precision);
     }
 
     // Empleados que pueden fichar en el teléfono compartido de la sucursal, con lo que les toca ahora
