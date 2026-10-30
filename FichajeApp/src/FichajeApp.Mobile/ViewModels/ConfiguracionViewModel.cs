@@ -78,7 +78,7 @@ public class ConfiguracionViewModel : VmBase
         if (string.IsNullOrWhiteSpace(Planilla)) { Estado = "Pegá el link o el ID de tu planilla."; return; }
         if (PideCredencial && !CredencialesCargadas) { Estado = "Cargá el archivo .json de la cuenta de servicio."; return; }
 
-        Estado = "Probando la conexión con Google...";
+        Estado = "Conectando y preparando la planilla... puede tardar hasta un minuto.";
         var (exito, mensaje) = await _api.GuardarAsync(new
         {
             Clave = Clave.Trim(),
@@ -90,7 +90,12 @@ public class ConfiguracionViewModel : VmBase
         });
 
         Estado = mensaje;
-        if (!exito) return;
+        if (!exito)
+        {
+            // Un cartel, no solo una línea de texto al final de la pantalla (que con el teclado abierto no se ve)
+            await Dialogos.Aviso("No se pudo conectar", mensaje);
+            return;
+        }
 
         // Ya quedó guardada en el servidor: se limpia lo sensible del teléfono
         Credenciales = string.Empty;

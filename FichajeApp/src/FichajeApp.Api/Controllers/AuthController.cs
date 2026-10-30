@@ -38,7 +38,7 @@ public class AuthController : ControllerBase
                 {
                     // El teléfono de una sucursal queda abierto: su sesión dura un mes (la baja o el bloqueo la cortan igual)
                     Token = _jwtService.GenerarToken(empleado, resultado.Roles, resultado.Permisos,
-                        resultado.Permisos.Contains(CatalogoPermisos.FicharEnKiosco) ? TimeSpan.FromDays(30) : null),
+                        CatalogoPermisos.EsSoloKiosco(resultado.Permisos) ? TimeSpan.FromDays(30) : null),
                     NombreCompleto = empleado.NombreCompleto,
                     EmpleadoId = empleado.Id,
                     Rol = resultado.Roles.FirstOrDefault() ?? "Empleado",

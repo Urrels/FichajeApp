@@ -32,6 +32,14 @@ public static class CatalogoPermisos
         FicharEnKiosco, CambiarConexion
     };
 
+    // Cuenta de un teléfono de sucursal: puede usar el kiosco pero no ficha por sí misma. El Administrador tiene todos los
+    // permisos (incluido el del kiosco) y sí ficha, así que NO es una cuenta de sucursal.
+    public static bool EsSoloKiosco(IEnumerable<string> permisos)
+    {
+        var lista = permisos as ICollection<string> ?? permisos.ToList();
+        return lista.Contains(FicharEnKiosco) && !lista.Contains(FicharAsistencia);
+    }
+
     // Permisos sin los cuales el sistema quedaría sin administración (guarda anti-lockout)
     public static readonly string[] DeAdministracion = { AdministrarUsuarios, GestionRoles };
 

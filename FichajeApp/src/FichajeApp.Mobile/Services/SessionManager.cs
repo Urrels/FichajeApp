@@ -29,7 +29,8 @@ public sealed class SessionManager
     public bool TienePermiso(string permiso) => _permisos.Contains(permiso);
     public bool TieneAlgunPermiso(IEnumerable<string> permisos) => permisos.Any(_permisos.Contains);
     public bool EsSupervisor => TienePermiso(NombresPermisos.VerPanelSupervisor);
-    public bool EsKiosco => TienePermiso(NombresPermisos.FicharEnKiosco);
+    // El Administrador tiene todos los permisos (también el del kiosco) pero ficha: no es una cuenta de sucursal
+    public bool EsKiosco => TienePermiso(NombresPermisos.FicharEnKiosco) && !TienePermiso(NombresPermisos.FicharAsistencia);
     public bool EsAdministrador => TieneAlgunPermiso(NombresPermisos.DeAdministracion);
 
     public void Suscribir(ISessionObserver observer)
