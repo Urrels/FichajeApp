@@ -7,8 +7,11 @@ public partial class App : Application
     private readonly AuthService _authService;
     private readonly AparienciaService _apariencia;
 
-    public App(AuthService authService, IClienteService clientes, AparienciaService apariencia)
+    private readonly ConfiguracionApiService _configuracion;
+
+    public App(AuthService authService, IClienteService clientes, AparienciaService apariencia, ConfiguracionApiService configuracion)
     {
+        _configuracion = configuracion;
         InitializeComponent();
 
         // El diseño es claro (fondo y tarjetas claras). Con el teléfono en modo oscuro, los textos de la plantilla de MAUI
@@ -25,6 +28,13 @@ public partial class App : Application
     {
         // Restaura el token guardado en SecureStorage y puebla el Singleton SessionManager
         var haySesion = await _authService.RestaurarSesionAsync();
+
+        // Si el servidor se reinició sin planilla (por ejemplo para empezar de cero), la sesión guardada es de la planilla vieja
+        if (haySesion && (await _configuracion.EstadoAsync())?.Configurada == false)
+        {
+            _authService.Logout();
+            haySesion = false;
+        }
         await Shell.Current.GoToAsync(haySesion ? Navegacion.RutaInicial() : "//LoginPage");
 
         // La apariencia vigente se pide sin bloquear el arranque; si cambió, la pantalla se actualiza sola
