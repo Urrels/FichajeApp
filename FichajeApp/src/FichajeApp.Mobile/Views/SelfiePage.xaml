@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:camara="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="FichajeApp.Mobile.Views.SelfiePage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="Black">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <!-- Vista de la cámara frontal -->
+        <camara:CameraView x:Name="Camara"
+                           MediaCaptured="OnFotoCapturada"
+                           MediaCaptureFailed="OnFotoFallida" />
+
+        <Label x:Name="Aviso" Text="Mirá a la cámara y tocá «Sacar foto»"
+               TextColor="White" FontSize="16" HorizontalOptions="Center" VerticalOptions="Start" Margin="16,48,16,0"
+               HorizontalTextAlignment="Center" />
+
+        <ActivityIndicator x:Name="Ocupado" IsRunning="False" IsVisible="False" Color="White"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,2*" ColumnSpacing="12" Padding="16,12,16,28" BackgroundColor="#CC000000">
+            <Button x:Name="CancelarBoton" Text="Cancelar" Clicked="OnCancelar"
+                    BackgroundColor="Transparent" TextColor="White" />
+            <Button x:Name="SacarBoton" Grid.Column="1" Text="Sacar foto" Clicked="OnSacar" FontAttributes="Bold" />
+        </Grid>
+    </Grid>
+</ContentPage>

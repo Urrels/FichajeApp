@@ -13,6 +13,26 @@ namespace FichajeApp.Mobile.Services;
 // y recién después se ajusta el tamaño y la rotación.
 public static class ReductorDeImagenes
 {
+    // Lo mismo desde un flujo (la cámara de la app entrega la foto así)
+    public static async Task<byte[]> ReducirAsync(System.IO.Stream flujo, int lado, bool permitirPng, int calidadJpeg, int pesoMaximoPng)
+    {
+#if ANDROID
+        var temporal = System.IO.Path.Combine(FileSystem.CacheDirectory, $"reducir_{Guid.NewGuid():N}.tmp");
+        try
+        {
+            await using (var destino = File.Create(temporal))
+                await flujo.CopyToAsync(destino);
+            return await Task.Run(() => ReducirAndroid(temporal, lado, permitirPng, calidadJpeg, pesoMaximoPng));
+        }
+        finally { try { File.Delete(temporal); } catch { /* es de la caché */ } }
+#else
+        await Task.CompletedTask;
+        using Microsoft.Maui.Graphics.IImage imagen = PlatformImage.FromStream(flujo);
+        using Microsoft.Maui.Graphics.IImage chica = imagen.Downsize(lado, true);
+        return chica.AsBytes(Microsoft.Maui.Graphics.ImageFormat.Jpeg, calidadJpeg / 100f);
+#endif
+    }
+
     // Devuelve JPG, o PNG (conserva la transparencia) si se permite y entra en pesoMaximoPng
     public static async Task<byte[]> ReducirAsync(FileResult archivo, int lado, bool permitirPng, int calidadJpeg, int pesoMaximoPng)
     {

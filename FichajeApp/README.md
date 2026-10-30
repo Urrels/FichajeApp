@@ -162,7 +162,7 @@ qué se pide al fichar. Se guarda en la pestaña `ConfigFichaje` de su planilla 
 Mientras nadie lo cambie rige lo de siempre: `Fichaje:ModoUbicacion` de appsettings y sin foto.
 
 **Las fotos se guardan en el servidor** (`datos/fotos/aaaa/mm/dd/<id>.jpg`, fuera de git); en la planilla, la hoja `Fichajes`
-guarda solo el nombre del archivo en la columna `O`. La app la achica a 640 px (~100 KB) y la API solo acepta PNG/JPG de hasta 400 KB.
+guarda solo el nombre del archivo en la columna `O`. La selfie se saca con la **cámara frontal dentro de la app** (paquete CommunityToolkit.Maui.Camera; si no se puede abrir, se usa la cámara del sistema). La app la achica a 640 px (~100 KB) y la API solo acepta PNG/JPG de hasta 400 KB.
 El supervisor ve la foto tocando el fichaje en su panel (`GET /api/supervisor/foto`, con permiso de supervisor).
 Detrás de `IAlmacenFotos`, así que pasar a Amazon S3 u otro almacenamiento es cambiar una clase. **Hay que hacer copia de seguridad
 de la carpeta `datos/`** y avisar a los empleados que se les saca una foto (es un dato personal).
