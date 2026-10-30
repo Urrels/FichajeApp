@@ -1,5 +1,4 @@
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
 using FichajeApp.Mobile.Services;
 
 namespace FichajeApp.Mobile.ViewModels;
@@ -138,8 +137,7 @@ public class AparienciaViewModel : VmBase
             var foto = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions { Title = "Elegí el logo" });
             if (foto is null) return;
 
-            await using var origen = await foto.OpenReadAsync();
-            var bytes = Achicar(origen);
+            var bytes = await ReductorDeImagenes.ReducirAsync(foto, (int)LadoDelLogo, permitirPng: true, calidadJpeg: 80, pesoMaximoPng: PesoMaximoPng);
 
             _logoNuevoBase64 = Convert.ToBase64String(bytes);
             _quitarLogo = false;
@@ -150,16 +148,6 @@ public class AparienciaViewModel : VmBase
         {
             await Dialogos.Aviso("No se pudo cargar la imagen", ex.Message);
         }
-    }
-
-    private static byte[] Achicar(Stream origen)
-    {
-        using Microsoft.Maui.Graphics.IImage imagen = PlatformImage.FromStream(origen);
-        using Microsoft.Maui.Graphics.IImage chica = imagen.Downsize(LadoDelLogo, true);
-
-        var png = chica.AsBytes(ImageFormat.Png);
-        // Una foto en PNG puede pesar mucho: en ese caso se pasa a JPG (pierde la transparencia)
-        return png.Length <= PesoMaximoPng ? png : chica.AsBytes(ImageFormat.Jpeg, 0.8f);
     }
 
     public void QuitarLogo()
