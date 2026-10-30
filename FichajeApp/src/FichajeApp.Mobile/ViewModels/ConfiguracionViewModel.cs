@@ -15,7 +15,13 @@ public class ConfiguracionViewModel : VmBase
     private string _emailAdmin = string.Empty;
     private string _pinAdmin = string.Empty;
 
-    public ConfiguracionViewModel(ConfiguracionApiService api) => _api = api;
+    private readonly AuthService _auth;
+
+    public ConfiguracionViewModel(ConfiguracionApiService api, AuthService auth)
+    {
+        _api = api;
+        _auth = auth;
+    }
 
     public string Clave { get => _clave; set => Set(ref _clave, value); }
     public string Planilla { get => _planilla; set => Set(ref _planilla, value); }
@@ -101,7 +107,13 @@ public class ConfiguracionViewModel : VmBase
         Credenciales = string.Empty;
         Clave = string.Empty;
         PinAdmin = string.Empty;
-        await Dialogos.Aviso("Listo", mensaje);
+        // Con otra planilla, la sesión de antes ya no vale (esos usuarios no existen ahí): se vuelve a entrar
+        var estabaConSesion = SessionManager.Instance.EstaLogueado;
+        if (estabaConSesion) _auth.Logout();
+
+        await Dialogos.Aviso("Listo", estabaConSesion
+            ? mensaje + "\n\nPor seguridad se cerró tu sesión: entrá con un usuario de esta planilla."
+            : mensaje);
         Guardada?.Invoke();
     });
 }

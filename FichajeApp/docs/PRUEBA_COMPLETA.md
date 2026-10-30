@@ -4,9 +4,25 @@ Hasta ahora casi todo se probó con tests automáticos y compilando, **no con un
 recorrerlo todo una vez antes de dárselo a un cliente. Marcá cada punto; si algo falla, anotá el mensaje exacto de la pantalla.
 
 Usá una **planilla de Google nueva y vacía** y los datos de prueba (administrador `admin@prueba.com`, PIN `1234`).
-Para empezar de cero: `appsettings.Development.json` con `"SpreadsheetId": ""` y `"Setup": { "Clave": "prueba123" }`,
-borrar la carpeta `src/FichajeApp.Api/datos` y reiniciar la API.
 
+## Empezar de cero con una planilla nueva
+
+Importante: la conexión que se guarda desde la app queda en `src/FichajeApp.Api/datos/conexion.json` y **manda sobre** el
+`SpreadsheetId` de `appsettings`. Por eso, vaciar el `SpreadsheetId` no alcanza para cambiar de planilla.
+
+**Opción 1, desde la app (la más simple):** entrá como administrador → Administración → **Conexión con Google Sheets**.
+Compartí la planilla nueva (vacía) con el correo que muestra la pantalla, pegá su link y completá los datos del primer
+administrador de esa planilla. Al guardar, la app cierra tu sesión y tenés que entrar con el administrador nuevo.
+La planilla vieja no se toca.
+
+**Opción 2, desde la PC (para empezar totalmente limpio):**
+1. Cerrá la API.
+2. Borrá **solo** el archivo `src/FichajeApp.Api/datos/conexion.json` (no la carpeta: ahí están las fotos y las llaves).
+3. En `appsettings.Development.json` dejá `"SpreadsheetId": ""` y `"Setup": { "Clave": "prueba123" }`.
+4. Iniciá la API. En el teléfono, al abrir la app, si todavía tenía una sesión de la planilla vieja se cierra sola y te lleva
+   a "Conectar Google Sheets": compartí la planilla nueva con el correo, pegá el link y completá el administrador.
+
+Las fotos de la prueba anterior quedan en `datos/fotos`; si querés borrarlas, borrá esa carpeta.
 ## A. Conectar la planilla (como lo haría un cliente)
 - [ ] La app, al abrir, te lleva sola a "Conectar Google Sheets" (o con el botón del login).
 - [ ] La pantalla muestra el correo de la cuenta de servicio para compartir la planilla; "Copiar correo" funciona.
@@ -35,6 +51,7 @@ borrar la carpeta `src/FichajeApp.Api/datos` y reiniciar la API.
 - [ ] Una ubicación simulada (app de GPS falso) se rechaza.
 - [ ] Aparece el botón "Ver en Google Maps" tras fichar.
 - [ ] Con foto obligatoria: sacar la foto y tocar la **tilde** no cierra la app (la foto se achica al leerla). Se abre **la cámara frontal dentro de la app** (botón "Sacar foto"); si el teléfono no tiene frontal o no se puede abrir, usa la cámara del sistema.
+- [ ] Ficha **dos veces seguidas** (entrada y salida, una a continuación de la otra): las dos veces toma la ubicación. Si falla, el mensaje dice por qué (GPS apagado, sin permiso o sin lectura) y se puede reintentar.
 - [ ] Al aire libre, con el GPS en alta precisión, el fichaje pasa (el GPS toma varias lecturas hasta 15 s y se queda con la mejor). Adentro puede salir "no es lo bastante precisa": es lo esperado.
 - [ ] El logo se ve **redondo** en el login y en la vista previa de Apariencia, también con uno subido por el administrador.
 - [ ] Cada fichaje se ve como una fila en la hoja `Fichajes`.
