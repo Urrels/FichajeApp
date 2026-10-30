@@ -10,6 +10,11 @@ public partial class App : Application
     public App(AuthService authService, IClienteService clientes, AparienciaService apariencia)
     {
         InitializeComponent();
+
+        // El diseño es claro (fondo y tarjetas claras). Con el teléfono en modo oscuro, los textos de la plantilla de MAUI
+        // pasaban a blanco y se leían muy mal sobre ese fondo.
+        UserAppTheme = AppTheme.Light;
+
         clientes.AplicarTema(); // el cliente del build + la última apariencia conocida del servidor
         _authService = authService;
         _apariencia = apariencia;

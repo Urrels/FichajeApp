@@ -6,7 +6,7 @@ namespace FichajeApp.Mobile.Services;
 // No usa sesión: se protege con la clave de instalación que define quien instala el servidor.
 public class ConfiguracionApiService
 {
-    private static readonly TimeSpan Espera = TimeSpan.FromSeconds(60); // incluye crear las pestañas en la planilla
+    private static readonly TimeSpan Espera = TimeSpan.FromSeconds(180); // incluye preparar la planilla; si Google limita los pedidos, la API espera y reintenta
 
     private readonly HttpClient _http = new();
     private readonly IClienteService _clientes;
@@ -54,6 +54,8 @@ public class ConfiguracionApiService
 
             if (respuesta.IsSuccessStatusCode) return (true, mensaje ?? "Conexión guardada.");
             if ((int)respuesta.StatusCode == 429) return (false, "Demasiados intentos. Esperá un minuto.");
+            if ((int)respuesta.StatusCode >= 500)
+                return (false, mensaje ?? "El servidor tuvo un problema al preparar la planilla. Probá de nuevo en un minuto; si sigue, revisá el registro de la API.");
             return (false, mensaje ?? $"El servidor respondió con error ({(int)respuesta.StatusCode})");
         }
         catch (OperationCanceledException) { return (false, "El servidor no respondió a tiempo."); }

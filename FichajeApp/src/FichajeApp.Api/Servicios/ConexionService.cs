@@ -141,6 +141,14 @@ public class ConexionService
         }
     }
 
+    // Mensaje corto y entendible de un error técnico (el detalle completo queda en el log del servidor)
+    private static string Resumir(Exception ex) => ex switch
+    {
+        GoogleApiException g when (int)g.HttpStatusCode == 429 => "Google limitó los pedidos por minuto.",
+        GoogleApiException g => $"Google respondió con un error ({(int)g.HttpStatusCode}).",
+        _ => ex.Message
+    };
+
     public async Task<string> ConfigurarAsync(ConfigurarConexionRequest r)
     {
         var id = ExtraerIdDePlanilla(r.Planilla);
@@ -172,9 +180,30 @@ public class ConexionService
         {
             await _probador.ProbarAsync(id, credenciales);
 
+            // Lo que había antes, para volver a eso si la preparación de la planilla nueva falla a la mitad
+            var anteriorGuardado = _almacen.Leer();
+            var anteriorId = _cliente.Configurado ? _cliente.SpreadsheetId : null;
+            var anteriorCredenciales = _cliente.Credenciales;
+
             _almacen.Guardar(id, cargadaDesdeLaApp ? credenciales : null);
             _cliente.Conectar(id, credenciales);
-            await _inicializador.InicializarAsync(admin);
+            try
+            {
+                await _inicializador.InicializarAsync(admin);
+            }
+            catch (Exception ex)
+            {
+                // Si quedara conectada pero a medio preparar, no se podría reintentar (el código ya no alcanza): se deshace todo
+                _log.LogError(ex, "No se pudo preparar la planilla; se vuelve a la conexión anterior");
+                if (anteriorGuardado is not null) _almacen.Guardar(anteriorGuardado.Value.SpreadsheetId, anteriorGuardado.Value.CredencialesJson);
+                else _almacen.Borrar();
+
+                if (anteriorId is not null) _cliente.Conectar(anteriorId, anteriorCredenciales);
+                else _cliente.Desconectar();
+
+                throw new ConexionInvalidaException(
+                    "Se pudo entrar a la planilla pero no se pudo prepararla: " + Resumir(ex) + " No se guardó nada: probá de nuevo en un minuto.");
+            }
             return correo;
         }
         finally { _configuracion.Release(); }

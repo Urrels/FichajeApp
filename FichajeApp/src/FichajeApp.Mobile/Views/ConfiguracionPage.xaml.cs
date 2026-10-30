@@ -1,3 +1,4 @@
+using FichajeApp.Mobile.Services;
 using FichajeApp.Mobile.ViewModels;
 
 namespace FichajeApp.Mobile.Views;
@@ -10,9 +11,13 @@ public partial class ConfiguracionPage : ContentPage
     {
         InitializeComponent();
         _viewModel = viewModel;
-        _viewModel.Guardada += async () => await MainThread.InvokeOnMainThreadAsync(() => Shell.Current.GoToAsync(".."));
+        _viewModel.Guardada += async () => await MainThread.InvokeOnMainThreadAsync(() => IrAlInicio());
         BindingContext = viewModel;
     }
+
+    // Sin sesión (primera configuración) se vuelve al inicio de sesión; un administrador que cambió la planilla vuelve a donde estaba
+    private static Task IrAlInicio() =>
+        Shell.Current.GoToAsync(SessionManager.Instance.EstaLogueado ? ".." : "//LoginPage");
 
     protected override async void OnAppearing()
     {

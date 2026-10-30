@@ -58,4 +58,24 @@
         <Setter Property="OnColor" Value="{DynamicResource ColorPrimario}" />
     </Style>
 
+    <!-- Textos: siempre oscuros sobre el fondo claro, sin depender del tema del teléfono -->
+    <Style TargetType="Label">
+        <Setter Property="TextColor" Value="{DynamicResource ColorTexto}" />
+    </Style>
+
+    <Style TargetType="Entry">
+        <Setter Property="TextColor" Value="{DynamicResource ColorTexto}" />
+        <Setter Property="PlaceholderColor" Value="{DynamicResource ColorTextoSuave}" />
+    </Style>
+
+    <Style TargetType="Editor">
+        <Setter Property="TextColor" Value="{DynamicResource ColorTexto}" />
+        <Setter Property="PlaceholderColor" Value="{DynamicResource ColorTextoSuave}" />
+    </Style>
+
+    <Style TargetType="SearchBar">
+        <Setter Property="TextColor" Value="{DynamicResource ColorTexto}" />
+        <Setter Property="PlaceholderColor" Value="{DynamicResource ColorTextoSuave}" />
+    </Style>
+
 </ResourceDictionary>

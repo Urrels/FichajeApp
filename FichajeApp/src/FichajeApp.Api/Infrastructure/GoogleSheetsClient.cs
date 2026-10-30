@@ -1,5 +1,7 @@
 using Google.Apis.Auth.OAuth2;
+using Google.Apis.Http;
 using Google.Apis.Services;
+using Google.Apis.Util;
 using Google.Apis.Sheets.v4;
 
 namespace FichajeApp.Api.Infrastructure;
@@ -62,6 +64,8 @@ public class GoogleSheetsClient
     // Correo con el que el cliente tiene que compartir su planilla (no es un secreto)
     public string? CorreoCuentaServicio => _actual?.Correo ?? (_credenciales is null ? null : CorreoDe(_credenciales));
 
+    public void Desconectar() => _actual = null;
+
     public void Conectar(string spreadsheetId, string? credencialesJson = null)
     {
         var json = credencialesJson ?? _credenciales ?? throw new ConexionNoConfiguradaException();
@@ -82,9 +86,37 @@ public class GoogleSheetsClient
         var credencial = GoogleCredential.FromJson(credencialesJson).CreateScoped(SheetsService.Scope.Spreadsheets);
         var servicio = new SheetsService(new BaseClientService.Initializer
         {
-            HttpClientInitializer = credencial,
+            HttpClientInitializer = new ReintentosPorCuota(credencial),
             ApplicationName = "FichajeApp"
         });
         return (servicio, correo);
+    }
+}
+
+// Google limita los pedidos por minuto (hoy 60 de lectura y 60 de escritura por usuario) y, al pasarse, responde 429.
+// La preparación de una planilla nueva hace muchos pedidos seguidos: en vez de fallar, se espera y se reintenta.
+public class ReintentosPorCuota : IConfigurableHttpClientInitializer
+{
+    private readonly IConfigurableHttpClientInitializer _interno;
+    private readonly TimeSpan _espera;
+    private readonly int _reintentos;
+
+    public ReintentosPorCuota(IConfigurableHttpClientInitializer interno, TimeSpan? espera = null, int reintentos = 6)
+    {
+        _interno = interno;
+        _espera = espera ?? TimeSpan.FromSeconds(1); // la librería exige entre 100 ms y 1 s; se duplica en cada intento
+        _reintentos = reintentos;
+    }
+
+    public void Initialize(ConfigurableHttpClient httpClient)
+    {
+        _interno.Initialize(httpClient);
+
+        httpClient.MessageHandler.NumTries = _reintentos + 1;
+        httpClient.MessageHandler.AddUnsuccessfulResponseHandler(new BackOffHandler(
+            new BackOffHandler.Initializer(new ExponentialBackOff(_espera, _reintentos))
+            {
+                HandleUnsuccessfulResponseFunc = r => (int)r.StatusCode == 429
+            }));
     }
 }

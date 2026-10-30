@@ -13,11 +13,15 @@ borrar la carpeta `src/FichajeApp.Api/datos` y reiniciar la API.
 - [ ] Con la planilla **sin compartir**: el mensaje dice con qué correo hay que compartirla.
 - [ ] Con un código de activación incorrecto: dice que no es correcto.
 - [ ] Con todo bien: se guarda y aparecen en la planilla las pestañas `Empleados`, `Fichajes`, `Sitios`, `Roles`, `Permisos`, `Parametros`, etc.
-- [ ] Entrás con el administrador que cargaste.
+- [ ] Entrás con el administrador que cargaste y ves **su panel** (Supervisor/Administración), no la pantalla del kiosco.
 - [ ] Desde Administración → "Conexión con Google Sheets" se puede volver a abrir (solo el administrador).
 - [ ] Sin sesión de administrador, intentar reconectar con el código **ya no funciona** ("La planilla ya está conectada…").
 
 - [ ] (Teléfono) 5 toques al logo del login cambian la dirección del servidor; una dirección mala se rechaza y una caída avisa "Guardada, pero no responde"; vacía vuelve a la original.
+
+- [ ] (Teléfono en modo oscuro) los textos se leen bien: la app siempre se ve clara.
+- [ ] Al guardar la planilla con un dato mal puesto aparece un **cartel** "No se pudo conectar" con el motivo, y se puede reintentar con el mismo código.
+- [ ] Al guardar bien, la app vuelve **sola al inicio de sesión**.
 
 ## B. Usuarios y roles
 - [ ] Administración → Usuarios: crear dos empleados y un supervisor; el empleado entra y ve solo "Fichar".

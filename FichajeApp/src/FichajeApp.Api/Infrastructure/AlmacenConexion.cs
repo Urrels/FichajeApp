@@ -37,6 +37,11 @@ public class AlmacenConexion
         return (g.SpreadsheetId, g.CredencialesProtegidas is null ? null : _protector.Unprotect(g.CredencialesProtegidas));
     }
 
+    public void Borrar()
+    {
+        if (File.Exists(_archivo)) File.Delete(_archivo);
+    }
+
     public void Guardar(string spreadsheetId, string? credencialesJson) =>
         File.WriteAllText(_archivo, JsonSerializer.Serialize(new Guardado(spreadsheetId,
             credencialesJson is null ? null : _protector.Protect(credencialesJson))));
