@@ -23,6 +23,28 @@ public class ConfiguracionViewModel : VmBase
         _auth = auth;
     }
 
+    // Por defecto el servidor crea la planilla, la prepara y se la comparte al cliente (todo de una vez)
+    private bool _crearPlanilla = true;
+    private string _emailPropietario = string.Empty;
+    private string _nombreEmpresa = string.Empty;
+    private string? _aviso;
+
+    public bool CrearPlanilla
+    {
+        get => _crearPlanilla;
+        set { if (Set(ref _crearPlanilla, value)) { Notificar(nameof(PideLink)); Notificar(nameof(ModoManual)); Notificar(nameof(TextoBotonGuardar)); } }
+    }
+    public string EmailPropietario { get => _emailPropietario; set => Set(ref _emailPropietario, value); }
+    public string NombreEmpresa { get => _nombreEmpresa; set => Set(ref _nombreEmpresa, value); }
+
+    // Si la planilla conectada se borró o dejó de estar compartida, el servidor lo avisa acá
+    public string? Aviso { get => _aviso; private set { if (Set(ref _aviso, value)) Notificar(nameof(HayAviso)); } }
+    public bool HayAviso => !string.IsNullOrWhiteSpace(Aviso);
+
+    public bool PideLink => !CrearPlanilla;
+    public bool ModoManual => ServidorTieneCredencial && !CrearPlanilla;
+    public string TextoBotonGuardar => CrearPlanilla ? "Crear y conectar" : "Probar y guardar";
+
     public string Clave { get => _clave; set => Set(ref _clave, value); }
     public string Planilla { get => _planilla; set => Set(ref _planilla, value); }
     public string Credenciales { get => _credenciales; set { if (Set(ref _credenciales, value)) { Notificar(nameof(CredencialesCargadas)); Notificar(nameof(MuestraEditor)); } } }
@@ -38,12 +60,17 @@ public class ConfiguracionViewModel : VmBase
 
     // Lo normal: el servidor ya tiene la cuenta de servicio y el cliente solo comparte su planilla con este correo
     private string? _cuentaDeServicio;
-    public string? CuentaDeServicio { get => _cuentaDeServicio; private set { if (Set(ref _cuentaDeServicio, value)) { Notificar(nameof(ServidorTieneCredencial)); Notificar(nameof(PideCredencial)); Notificar(nameof(MuestraEditor)); } } }
+    public string? CuentaDeServicio { get => _cuentaDeServicio; private set { if (Set(ref _cuentaDeServicio, value)) { Notificar(nameof(ServidorTieneCredencial)); Notificar(nameof(PideCredencial)); Notificar(nameof(MuestraEditor)); Notificar(nameof(ModoManual)); } } }
     public bool ServidorTieneCredencial => !string.IsNullOrEmpty(CuentaDeServicio);
     public bool PideCredencial => !ServidorTieneCredencial;
     public bool MuestraEditor => PideCredencial && !CredencialesCargadas;
 
-    public async Task CargarEstadoAsync() => CuentaDeServicio = (await _api.EstadoAsync())?.CuentaDeServicio;
+    public async Task CargarEstadoAsync()
+    {
+        var estado = await _api.EstadoAsync();
+        CuentaDeServicio = estado?.CuentaDeServicio;
+        Aviso = estado?.Aviso;
+    }
 
     public async Task CopiarCorreoAsync()
     {
@@ -81,15 +108,26 @@ public class ConfiguracionViewModel : VmBase
     public Task GuardarAsync() => ConEspera(async () =>
     {
         if (PideClave && string.IsNullOrWhiteSpace(Clave)) { Estado = "Escribí el código de activación."; return; }
-        if (string.IsNullOrWhiteSpace(Planilla)) { Estado = "Pegá el link o el ID de tu planilla."; return; }
+        if (CrearPlanilla)
+        {
+            if (!EmailPropietario.Contains('@')) { Estado = "Escribí tu cuenta de Google (ahí se te comparte la planilla)."; return; }
+            if (string.IsNullOrWhiteSpace(NombreAdmin)) { Estado = "Escribí el nombre del administrador."; return; }
+            if (PinAdmin.Length != 4 || !PinAdmin.All(char.IsDigit)) { Estado = "El PIN tiene 4 dígitos."; return; }
+        }
+        else if (string.IsNullOrWhiteSpace(Planilla)) { Estado = "Pegá el link o el ID de tu planilla."; return; }
         if (PideCredencial && !CredencialesCargadas) { Estado = "Cargá el archivo .json de la cuenta de servicio."; return; }
 
-        Estado = "Conectando y preparando la planilla... puede tardar hasta un minuto.";
+        Estado = CrearPlanilla
+            ? "Creando y preparando tu planilla... puede tardar hasta un minuto."
+            : "Conectando y preparando la planilla... puede tardar hasta un minuto.";
         var (exito, mensaje) = await _api.GuardarAsync(new
         {
             Clave = Clave.Trim(),
             Planilla,
             Credenciales,
+            CrearPlanillaNueva = CrearPlanilla,
+            EmailPropietario = EmailPropietario.Trim(),
+            NombreEmpresa = NombreEmpresa.Trim(),
             NombreAdministrador = NombreAdmin,
             EmailAdministrador = EmailAdmin,
             PinAdministrador = PinAdmin

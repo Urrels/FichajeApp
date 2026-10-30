@@ -175,6 +175,23 @@ public class AparienciaFalso : IAparienciaRepositorio
     }
 }
 
+// Crea "planillas" sin ir a Google: guarda qué se pidió y qué se borró
+public class CreadorFalso : ICreadorDePlanilla
+{
+    public string IdQueDevuelve { get; set; } = "1PlanillaNuevaCreadaPorElServidor0123456789abc";
+    public Exception? ErrorAlCrear { get; set; }
+    public List<(string Titulo, string Email)> Creadas { get; } = new();
+    public List<string> Eliminadas { get; } = new();
+
+    public Task<string> CrearAsync(string credencialesJson, string titulo, string emailPropietario)
+    {
+        if (ErrorAlCrear is not null) return Task.FromException<string>(ErrorAlCrear);
+        Creadas.Add((titulo, emailPropietario));
+        return Task.FromResult(IdQueDevuelve);
+    }
+
+    public Task EliminarAsync(string credencialesJson, string spreadsheetId) { Eliminadas.Add(spreadsheetId); return Task.CompletedTask; }
+}
 public class ConfiguracionFichajeFalso : IConfiguracionFichajeRepositorio
 {
     public ConfiguracionFichaje? Datos { get; set; }

@@ -22,7 +22,7 @@ La app de Play Store no puede hablar con `localhost` ni con `http://` (Android l
 ## 2. Conectar la planilla de Google
 
 ### Una sola vez, la hace quien instala el servidor (vos): la cuenta de servicio
-1. En <https://console.cloud.google.com> crear un proyecto y activar **Google Sheets API** (APIs y servicios → Biblioteca).
+1. En <https://console.cloud.google.com> crear un proyecto y activar **Google Sheets API** y **Google Drive API** (APIs y servicios → Biblioteca → Habilitar). La de Drive se usa para que el servidor cree la planilla del cliente y se la comparta.
 2. IAM y administración → **Cuentas de servicio** → crear una → pestaña **Claves** → *Agregar clave* → JSON.
 3. Poner ese archivo en el servidor y apuntar `GoogleSheets__CredentialsPath` a él (por ejemplo `credentials/service-account.json`).
    Con una cuenta por cliente o una sola para todos: a Google le da igual, lo que separa a los clientes es cada planilla.
