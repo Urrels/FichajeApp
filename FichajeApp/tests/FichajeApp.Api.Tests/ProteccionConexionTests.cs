@@ -72,6 +72,6 @@ public class ProteccionConexionTests : IDisposable
         Assert.Contains(CatalogoPermisos.CambiarConexion, CatalogoPermisos.RolesIniciales[CatalogoPermisos.RolAdministrador]);
         Assert.DoesNotContain(CatalogoPermisos.CambiarConexion, CatalogoPermisos.RolesIniciales[CatalogoPermisos.RolEmpleado]);
         Assert.DoesNotContain(CatalogoPermisos.CambiarConexion, CatalogoPermisos.RolesIniciales[CatalogoPermisos.RolSupervisor]);
-        Assert.DoesNotContain(CatalogoPermisos.CambiarConexion, CatalogoPermisos.RolesIniciales[CatalogoPermisos.RolKiosco]);
+        Assert.DoesNotContain(CatalogoPermisos.CambiarConexion, CatalogoPermisos.PermisosDelRolKiosco);
     }
 }

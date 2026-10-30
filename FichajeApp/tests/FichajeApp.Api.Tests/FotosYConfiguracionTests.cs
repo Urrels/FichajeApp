@@ -22,7 +22,7 @@ public class ConfiguracionFichajeTests
 
         var sedeFija = new ConfiguracionFichajeService(e.ConfigFichajeRepo, e.Bitacora,
             new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()),
-            Microsoft.Extensions.Options.Options.Create(new FichajeOptions { ModoUbicacion = "Sede" }));
+            Microsoft.Extensions.Options.Options.Create(new FichajeOptions { ModoUbicacion = "Sede" }), e.Roles);
         Assert.Equal(ConfiguracionFichaje.UbicacionSedeFija, (await sedeFija.ObtenerAsync()).Ubicacion);
     }
 

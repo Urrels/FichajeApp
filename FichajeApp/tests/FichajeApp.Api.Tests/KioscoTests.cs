@@ -103,6 +103,7 @@ public class KioscoApiTests : IClassFixture<ApiFactory>
     {
         _fabrica = fabrica;
         _fabrica.Datos.AgregarSucursal();
+        _fabrica.Datos.ConfigFichajeRepo.Datos = new ConfiguracionFichaje { Modo = ConfiguracionFichaje.ModoKiosco };
     }
 
     private async Task<(HttpClient Cliente, string Token)> ClienteDe(string email, string pin)

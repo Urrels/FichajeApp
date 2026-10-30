@@ -49,6 +49,8 @@ borrar la carpeta `src/FichajeApp.Api/datos` y reiniciar la API.
 - [ ] Los fichajes sin ubicación no rompen el mapa.
 
 ## F. Kiosco (un teléfono por sucursal)
+- [ ] Por defecto el kiosco está **apagado**: en Usuarios no existe el rol Kiosco. Una cuenta de sucursal ya creada ve "El modo kiosco no está activado…".
+- [ ] Administración → Cómo se ficha → Modo → **Kiosco** → Guardar: dice que ahora hay que crear una cuenta por sucursal, y el rol Kiosco aparece en Usuarios.
 - [ ] Crear "Sucursal Centro" con el rol **Kiosco**; entrar con esa cuenta abre la pantalla de kiosco.
 - [ ] La lista muestra a los empleados con **Entrada** o **Salida**; la cuenta de la sucursal **no** aparece.
 - [ ] Tocar un nombre, PIN correcto (+ foto si corresponde): registra y cambia a Salida.

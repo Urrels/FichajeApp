@@ -14,11 +14,18 @@ public class ConfiguracionFichaje
     public const string FotoOpcional = "Opcional";
     public const string FotoObligatoria = "Obligatoria";
 
+    // Personal: cada persona ficha con su propio usuario en su teléfono (por defecto).
+    // Kiosco: hay un teléfono por sucursal y cada empleado ficha en él con su nombre y su PIN.
+    public const string ModoPersonal = "Personal";
+    public const string ModoKiosco = "Kiosco";
+    public static readonly string[] Modos = { ModoPersonal, ModoKiosco };
+
     public static readonly string[] Ubicaciones = { UbicacionNinguna, UbicacionLibre, UbicacionSedeFija };
     public static readonly string[] Fotos = { FotoNo, FotoOpcional, FotoObligatoria };
 
     public string Ubicacion { get; set; } = UbicacionLibre;
     public string Foto { get; set; } = FotoNo;
+    public string Modo { get; set; } = ModoPersonal;
 
     // Cuánto tiempo se guardan las fotos (lo define el servidor, no el administrador); 0 = para siempre
     public int RetencionFotosDias { get; set; }
@@ -28,4 +35,7 @@ public class GuardarConfiguracionFichajeRequest
 {
     public string? Ubicacion { get; set; }
     public string? Foto { get; set; }
+
+    // Si no viene, se conserva el modo actual
+    public string? Modo { get; set; }
 }

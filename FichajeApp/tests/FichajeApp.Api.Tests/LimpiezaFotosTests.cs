@@ -141,7 +141,7 @@ public class RetencionEnLaConfiguracionTests
 
         var otro = new ConfiguracionFichajeService(e.ConfigFichajeRepo, e.Bitacora,
             new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()),
-            Microsoft.Extensions.Options.Options.Create(new FichajeOptions { FotosRetencionDias = 30 }));
+            Microsoft.Extensions.Options.Options.Create(new FichajeOptions { FotosRetencionDias = 30 }), e.Roles);
         Assert.Equal(30, (await otro.ObtenerAsync()).RetencionFotosDias);
 
         // Guardar la configuración desde la app no cambia la retención

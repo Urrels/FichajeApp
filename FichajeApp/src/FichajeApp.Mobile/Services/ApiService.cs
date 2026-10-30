@@ -15,7 +15,7 @@ public class FichajeRequest
 }
 
 // Cómo se ficha en este cliente: ubicación (Ninguna / Libre / SedeFija) y foto (No / Opcional / Obligatoria)
-public record ConfiguracionFichaje(string Ubicacion, string Foto, int RetencionDias = 90)
+public record ConfiguracionFichaje(string Ubicacion, string Foto, int RetencionDias = 90, string Modo = "Personal")
 {
     public static readonly ConfiguracionFichaje PorDefecto = new("Libre", "No");
     public bool PideUbicacion => Ubicacion != "Ninguna";

@@ -14,7 +14,7 @@ public class EsSoloKioscoTests
     [Fact]
     public void LaCuentaDeSucursal_SiEsSoloKiosco()
     {
-        Assert.True(CatalogoPermisos.EsSoloKiosco(CatalogoPermisos.RolesIniciales[CatalogoPermisos.RolKiosco]));
+        Assert.True(CatalogoPermisos.EsSoloKiosco(CatalogoPermisos.PermisosDelRolKiosco));
     }
 
     [Theory]
@@ -96,7 +96,7 @@ public class NavegacionDeLaAppTests
     [Fact]
     public void LaCuentaDeSucursalVaAlKiosco()
     {
-        Entrar(CatalogoPermisos.RolesIniciales[CatalogoPermisos.RolKiosco]);
+        Entrar(CatalogoPermisos.PermisosDelRolKiosco);
 
         Assert.True(SessionManager.Instance.EsKiosco);
         Assert.Equal("//KioscoPage", Navegacion.RutaInicial());

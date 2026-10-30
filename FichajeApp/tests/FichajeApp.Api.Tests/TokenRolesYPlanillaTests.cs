@@ -115,8 +115,8 @@ public class RolesEfectivosTests
     [Fact]
     public void ElRolKiosco_NoPuedeFicharPorSiMismo_PeroElAdministradorTieneTodo()
     {
-        Assert.DoesNotContain(CatalogoPermisos.FicharAsistencia, CatalogoPermisos.RolesIniciales[CatalogoPermisos.RolKiosco]);
-        Assert.Contains(CatalogoPermisos.FicharEnKiosco, CatalogoPermisos.RolesIniciales[CatalogoPermisos.RolKiosco]);
+        Assert.DoesNotContain(CatalogoPermisos.FicharAsistencia, CatalogoPermisos.PermisosDelRolKiosco);
+        Assert.Contains(CatalogoPermisos.FicharEnKiosco, CatalogoPermisos.PermisosDelRolKiosco);
         Assert.Equal(CatalogoPermisos.Todos, CatalogoPermisos.RolesIniciales[CatalogoPermisos.RolAdministrador]);
     }
 
