@@ -34,7 +34,7 @@ borrar la carpeta `src/FichajeApp.Api/datos` y reiniciar la API.
 - [ ] Con ubicación "Libre": fuera de un sitio conocido pide un motivo; dentro de uno cargado en `Sitios` no.
 - [ ] Una ubicación simulada (app de GPS falso) se rechaza.
 - [ ] Aparece el botón "Ver en Google Maps" tras fichar.
-- [ ] Con foto obligatoria: sacar la foto y tocar la **tilde** no cierra la app (la foto se achica al leerla). Probar con la cámara trasera y la frontal.
+- [ ] Con foto obligatoria: sacar la foto y tocar la **tilde** no cierra la app (la foto se achica al leerla). Se abre **la cámara frontal dentro de la app** (botón "Sacar foto"); si el teléfono no tiene frontal o no se puede abrir, usa la cámara del sistema.
 - [ ] Al aire libre, con el GPS en alta precisión, el fichaje pasa (el GPS toma varias lecturas hasta 15 s y se queda con la mejor). Adentro puede salir "no es lo bastante precisa": es lo esperado.
 - [ ] El logo se ve **redondo** en el login y en la vista previa de Apariencia, también con uno subido por el administrador.
 - [ ] Cada fichaje se ve como una fila en la hoja `Fichajes`.
