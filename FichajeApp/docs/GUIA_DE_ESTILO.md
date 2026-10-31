@@ -50,3 +50,10 @@ verbo ("Dar de baja", "Eliminar feriado"), nunca "Sí" ni "Aceptar". Si es rever
 2. ¿Es de la app? Agregá una constante en `TextosDeError` y un caso en `TextosDeErrorTests` (los tests revisan que sea corto, termine
    en punto y no tenga jerga).
 3. Mostralo con `IFeedback` o con `EstadoDeError`/`BannerInline`, no con `DisplayAlert` suelto.
+
+## Pantallas pulidas (PR B)
+
+- **Menús**: las opciones de Administración y de "Cómo se ficha" son tarjetas `OpcionDeMenu` (título, descripción, valor actual y flecha), agrupadas por tema con `EncabezadoSeccion`. No se apilan botones iguales.
+- **Login**: el error se muestra en un `BannerInline` rojo; "Listo" en el teclado del PIN entra.
+- **Fichaje y kiosco**: al registrar se ve una tarjeta verde grande con el tipo y la hora (en kiosco, también el nombre) y una vibración corta; se oculta sola. Los errores van en banner rojo y el avance ("Obteniendo ubicación…") en texto común.
+- **Listas**: toda lista lleva `EstadoVacio` como `EmptyView` con un título y qué hacer.

@@ -28,6 +28,11 @@ public partial class AdminPage : ContentPage
         ConfigFichajeButton.IsVisible = sesion.TienePermiso(NombresPermisos.ConfigurarFichaje);
         ConexionButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarConexion);
         PinButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarPin);
+
+        SeccionPersonas.IsVisible = UsuariosButton.IsVisible || RolesButton.IsVisible || BitacoraButton.IsVisible;
+        SeccionAsistencia.IsVisible = FichajesButton.IsVisible || LiquidacionButton.IsVisible;
+        SeccionConfiguracion.IsVisible = ConfigFichajeButton.IsVisible || AparienciaButton.IsVisible || ConexionButton.IsVisible;
+        SeccionCuenta.IsVisible = PinButton.IsVisible;
     }
 
     private async void OnUsuarios(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(UsuariosPage));

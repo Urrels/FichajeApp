@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
              x:Class="FichajeApp.Mobile.Views.FichajePage"
              Title="Fichaje"
              Shell.NavBarIsVisible="False"
@@ -49,8 +50,21 @@
 
         <VerticalStackLayout Grid.Row="2" Margin="24,0,24,24" Spacing="10">
 
-            <!-- Estado del último intento -->
-            <Border Padding="16,12"
+            <!-- Confirmación grande del fichaje registrado -->
+            <Border IsVisible="{Binding ConfirmacionVisible}" Padding="20,18"
+                    BackgroundColor="#E8F5E9" Stroke="#2E7D32" StrokeShape="RoundRectangle 14">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="✓" FontSize="36" FontAttributes="Bold" TextColor="#2E7D32" HorizontalOptions="Center" />
+                    <Label Text="{Binding ConfirmacionTexto}" FontSize="18" FontAttributes="Bold"
+                           HorizontalTextAlignment="Center" TextColor="#1B5E20" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Error del último intento -->
+            <ctl:BannerInline Severidad="Error" Texto="{Binding Estado}" IsVisible="{Binding HayError}" />
+
+            <!-- Avance ("Obteniendo ubicación…") -->
+            <Border IsVisible="{Binding HayEstado}" Padding="16,12"
                     BackgroundColor="{DynamicResource ColorSuperficie}"
                     Stroke="{DynamicResource ColorBorde}"
                     StrokeShape="RoundRectangle 14">

@@ -71,7 +71,7 @@ public class KioscoViewModel : VmBase
     {
         Elegido = empleado;
         Pin = string.Empty;
-        Estado = string.Empty;
+        Reiniciar();
     }
 
     public void Cancelar()
@@ -83,7 +83,7 @@ public class KioscoViewModel : VmBase
     public Task ConfirmarAsync() => ConEspera(async () =>
     {
         if (Elegido is null) return;
-        if (Pin.Length != 4 || !Pin.All(char.IsDigit)) { Estado = "El PIN tiene 4 dígitos."; return; }
+        if (Pin.Length != 4 || !Pin.All(char.IsDigit)) { Fallar("El PIN tiene 4 dígitos."); return; }
 
         // Si el cliente pide foto, se saca antes de mandar: es la prueba de quién fichó
         var config = await _api.ObtenerConfiguracionFichajeAsync("kiosco/configuracion");
@@ -92,28 +92,29 @@ public class KioscoViewModel : VmBase
         {
             if (config.FotoObligatoria)
             {
-                Estado = "Para fichar con foto tenés que estar de acuerdo. Consultalo con tu empresa.";
+                Fallar("Para fichar con foto tenés que estar de acuerdo. Consultalo con tu empresa.");
                 return;
             }
         }
         else if (config.PideFoto)
         {
-            Estado = "Sacate una foto...";
+            Avisar("Sacate una foto...");
             try { foto = await FotoFichaje.TomarAsync(); }
             catch (Exception ex)
             {
-                if (config.FotoObligatoria) { Estado = TextosDeError.CamaraNoDisponible; return; }
+                if (config.FotoObligatoria) { Fallar(TextosDeError.CamaraNoDisponible); return; }
             }
 
-            if (foto is null && config.FotoObligatoria) { Estado = "Este fichaje requiere una foto."; return; }
+            if (foto is null && config.FotoObligatoria) { Fallar("Este fichaje requiere una foto. Sacate una y volvé a intentar."); return; }
         }
 
-        Estado = "Registrando...";
+        Avisar("Registrando...");
         var r = await _api.RegistrarFichajeAsync(new { empleadoId = Elegido.Id, pin = Pin, fotoBase64 = foto }, "kiosco/fichaje");
         Pin = string.Empty;
-        Estado = r.Mensaje;
-        if (!r.Exito) return; // se queda en el mismo empleado para reintentar o cancelar
+        if (!r.Exito) { Fallar(r.Mensaje); return; } // se queda en el mismo empleado para reintentar o cancelar
 
+        var nombre = Elegido.Nombre;
+        Avisar(string.Empty);
         Elegido = null;
         var lista = await _api.ObtenerKioscoEmpleadosAsync(); // actualiza quién queda en "Salida"
         if (lista.Exito && lista.Datos is not null)
@@ -121,7 +122,58 @@ public class KioscoViewModel : VmBase
             _todos = lista.Datos;
             Filtrar();
         }
+        _ = MostrarConfirmacionAsync($"{nombre}: {TextosDeError.FichajeRegistrado(r.Tipo ?? "Fichaje", DateTime.Now)}");
     });
+
+    private bool _hayFalla;
+    private bool _confirmacionVisible;
+    private string _confirmacionTexto = string.Empty;
+
+    // Un error del fichaje (PIN mal, foto) se ve como banner rojo; el avance ("Registrando…") como texto común
+    public bool HayFalla => _hayFalla;
+    public bool HayAvance => !_hayFalla && !_confirmacionVisible && !string.IsNullOrWhiteSpace(Estado);
+    public bool ConfirmacionVisible => _confirmacionVisible;
+    public string ConfirmacionTexto => _confirmacionTexto;
+
+    private void Avisar(string texto)
+    {
+        Estado = texto;
+        _hayFalla = false;
+        Notificar(nameof(HayFalla));
+        Notificar(nameof(HayAvance));
+    }
+
+    private void Fallar(string texto)
+    {
+        Estado = texto;
+        _hayFalla = true;
+        Notificar(nameof(HayFalla));
+        Notificar(nameof(HayAvance));
+    }
+
+    private void Reiniciar()
+    {
+        _confirmacionVisible = false;
+        Avisar(string.Empty);
+        Notificar(nameof(ConfirmacionVisible));
+    }
+
+    // Quien ficha ve el resultado desde lejos: tarjeta grande con nombre, tipo y hora, y una vibración corta
+    private async Task MostrarConfirmacionAsync(string texto)
+    {
+        _confirmacionTexto = texto;
+        _confirmacionVisible = true;
+        Notificar(nameof(ConfirmacionTexto));
+        Notificar(nameof(ConfirmacionVisible));
+        Notificar(nameof(HayAvance));
+        try { HapticFeedback.Default.Perform(HapticFeedbackType.Click); } catch { /* sin vibración en este teléfono */ }
+
+        await Task.Delay(TimeSpan.FromSeconds(6));
+        if (_confirmacionTexto != texto) return; // ya hay una confirmación más nueva
+        _confirmacionVisible = false;
+        Notificar(nameof(ConfirmacionVisible));
+        Notificar(nameof(HayAvance));
+    }
 
     // Cerrar la sesión del teléfono pide confirmación: lo usa quien lo administra, no los empleados
     public async Task CerrarSesionAsync()

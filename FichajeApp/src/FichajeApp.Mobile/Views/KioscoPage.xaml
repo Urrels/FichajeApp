@@ -25,6 +25,10 @@
 
         <CollectionView Grid.Row="2" IsVisible="{Binding SinError}" ItemsSource="{Binding Empleados}" SelectionMode="Single"
                         SelectionChanged="OnEmpleado" Margin="16,0">
+            <CollectionView.EmptyView>
+                <ctl:EstadoVacio Icono="🔍" Titulo="No encontramos ese nombre"
+                                 Mensaje="Revisá cómo lo escribiste o borrá la búsqueda para ver a todo el equipo." />
+            </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Border Margin="0,4" Padding="14,12" StrokeShape="RoundRectangle 12"
@@ -55,7 +59,16 @@
 
         <VerticalStackLayout Grid.Row="4" Margin="16,0,16,12" Spacing="6">
             <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
-            <Label Text="{Binding Estado}" HorizontalTextAlignment="Center" FontAttributes="Bold" TextColor="{DynamicResource ColorTexto}" />
+            <Border IsVisible="{Binding ConfirmacionVisible}" Padding="16,14"
+                    BackgroundColor="#E8F5E9" Stroke="#2E7D32" StrokeShape="RoundRectangle 14">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="✓" FontSize="32" FontAttributes="Bold" TextColor="#2E7D32" HorizontalOptions="Center" />
+                    <Label Text="{Binding ConfirmacionTexto}" FontSize="18" FontAttributes="Bold"
+                           HorizontalTextAlignment="Center" TextColor="#1B5E20" />
+                </VerticalStackLayout>
+            </Border>
+            <ctl:BannerInline Severidad="Error" Texto="{Binding Estado}" IsVisible="{Binding HayFalla}" />
+            <Label Text="{Binding Estado}" IsVisible="{Binding HayAvance}" HorizontalTextAlignment="Center" FontAttributes="Bold" TextColor="{DynamicResource ColorTexto}" />
             <Button Text="Cerrar sesión del teléfono" Clicked="OnCerrarSesion" FontSize="11"
                     BackgroundColor="Transparent" TextColor="{DynamicResource ColorTextoSuave}" />
         </VerticalStackLayout>

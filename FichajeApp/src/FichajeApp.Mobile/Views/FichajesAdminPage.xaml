@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
              x:Class="FichajeApp.Mobile.Views.FichajesAdminPage"
              Title="Corregir fichajes">
 
@@ -21,6 +22,9 @@
         <Label Grid.Row="1" Text="{Binding Estado}" FontSize="12" />
 
         <CollectionView Grid.Row="2" ItemsSource="{Binding Incompletos}" SelectionMode="Single" SelectionChanged="OnSeleccion">
+            <CollectionView.EmptyView>
+                <ctl:EstadoVacio Icono="✅" Titulo="No hay fichajes para corregir" Mensaje="Todas las entradas y salidas están completas." />
+            </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <VerticalStackLayout Padding="6,6">
