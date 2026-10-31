@@ -41,7 +41,13 @@ public class ConfigFichajeViewModel : VmBase
     private string _ubicacion = "Libre";
     private string _foto = "No";
 
-    public ConfigFichajeViewModel(AdminApiService api) => _api = api;
+    private readonly IFeedback _feedback;
+
+    public ConfigFichajeViewModel(AdminApiService api, IFeedback feedback)
+    {
+        _api = api;
+        _feedback = feedback;
+    }
 
     public string Ubicacion { get => _ubicacion; private set { if (Set(ref _ubicacion, value)) Notificar(nameof(UbicacionTexto)); } }
     public string Modo { get => _modo; private set { if (Set(ref _modo, value)) Notificar(nameof(ModoTexto)); } }
@@ -101,9 +107,12 @@ public class ConfigFichajeViewModel : VmBase
     public Task GuardarAsync() => ConEspera(async () =>
     {
         var r = await _api.GuardarConfiguracionFichaje(Ubicacion, Foto, Modo, Precision);
-        Estado = !r.Exito ? r.Mensaje
-            : Modo == "Kiosco"
-                ? "Guardado. Ahora, en Usuarios, creá una cuenta por sucursal (por ejemplo \"Sucursal Centro\") y asignale el rol Kiosco."
-                : "Guardado. Se aplica en el próximo fichaje.";
+        if (!r.Exito) { await _feedback.ErrorAsync(TextosDeError.Para(null, r.Mensaje)); return; }
+
+        // El paso siguiente del modo kiosco queda a la vista en pantalla; el resto es solo una confirmación corta
+        Estado = Modo == "Kiosco"
+            ? "Ahora, en Usuarios, creá una cuenta por sucursal (por ejemplo «Sucursal Centro») y asignale el rol Kiosco."
+            : string.Empty;
+        await _feedback.ExitoAsync("Cambios guardados. Se aplican desde el próximo fichaje.");
     });
 }

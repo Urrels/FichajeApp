@@ -75,7 +75,7 @@ public class RolesViewModel : VmBase
                 break;
             case "Cambiar padre": await CambiarPadreAsync(rol); break;
             case "Eliminar":
-                if (await Dialogos.Confirmar("Eliminar rol", $"Se elimina «{rol.Nombre}» con sus subroles y permisos. Solo se puede si nadie lo tiene asignado.", "Eliminar"))
+                if (await Dialogos.Confirmar($"¿Eliminar el rol «{rol.Nombre}»?", "Se borra con sus subroles y permisos. Solo se puede si nadie lo tiene asignado.", "Eliminar rol"))
                     await Ejecutar(() => _api.EliminarRol(rol.Id), "Rol eliminado");
                 break;
         }

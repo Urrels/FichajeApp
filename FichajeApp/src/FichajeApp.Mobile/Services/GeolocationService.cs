@@ -67,7 +67,7 @@ public class GeolocationService : IGeolocationService
         }
         catch (Exception ex)
         {
-            return Fallo($"Error de ubicación: {ex.Message}");
+            return Fallo(TextosDeError.UbicacionNoDisponible);
         }
     }
 

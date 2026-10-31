@@ -28,6 +28,7 @@ public partial class KioscoPage : ContentPage
         _viewModel.Elegir(empleado);
     }
 
+    private async void OnReintentar(object? sender, EventArgs e) => await _viewModel.CargarAsync();
     private void OnCancelar(object sender, EventArgs e) => _viewModel.Cancelar();
     private async void OnConfirmar(object sender, EventArgs e) => await _viewModel.ConfirmarAsync();
     private async void OnCerrarSesion(object sender, EventArgs e) => await _viewModel.CerrarSesionAsync();

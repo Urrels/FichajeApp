@@ -12,9 +12,12 @@ public class LiquidacionViewModel : VmBase
     private ResultadoCalculo? _calculo;
     private string _total = string.Empty;
 
-    public LiquidacionViewModel(AdminApiService api)
+    private readonly IFeedback _feedback;
+
+    public LiquidacionViewModel(AdminApiService api, IFeedback feedback)
     {
         _api = api;
+        _feedback = feedback;
 
         // Hasta hoy, y desde el 1 del mes; al abrir la pantalla se ajusta a "después de la última liquidación"
         _hasta = DateTime.Today;
@@ -85,7 +88,7 @@ public class LiquidacionViewModel : VmBase
 
         var dia = lineas[elegida];
         if (dia.Observacion?.Contains("Excedente a aprobar") == true
-            && await Dialogos.Confirmar("Excedente", $"{dia.Empleado} fichó de más el {dia.Fecha:dd/MM}. ¿Aprobar pagarlo?", "Aprobar"))
+            && await Dialogos.Confirmar("Horas de más", $"{dia.Empleado} fichó de más el {dia.Fecha:dd/MM}. ¿Querés que se le pague? Si no lo aprobás, esas horas no se suman al pago.", "Aprobar pago"))
         {
             var r = await _api.AprobarExcedente(dia.Empleado, dia.Fecha);
             if (!r.Exito) await Dialogos.Aviso("No se pudo", r.Mensaje);
@@ -136,10 +139,10 @@ public class LiquidacionViewModel : VmBase
             case "Ver resumen": await ResumenDeAsync(liquidacion); break;
             case "Compartir CSV": await CompartirCsvAsync(liquidacion); break;
             case "Marcar como pagada":
-                if (await Dialogos.Confirmar("Marcar como pagada", "Esto no se puede deshacer.", "Marcar"))
+                if (await Dialogos.Confirmar("¿Marcar como pagada?", "Una vez marcada, ya no se puede volver atrás.", "Marcar como pagada"))
                 {
                     var p = await _api.MarcarPagada(liquidacion.Id);
-                    await Dialogos.Aviso(p.Exito ? "Listo" : "No se pudo", p.Exito ? "Liquidación marcada como pagada." : p.Mensaje);
+                    await _feedback.ResultadoAsync(p.Exito, "Liquidación marcada como pagada.", p.Mensaje);
                 }
                 break;
         }
@@ -204,7 +207,7 @@ public class LiquidacionViewModel : VmBase
 
         lineas[elegida](valor.Value);
         var guardado = await _api.GuardarParametros(p);
-        await Dialogos.Aviso(guardado.Exito ? "Listo" : "No se pudo", guardado.Exito ? "Parámetro guardado." : guardado.Mensaje);
+        await _feedback.ResultadoAsync(guardado.Exito, "Parámetro guardado.", guardado.Mensaje);
     }
 
     private async Task ValorHoraAsync()
@@ -230,7 +233,7 @@ public class LiquidacionViewModel : VmBase
 
         var empleado = empleados.Datos.First(e => e.Nombre == nombre);
         var guardado = await _api.GuardarValorHora(empleado.Id, valor.Value, desde.Value);
-        await Dialogos.Aviso(guardado.Exito ? "Listo" : "No se pudo", guardado.Exito ? "Valor hora guardado." : guardado.Mensaje);
+        await _feedback.ResultadoAsync(guardado.Exito, "Valor hora guardado.", guardado.Mensaje);
     }
 
     private async Task FeriadosAsync()
@@ -255,12 +258,12 @@ public class LiquidacionViewModel : VmBase
             if (string.IsNullOrEmpty(descripcion)) return;
 
             var guardado = await _api.GuardarFeriado(fecha.Value, descripcion);
-            await Dialogos.Aviso(guardado.Exito ? "Listo" : "No se pudo", guardado.Exito ? "Feriado guardado." : guardado.Mensaje);
+            await _feedback.ResultadoAsync(guardado.Exito, "Feriado guardado.", guardado.Mensaje);
         }
-        else if (await Dialogos.Confirmar("Eliminar feriado", elegida, "Eliminar"))
+        else if (await Dialogos.Confirmar("¿Eliminar este feriado?", $"{elegida}\n\nDejará de sumar el recargo en las liquidaciones nuevas.", "Eliminar feriado"))
         {
             var eliminado = await _api.EliminarFeriado(lineas[elegida].Fecha);
-            await Dialogos.Aviso(eliminado.Exito ? "Listo" : "No se pudo", eliminado.Exito ? "Feriado eliminado." : eliminado.Mensaje);
+            await _feedback.ResultadoAsync(eliminado.Exito, "Feriado eliminado.", eliminado.Mensaje);
         }
     }
 }

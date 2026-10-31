@@ -53,7 +53,7 @@ public partial class SelfiePage : ContentPage
         catch (Exception ex)
         {
             Ocupar(false);
-            Aviso.Text = $"No se pudo sacar la foto: {ex.Message}";
+            Aviso.Text = "No pudimos sacar la foto. Probá de nuevo.";
         }
     }
 
@@ -68,14 +68,14 @@ public partial class SelfiePage : ContentPage
         catch (Exception ex)
         {
             Ocupar(false);
-            Aviso.Text = $"No se pudo procesar la foto: {ex.Message}. Probá de nuevo.";
+            Aviso.Text = "No pudimos procesar la foto. Probá de nuevo.";
         }
     }
 
     private void OnFotoFallida(object? sender, MediaCaptureFailedEventArgs e)
     {
         Ocupar(false);
-        Aviso.Text = $"No se pudo sacar la foto: {e.FailureReason}. Probá de nuevo.";
+        Aviso.Text = "No pudimos sacar la foto. Probá de nuevo.";
     }
 
     private async void OnCancelar(object sender, EventArgs e) => await Terminar(base64: null);

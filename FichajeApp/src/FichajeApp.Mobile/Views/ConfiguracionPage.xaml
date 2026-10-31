@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
              x:Class="FichajeApp.Mobile.Views.ConfiguracionPage"
              Title="Conectar Google Sheets"
              BackgroundColor="{DynamicResource ColorFondo}">
@@ -11,12 +12,10 @@
             <Label Text="Conectá tu planilla de Google" FontSize="20" FontAttributes="Bold" />
 
             <!-- Si la planilla conectada se borró o dejó de estar compartida -->
-            <Border IsVisible="{Binding HayAviso}" Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="#FDECEA" Stroke="#C62828">
-                <Label Text="{Binding Aviso}" TextColor="#8E1B14" FontSize="13" />
-            </Border>
+            <ctl:BannerInline Severidad="Error" Texto="{Binding Aviso}" IsVisible="{Binding HayAviso}" />
 
             <!-- Todo de una vez: el servidor crea la planilla, la prepara y se la comparte -->
-            <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+            <Border Style="{StaticResource Tarjeta}" Padding="12">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                     <VerticalStackLayout>
                         <Label Text="Crear la planilla por mí" FontAttributes="Bold" />
@@ -42,7 +41,7 @@
                 <Label FontSize="12" Text="Entrá a Google Sheets con tu cuenta y creá una planilla nueva y vacía (el nombre da igual)." />
 
                 <Label FontAttributes="Bold" Text="Paso 2: compartila con este correo, como Editor" Margin="0,6,0,0" />
-                <Border Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                <Border Style="{StaticResource Tarjeta}" Padding="12">
                     <Label Text="{Binding CuentaDeServicio}" FontSize="13" TextColor="{DynamicResource ColorTexto}" />
                 </Border>
                 <Button Text="Copiar correo" Clicked="OnCopiarCorreo" />

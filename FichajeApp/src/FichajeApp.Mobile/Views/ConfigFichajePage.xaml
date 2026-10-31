@@ -12,13 +12,13 @@
                    Text="Elegí qué se pide al fichar en tu empresa. Se aplica a todos los teléfonos en el próximo fichaje." />
 
             <Label Text="Ubicación" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Border Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+            <Border Style="{StaticResource Tarjeta}" Padding="12">
                 <Label Text="{Binding UbicacionTexto}" TextColor="{DynamicResource ColorTexto}" />
             </Border>
             <Button Text="Cambiar ubicación" Clicked="OnUbicacion" />
 
             <Label Text="Precisión del GPS" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Border Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+            <Border Style="{StaticResource Tarjeta}" Padding="12">
                 <Label Text="{Binding PrecisionTexto}" TextColor="{DynamicResource ColorTexto}" />
             </Border>
             <Button Text="Cambiar precisión" Clicked="OnPrecision" />
@@ -26,7 +26,7 @@
                    Text="Es el error máximo del GPS que se acepta al fichar. Adentro de un edificio el GPS suele tener entre 30 y 150 m de error: si tus empleados fichan adentro y les sale «no es lo bastante precisa», elegí Flexible. Más alto = menos rechazos, pero la ubicación es menos exacta." />
 
             <Label Text="Modo" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Border Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+            <Border Style="{StaticResource Tarjeta}" Padding="12">
                 <Label Text="{Binding ModoTexto}" TextColor="{DynamicResource ColorTexto}" />
             </Border>
             <Button Text="Cambiar modo" Clicked="OnModo" />
@@ -34,7 +34,7 @@
                    Text="Kiosco es para empresas donde varias personas fichan en el mismo teléfono (uno por sucursal): cada empleado toca su nombre y pone su PIN. Viene apagado; al activarlo se crea el rol Kiosco para las cuentas de sucursal." />
 
             <Label Text="Foto" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Border Padding="12" StrokeShape="RoundRectangle 10" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+            <Border Style="{StaticResource Tarjeta}" Padding="12">
                 <Label Text="{Binding FotoTexto}" TextColor="{DynamicResource ColorTexto}" />
             </Border>
             <Button Text="Cambiar foto" Clicked="OnFoto" />

@@ -37,6 +37,12 @@ public class KioscoViewModel : VmBase
         private set { if (Set(ref _elegido, value)) { Notificar(nameof(HayElegido)); Notificar(nameof(TituloPin)); } }
     }
 
+    // Si la lista no se pudo cargar no hay nada que hacer en la pantalla: se muestra una pantalla de error con "Reintentar"
+    private string? _errorDeCarga;
+    public string? ErrorDeCarga { get => _errorDeCarga; private set { if (Set(ref _errorDeCarga, value)) { Notificar(nameof(HayError)); Notificar(nameof(SinError)); } } }
+    public bool HayError => !string.IsNullOrWhiteSpace(ErrorDeCarga);
+    public bool SinError => !HayError;
+
     public bool HayElegido => Elegido is not null;
     public string TituloPin => Elegido is null ? string.Empty : $"{Elegido.Nombre}: {Elegido.Accion}";
 
@@ -45,7 +51,8 @@ public class KioscoViewModel : VmBase
     public Task CargarAsync() => ConEspera(async () =>
     {
         var r = await _api.ObtenerKioscoEmpleadosAsync();
-        if (!r.Exito || r.Datos is null) { Estado = r.Mensaje; return; }
+        if (!r.Exito || r.Datos is null) { ErrorDeCarga = r.Mensaje; return; }
+        ErrorDeCarga = null;
 
         _todos = r.Datos;
         Filtrar();
@@ -95,7 +102,7 @@ public class KioscoViewModel : VmBase
             try { foto = await FotoFichaje.TomarAsync(); }
             catch (Exception ex)
             {
-                if (config.FotoObligatoria) { Estado = $"No se pudo usar la cámara: {ex.Message}"; return; }
+                if (config.FotoObligatoria) { Estado = TextosDeError.CamaraNoDisponible; return; }
             }
 
             if (foto is null && config.FotoObligatoria) { Estado = "Este fichaje requiere una foto."; return; }

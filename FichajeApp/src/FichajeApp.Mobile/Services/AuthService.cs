@@ -66,7 +66,7 @@ public class AuthService
         }
         catch (Exception ex)
         {
-            return (false, $"Error de conexión: {ex.Message}");
+            return (false, TextosDeError.DeExcepcion(ex));
         }
     }
 

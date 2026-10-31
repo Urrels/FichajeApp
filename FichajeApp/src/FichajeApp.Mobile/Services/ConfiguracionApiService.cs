@@ -59,7 +59,7 @@ public class ConfiguracionApiService
                 return (false, mensaje ?? "El servidor tuvo un problema al preparar la planilla. Probá de nuevo en un minuto; si sigue, revisá el registro de la API.");
             return (false, mensaje ?? $"El servidor respondió con error ({(int)respuesta.StatusCode})");
         }
-        catch (OperationCanceledException) { return (false, "El servidor no respondió a tiempo."); }
-        catch (Exception ex) { return (false, $"Error de conexión: {ex.Message}"); }
+        catch (OperationCanceledException) { return (false, TextosDeError.TiempoAgotado); }
+        catch (Exception ex) { return (false, TextosDeError.DeExcepcion(ex)); }
     }
 }

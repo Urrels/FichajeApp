@@ -224,3 +224,4 @@ reemplazar los SVG (los actuales son placeholders), y agregar su bloque al `.csp
 - [Probar en un teléfono Android real](docs/TELEFONO_REAL.md)
 - [Prueba completa de punta a punta (lista para tildar)](docs/PRUEBA_COMPLETA.md)
 - [Plantilla de política de privacidad y datos para Play Console](docs/POLITICA_PRIVACIDAD_PLANTILLA.md)
+- [Guía de estilo: pantallas y mensajes](docs/GUIA_DE_ESTILO.md)
