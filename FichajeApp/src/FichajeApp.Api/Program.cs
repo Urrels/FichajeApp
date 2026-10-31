@@ -79,6 +79,16 @@ builder.Services.AddSingleton<JornadasService>();
 builder.Services.AddSingleton<FichajesAdminService>();
 builder.Services.AddSingleton<LiquidacionService>();
 
+// Feriados oficiales (ArgentinaDatos): se sincronizan solos a la pestaña Feriados; "Feriados:SincronizacionAutomatica": false lo apaga
+builder.Services.AddHttpClient<IProveedorFeriados, ArgentinaDatosProveedor>(c =>
+{
+    c.BaseAddress = new Uri(builder.Configuration["Feriados:Url"] ?? "https://api.argentinadatos.com/");
+    c.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddSingleton<FeriadosService>();
+if (builder.Configuration.GetValue("Feriados:SincronizacionAutomatica", true))
+    builder.Services.AddHostedService<FeriadosHostedService>();
+
 // Crea las pestañas y los datos iniciales de la administración al arrancar
 builder.Services.AddSingleton<InicializadorPlanilla>();
 builder.Services.AddSingleton<IInicializadorPlanilla>(sp => sp.GetRequiredService<InicializadorPlanilla>());

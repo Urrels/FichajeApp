@@ -33,7 +33,8 @@ public class LiquidacionSheetsRepositorio : ILiquidacionRepositorio
         ("JORNADA_NORMAL_HORAS", 8, "Horas por día a valor normal; lo que excede se paga con recargo de hora extra"),
         ("RECARGO_EXTRA_PCT", 50, "Recargo (%) de las horas extra de días comunes"),
         ("RECARGO_FERIADO_PCT", 100, "Recargo (%) de las horas trabajadas en domingo o feriado"),
-        ("MAX_HORAS_FICHAJE_ABIERTO", 16, "Una entrada sin salida con más horas que estas se considera incompleta y hay que corregirla")
+        ("MAX_HORAS_FICHAJE_ABIERTO", 16, "Una entrada sin salida con más horas que estas se considera incompleta y hay que corregirla"),
+        ("PAGAR_PUENTES", 0, "1 = los días puente y no laborables también se pagan con el recargo de feriado; 0 = solo los feriados obligatorios")
     };
 
     public async Task<ParametrosLiquidacion> ObtenerParametrosAsync()
@@ -48,7 +49,8 @@ public class LiquidacionSheetsRepositorio : ILiquidacionRepositorio
             JornadaNormalHoras = Valor("JORNADA_NORMAL_HORAS", 8),
             RecargoExtraPct = Valor("RECARGO_EXTRA_PCT", 50),
             RecargoFeriadoPct = Valor("RECARGO_FERIADO_PCT", 100),
-            MaxHorasFichajeAbierto = (int)Valor("MAX_HORAS_FICHAJE_ABIERTO", 16)
+            MaxHorasFichajeAbierto = (int)Valor("MAX_HORAS_FICHAJE_ABIERTO", 16),
+            PagarPuentes = Valor("PAGAR_PUENTES", 0) != 0
         };
     }
 
@@ -64,7 +66,8 @@ public class LiquidacionSheetsRepositorio : ILiquidacionRepositorio
                 ["JORNADA_NORMAL_HORAS"] = p.JornadaNormalHoras,
                 ["RECARGO_EXTRA_PCT"] = p.RecargoExtraPct,
                 ["RECARGO_FERIADO_PCT"] = p.RecargoFeriadoPct,
-                ["MAX_HORAS_FICHAJE_ABIERTO"] = p.MaxHorasFichajeAbierto
+                ["MAX_HORAS_FICHAJE_ABIERTO"] = p.MaxHorasFichajeAbierto,
+                ["PAGAR_PUENTES"] = p.PagarPuentes ? 1 : 0
             };
 
             var actuales = await _parametros.LeerAsync("A:C");
@@ -110,7 +113,11 @@ public class LiquidacionSheetsRepositorio : ILiquidacionRepositorio
     // ---- Feriados ----
 
     public async Task<List<Feriado>> ListarFeriadosAsync() =>
-        (await _feriados.LeerAsync("A:B")).Select(f => new Feriado { Fecha = f.Fecha(0).Date, Descripcion = f.Texto(1) })
+        (await _feriados.LeerAsync("A:D")).Select(f => new Feriado
+            {
+                Fecha = f.Fecha(0).Date, Descripcion = f.Texto(1), Tipo = f.Texto(2),
+                Origen = f.Texto(3) == Feriado.OrigenApi ? Feriado.OrigenApi : Feriado.OrigenManual
+            })
             .OrderBy(f => f.Fecha).ToList();
 
     public async Task GuardarFeriadoAsync(Feriado feriado)
@@ -118,8 +125,8 @@ public class LiquidacionSheetsRepositorio : ILiquidacionRepositorio
         await _escritura.WaitAsync();
         try
         {
-            var datos = new List<object> { HojaSheets.Fecha(feriado.Fecha), feriado.Descripcion };
-            var existente = (await _feriados.LeerAsync("A:B")).FirstOrDefault(f => f.Fecha(0).Date == feriado.Fecha.Date);
+            var datos = new List<object> { HojaSheets.Fecha(feriado.Fecha), feriado.Descripcion, feriado.Tipo, feriado.Origen };
+            var existente = (await _feriados.LeerAsync("A:D")).FirstOrDefault(f => f.Fecha(0).Date == feriado.Fecha.Date);
             if (existente != null) await _feriados.ActualizarAsync(existente.Numero, datos);
             else await _feriados.AgregarAsync(datos);
         }
@@ -131,8 +138,8 @@ public class LiquidacionSheetsRepositorio : ILiquidacionRepositorio
         await _escritura.WaitAsync();
         try
         {
-            var resto = (await _feriados.LeerAsync("A:B")).Where(f => f.Fecha(0).Date != fecha.Date)
-                .Select(f => (IList<object>)new List<object> { HojaSheets.Fecha(f.Fecha(0)), f.Texto(1) }).ToList();
+            var resto = (await _feriados.LeerAsync("A:D")).Where(f => f.Fecha(0).Date != fecha.Date)
+                .Select(f => (IList<object>)new List<object> { HojaSheets.Fecha(f.Fecha(0)), f.Texto(1), f.Texto(2), f.Texto(3) }).ToList();
             await _feriados.ReemplazarTodoAsync(resto);
         }
         finally { _escritura.Release(); }

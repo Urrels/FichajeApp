@@ -274,11 +274,13 @@ public class LiquidacionController : AdminControllerBase
 {
     private readonly LiquidacionService _liquidacion;
     private readonly IEmpleadosRepositorio _empleados;
+    private readonly FeriadosService _feriados;
 
-    public LiquidacionController(LiquidacionService liquidacion, IEmpleadosRepositorio empleados)
+    public LiquidacionController(LiquidacionService liquidacion, IEmpleadosRepositorio empleados, FeriadosService feriados)
     {
         _liquidacion = liquidacion;
         _empleados = empleados;
+        _feriados = feriados;
     }
 
     // Para el selector de empleado del valor hora (este permiso no incluye listar usuarios)
@@ -363,6 +365,7 @@ public class LiquidacionController : AdminControllerBase
     public async Task<IActionResult> GuardarParametros([FromBody] ParametrosLiquidacion p)
     {
         await _liquidacion.GuardarParametrosAsync(Actor, p);
+        _feriados.Invalidar();
         return Ok(new { mensaje = "Parámetros guardados" });
     }
 
@@ -384,6 +387,7 @@ public class LiquidacionController : AdminControllerBase
     public async Task<IActionResult> GuardarFeriado([FromBody] FeriadoRequest r)
     {
         await _liquidacion.GuardarFeriadoAsync(Actor, r.Fecha, r.Descripcion);
+        _feriados.Invalidar();
         return Ok(new { mensaje = "Feriado guardado" });
     }
 
@@ -391,6 +395,18 @@ public class LiquidacionController : AdminControllerBase
     public async Task<IActionResult> EliminarFeriado([FromQuery] DateTime fecha)
     {
         await _liquidacion.EliminarFeriadoAsync(Actor, fecha);
+        _feriados.Invalidar();
         return Ok(new { mensaje = "Feriado eliminado" });
+    }
+
+    // "Actualizar ahora": trae los feriados oficiales sin esperar a la sincronización diaria
+    [HttpPost("feriados/sincronizar")]
+    public async Task<IActionResult> SincronizarFeriados()
+    {
+        var r = await _feriados.SincronizarAsync(Actor);
+        var mensaje = r.Agregados + r.Actualizados == 0
+            ? "Los feriados ya estaban al día."
+            : $"Feriados actualizados: {r.Agregados} nuevos y {r.Actualizados} modificados.";
+        return Ok(new { mensaje, r.Agregados, r.Actualizados, r.Omitidos });
     }
 }

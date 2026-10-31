@@ -8,6 +8,9 @@ public class ParametrosLiquidacion
     public decimal RecargoExtraPct { get; set; } = 50;
     public decimal RecargoFeriadoPct { get; set; } = 100;
     public int MaxHorasFichajeAbierto { get; set; } = 16;
+
+    // Los días puente y los no laborables (opcionales para el empleador) no suman el recargo de feriado salvo que se active
+    public bool PagarPuentes { get; set; }
 }
 
 public class ValorHoraEmpleado
@@ -22,6 +25,18 @@ public class Feriado
 {
     public DateTime Fecha { get; set; }
     public string Descripcion { get; set; } = string.Empty;
+
+    // inamovible / trasladable / puente / nolaborable (según la API de feriados); vacío = cargado a mano
+    public string Tipo { get; set; } = string.Empty;
+
+    // "manual" (lo cargó una persona) o "api" (lo trajo la sincronización). Lo manual nunca se pisa.
+    public string Origen { get; set; } = OrigenManual;
+
+    public const string OrigenManual = "manual", OrigenApi = "api";
+
+    public bool EsOpcional => Tipo is "puente" or "nolaborable";
+
+    public bool PagaRecargo(bool pagarPuentes) => !EsOpcional || pagarPuentes;
 }
 
 // Un evento de la hoja Fichajes (Entrada o Salida). Id = número de fila en la hoja.

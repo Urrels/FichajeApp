@@ -41,14 +41,16 @@ public class LiquidacionService
         ValidarRango(desde, hasta);
 
         var (jornadas, _) = await _jornadas.ObtenerAsync(desde, hasta, empleado);
+        var parametros = await _repositorio.ObtenerParametrosAsync();
         var entrada = new EntradaLiquidacion
         {
             Jornadas = jornadas,
             ValoresHora = await _repositorio.ListarValoresHoraAsync(),
-            Feriados = (await _repositorio.ListarFeriadosAsync()).Select(f => f.Fecha.Date).ToHashSet(),
+            Feriados = (await _repositorio.ListarFeriadosAsync()).Where(f => f.PagaRecargo(parametros.PagarPuentes))
+                .Select(f => f.Fecha.Date).ToHashSet(),
             ExcedentesAprobados = (await _repositorio.ListarExcedentesAprobadosAsync())
                 .Select(x => (x.Empleado.ToLowerInvariant(), x.Fecha.Date)).ToHashSet(),
-            Parametros = await _repositorio.ObtenerParametrosAsync(),
+            Parametros = parametros,
             Ahora = Ahora
         };
         return LiquidacionCalculo.Calcular(entrada, desde, hasta);
@@ -192,7 +194,7 @@ public class LiquidacionService
 
     public async Task GuardarFeriadoAsync(string actor, DateTime fecha, string descripcion)
     {
-        await _repositorio.GuardarFeriadoAsync(new Feriado { Fecha = fecha.Date, Descripcion = (descripcion ?? "").Trim() });
+        await _repositorio.GuardarFeriadoAsync(new Feriado { Fecha = fecha.Date, Descripcion = (descripcion ?? "").Trim(), Origen = Feriado.OrigenManual });
         await _bitacora.RegistrarAsync(actor, "FERIADO_GUARDADO:" + fecha.ToString("yyyyMMdd"));
     }
 

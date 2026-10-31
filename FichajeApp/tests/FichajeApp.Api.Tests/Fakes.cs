@@ -284,6 +284,20 @@ public class LiquidacionFalso : ILiquidacionRepositorio
     public Task<List<LiquidacionDia>> ListarDiasDeLiquidacionAsync(int id) => Task.FromResult(Dias.GetValueOrDefault(id) ?? new());
 }
 
+public class ProveedorFeriadosFalso : IProveedorFeriados
+{
+    public Dictionary<int, List<FeriadoExterno>> PorAnio { get; } = new();
+    public bool Falla { get; set; }
+    public int Consultas { get; private set; }
+
+    public Task<IReadOnlyList<FeriadoExterno>> ObtenerAsync(int anio, CancellationToken cancelar = default)
+    {
+        Consultas++;
+        if (Falla || !PorAnio.TryGetValue(anio, out var lista)) throw new HttpRequestException("sin conexión");
+        return Task.FromResult<IReadOnlyList<FeriadoExterno>>(lista);
+    }
+}
+
 // Arma todos los servicios sobre repositorios en memoria, con los roles y permisos iniciales del sistema
 public class Entorno
 {
@@ -298,6 +312,8 @@ public class Entorno
     public AlmacenFotosFalso Fotos { get; } = new();
     public StorageEnMemoria StorageFichajes { get; } = new();
     public RelojFalso Reloj { get; } = new();
+    public ProveedorFeriadosFalso ProveedorFeriados { get; } = new();
+    public FeriadosService Feriados { get; }
 
     public BitacoraService Bitacora { get; }
     public PermisosService Permisos { get; }
@@ -341,6 +357,8 @@ public class Entorno
         Jornadas = new JornadasService(Fichajes, Empleados);
         FichajesAdmin = new FichajesAdminService(Jornadas, Fichajes, Empleados, LiquidacionRepo, Bitacora, Reloj);
         Liquidacion = new LiquidacionService(Jornadas, LiquidacionRepo, Empleados, Bitacora, Reloj);
+        Feriados = new FeriadosService(LiquidacionRepo, ProveedorFeriados, Bitacora,
+            new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()), Reloj);
         Apariencia = new AparienciaService(AparienciaRepo, Bitacora, new Microsoft.Extensions.Caching.Memory.MemoryCache(
             new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions()));
 

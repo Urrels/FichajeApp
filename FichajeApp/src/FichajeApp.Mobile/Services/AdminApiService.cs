@@ -151,6 +151,7 @@ public class ParametrosLiquidacionItem
     public decimal RecargoExtraPct { get; set; }
     public decimal RecargoFeriadoPct { get; set; }
     public int MaxHorasFichajeAbierto { get; set; }
+    public bool PagarPuentes { get; set; }
 }
 
 public class ValorHoraItem
@@ -166,7 +167,12 @@ public class FeriadoItem
 {
     public DateTime Fecha { get; set; }
     public string Descripcion { get; set; } = string.Empty;
-    public string Texto => $"{Fecha:yyyy-MM-dd} · {Descripcion}";
+    public string Tipo { get; set; } = string.Empty;
+    public string Origen { get; set; } = string.Empty;
+
+    // Los puentes y no laborables son opcionales: no suman recargo salvo que se active en los parámetros
+    public bool EsOpcional => Tipo is "puente" or "nolaborable";
+    public string Texto => $"{Fecha:yyyy-MM-dd} · {Descripcion}{(EsOpcional ? " (opcional)" : "")}";
 }
 
 public static class Formato
@@ -290,6 +296,8 @@ public class AdminApiService
         Pedir<List<FeriadoItem>>(HttpMethod.Get, $"admin/liquidacion/feriados?desde={Formato.Fecha(desde)}&hasta={Formato.Fecha(hasta)}");
     public Task<ResultadoConsulta<Respuesta>> GuardarFeriado(DateTime fecha, string descripcion) =>
         Pedir<Respuesta>(HttpMethod.Put, "admin/liquidacion/feriados", new { fecha, descripcion });
+    public Task<ResultadoConsulta<Respuesta>> SincronizarFeriados() =>
+        Pedir<Respuesta>(HttpMethod.Post, "admin/liquidacion/feriados/sincronizar");
     public Task<ResultadoConsulta<Respuesta>> EliminarFeriado(DateTime fecha) =>
         Pedir<Respuesta>(HttpMethod.Delete, $"admin/liquidacion/feriados?fecha={Formato.Fecha(fecha)}");
 
