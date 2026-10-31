@@ -107,3 +107,11 @@ Las fotos de la prueba anterior quedan en `datos/fotos`; si querés borrarlas, b
 
 ## J. En el teléfono real
 Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, modo avión y rotación.
+
+## M. Pantallas pulidas
+- [ ] Login con PIN mal: aparece un banner rojo (no texto suelto) y "Listo" del teclado entra.
+- [ ] Administración muestra tarjetas agrupadas (Personas, Asistencia y pagos, Configuración, Mi cuenta) y solo las que el rol permite; los títulos de grupo sin opciones no aparecen.
+- [ ] Cómo se ficha: cada tarjeta muestra el valor actual y al tocarla se cambia.
+- [ ] Fichar: tarjeta verde con "Entrada/Salida registrada" y hora, vibración corta, se oculta a los segundos. Un error (sin GPS, sin foto) sale en banner rojo.
+- [ ] Kiosco: tras fichar, tarjeta verde con nombre y hora; buscar un nombre inexistente muestra "No encontramos ese nombre".
+- [ ] Listas vacías (Bitácora, Fichajes a corregir, Liquidación, Roles, Usuarios) muestran un cartel con qué hacer en lugar de una pantalla en blanco.

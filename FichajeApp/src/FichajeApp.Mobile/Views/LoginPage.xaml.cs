@@ -97,6 +97,9 @@ public partial class LoginPage : ContentPage
 
     private async void OnConfigurarClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(ConfiguracionPage));
 
+    // Tocar "Listo" en el teclado entra, igual que el botón
+    private async void OnPinCompleted(object sender, EventArgs e) => await _viewModel.LoginAsync();
+
     private async void OnLoginClicked(object sender, EventArgs e)
     {
         await _viewModel.LoginAsync();

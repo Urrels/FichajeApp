@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Border xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="FichajeApp.Mobile.Views.Componentes.OpcionDeMenu"
+        x:Name="Raiz"
+        Style="{StaticResource Tarjeta}"
+        Padding="16,14">
+
+    <!-- Una opción tocable del menú: título, qué hace (o su valor actual) y una flecha. Reemplaza la pila de botones iguales -->
+    <Border.GestureRecognizers>
+        <TapGestureRecognizer Tapped="OnToque" />
+    </Border.GestureRecognizers>
+
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+            <Label Text="{Binding Titulo, Source={x:Reference Raiz}}" FontSize="16" FontAttributes="Bold"
+                   TextColor="{DynamicResource ColorTexto}" />
+            <Label Text="{Binding Valor, Source={x:Reference Raiz}}" FontSize="14"
+                   TextColor="{DynamicResource ColorPrimario}"
+                   IsVisible="{Binding TieneValor, Source={x:Reference Raiz}}" />
+            <Label Text="{Binding Descripcion, Source={x:Reference Raiz}}" Style="{StaticResource TextoAclaracion}"
+                   IsVisible="{Binding TieneDescripcion, Source={x:Reference Raiz}}" />
+        </VerticalStackLayout>
+        <Label Grid.Column="1" Text="›" FontSize="26" VerticalOptions="Center"
+               TextColor="{DynamicResource ColorTextoSuave}" />
+    </Grid>
+</Border>

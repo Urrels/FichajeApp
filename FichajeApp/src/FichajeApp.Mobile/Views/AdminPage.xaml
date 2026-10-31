@@ -1,28 +1,36 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
              x:Class="FichajeApp.Mobile.Views.AdminPage"
-             Title="Administración">
+             Title="Administración"
+             BackgroundColor="{DynamicResource ColorFondo}">
 
     <ScrollView>
-        <VerticalStackLayout Padding="24" Spacing="14">
+        <VerticalStackLayout Padding="16" Spacing="8">
 
-            <Label x:Name="SaludoLabel" FontSize="20" FontAttributes="Bold" />
-            <Label Text="Solo ves lo que tu rol te permite." FontSize="12" />
+            <Label x:Name="SaludoLabel" Style="{StaticResource TextoTitulo}" />
+            <Label Text="Solo ves lo que tu rol te permite." Style="{StaticResource TextoAclaracion}" />
 
-            <Button x:Name="UsuariosButton" Text="Usuarios" Clicked="OnUsuarios" IsVisible="False" />
-            <Button x:Name="RolesButton" Text="Roles y permisos" Clicked="OnRoles" IsVisible="False" />
-            <Button x:Name="BitacoraButton" Text="Bitácora" Clicked="OnBitacora" IsVisible="False" />
-            <Button x:Name="FichajesButton" Text="Corregir fichajes" Clicked="OnFichajes" IsVisible="False" />
-            <Button x:Name="LiquidacionButton" Text="Liquidación de horas" Clicked="OnLiquidacion" IsVisible="False" />
-            <Button x:Name="AparienciaButton" Text="Apariencia" Clicked="OnApariencia" IsVisible="False" />
-            <Button x:Name="ConfigFichajeButton" Text="Cómo se ficha (ubicación y foto)" Clicked="OnConfigFichaje" IsVisible="False" />
-            <Button x:Name="ConexionButton" Text="Conexión con Google Sheets" Clicked="OnConexion" IsVisible="False" />
+            <!-- Cada opción aparece solo si el usuario tiene el permiso (ver OnAppearing). Agrupadas por tema, no una pila de botones -->
+            <Label x:Name="SeccionPersonas" Text="PERSONAS" Style="{StaticResource EncabezadoSeccion}" />
+            <ctl:OpcionDeMenu x:Name="UsuariosButton" Titulo="Usuarios" Descripcion="Altas, bajas, PIN y roles de cada persona" Tocado="OnUsuarios" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="RolesButton" Titulo="Roles y permisos" Descripcion="Quién puede hacer qué en la app" Tocado="OnRoles" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="BitacoraButton" Titulo="Bitácora" Descripcion="Quién hizo qué y cuándo" Tocado="OnBitacora" IsVisible="False" />
 
-            <BoxView HeightRequest="1" Color="Gray" Opacity="0.4" />
+            <Label x:Name="SeccionAsistencia" Text="ASISTENCIA Y PAGOS" Style="{StaticResource EncabezadoSeccion}" />
+            <ctl:OpcionDeMenu x:Name="FichajesButton" Titulo="Corregir fichajes" Descripcion="Entradas o salidas que faltan o están mal" Tocado="OnFichajes" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="LiquidacionButton" Titulo="Liquidación de horas" Descripcion="Calcular y cerrar el pago de cada período" Tocado="OnLiquidacion" IsVisible="False" />
 
-            <Button x:Name="PinButton" Text="Cambiar mi PIN" Clicked="OnCambiarPin" IsVisible="False" />
-            <Button Text="Cerrar sesión" Clicked="OnCerrarSesion" />
+            <Label x:Name="SeccionConfiguracion" Text="CONFIGURACIÓN" Style="{StaticResource EncabezadoSeccion}" />
+            <ctl:OpcionDeMenu x:Name="ConfigFichajeButton" Titulo="Cómo se ficha" Descripcion="Ubicación, precisión del GPS, foto y modo kiosco" Tocado="OnConfigFichaje" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="AparienciaButton" Titulo="Apariencia" Descripcion="Nombre, colores y logo de la app" Tocado="OnApariencia" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="ConexionButton" Titulo="Conexión con Google Sheets" Descripcion="La planilla donde se guardan los datos" Tocado="OnConexion" IsVisible="False" />
+
+            <Label x:Name="SeccionCuenta" Text="MI CUENTA" Style="{StaticResource EncabezadoSeccion}" />
+            <ctl:OpcionDeMenu x:Name="PinButton" Titulo="Cambiar mi PIN" Descripcion="El PIN con el que entrás a la app" Tocado="OnCambiarPin" IsVisible="False" />
+
+            <Button Text="Cerrar sesión" Style="{StaticResource BotonSecundario}" Clicked="OnCerrarSesion" Margin="0,16,0,8" />
 
         </VerticalStackLayout>
     </ScrollView>

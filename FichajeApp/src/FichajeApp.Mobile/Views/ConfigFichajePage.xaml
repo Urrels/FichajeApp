@@ -1,51 +1,41 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
              x:Class="FichajeApp.Mobile.Views.ConfigFichajePage"
              Title="Cómo se ficha"
              BackgroundColor="{DynamicResource ColorFondo}">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="12">
+        <VerticalStackLayout Padding="16" Spacing="8">
 
-            <Label FontSize="12"
-                   Text="Elegí qué se pide al fichar en tu empresa. Se aplica a todos los teléfonos en el próximo fichaje." />
+            <Label Text="Elegí qué se pide al fichar en tu empresa. Se aplica a todos los teléfonos desde el próximo fichaje."
+                   Style="{StaticResource TextoAclaracion}" />
 
-            <Label Text="Ubicación" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Border Style="{StaticResource Tarjeta}" Padding="12">
-                <Label Text="{Binding UbicacionTexto}" TextColor="{DynamicResource ColorTexto}" />
-            </Border>
-            <Button Text="Cambiar ubicación" Clicked="OnUbicacion" />
+            <!-- Cada ajuste es una tarjeta: se ve el valor actual y se toca para cambiarlo -->
+            <Label Text="UBICACIÓN" Style="{StaticResource EncabezadoSeccion}" />
+            <ctl:OpcionDeMenu Titulo="¿Se pide la ubicación?" Valor="{Binding UbicacionTexto}"
+                              Descripcion="Libre registra dónde ficha cada persona; «Solo en la sede» rechaza fuera de ella."
+                              Tocado="OnUbicacion" />
+            <ctl:OpcionDeMenu Titulo="Precisión del GPS" Valor="{Binding PrecisionTexto}"
+                              Descripcion="Error máximo que se acepta. Adentro de un edificio el GPS suele tener 30 a 150 m: si les sale «no es lo bastante precisa», elegí Flexible."
+                              Tocado="OnPrecision" />
 
-            <Label Text="Precisión del GPS" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Border Style="{StaticResource Tarjeta}" Padding="12">
-                <Label Text="{Binding PrecisionTexto}" TextColor="{DynamicResource ColorTexto}" />
-            </Border>
-            <Button Text="Cambiar precisión" Clicked="OnPrecision" />
-            <Label FontSize="11"
-                   Text="Es el error máximo del GPS que se acepta al fichar. Adentro de un edificio el GPS suele tener entre 30 y 150 m de error: si tus empleados fichan adentro y les sale «no es lo bastante precisa», elegí Flexible. Más alto = menos rechazos, pero la ubicación es menos exacta." />
+            <Label Text="FOTO" Style="{StaticResource EncabezadoSeccion}" />
+            <ctl:OpcionDeMenu Titulo="¿Se saca una foto al fichar?" Valor="{Binding FotoTexto}"
+                              Descripcion="Las fotos las ve solo un supervisor. La primera vez, cada empleado recibe un aviso y tiene que estar de acuerdo."
+                              Tocado="OnFoto" />
+            <Label Text="{Binding RetencionTexto}" Style="{StaticResource TextoAclaracion}" Margin="4,0,0,0" />
 
-            <Label Text="Modo" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Border Style="{StaticResource Tarjeta}" Padding="12">
-                <Label Text="{Binding ModoTexto}" TextColor="{DynamicResource ColorTexto}" />
-            </Border>
-            <Button Text="Cambiar modo" Clicked="OnModo" />
-            <Label FontSize="11"
-                   Text="Kiosco es para empresas donde varias personas fichan en el mismo teléfono (uno por sucursal): cada empleado toca su nombre y pone su PIN. Viene apagado; al activarlo se crea el rol Kiosco para las cuentas de sucursal." />
+            <Label Text="MODO" Style="{StaticResource EncabezadoSeccion}" />
+            <ctl:OpcionDeMenu Titulo="¿Cómo ficha tu equipo?" Valor="{Binding ModoTexto}"
+                              Descripcion="Kiosco es para varias personas en el mismo teléfono (uno por sucursal). Viene apagado: al activarlo se crea el rol Kiosco."
+                              Tocado="OnModo" />
 
-            <Label Text="Foto" FontAttributes="Bold" Margin="0,8,0,0" />
-            <Border Style="{StaticResource Tarjeta}" Padding="12">
-                <Label Text="{Binding FotoTexto}" TextColor="{DynamicResource ColorTexto}" />
-            </Border>
-            <Button Text="Cambiar foto" Clicked="OnFoto" />
-            <Label FontSize="11"
-                   Text="Las fotos se guardan en el servidor y solo las ve un supervisor desde el panel. La primera vez que cada empleado ficha con foto, la app le muestra un aviso y le pide que esté de acuerdo." />
-            <Label FontSize="11" Text="{Binding RetencionTexto}" />
-
-            <Button Text="Guardar" Clicked="OnGuardar" Margin="0,12,0,0"
+            <Button Text="Guardar cambios" Clicked="OnGuardar" Margin="0,16,0,0"
                     IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
             <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
-            <Label Text="{Binding Estado}" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding Estado}" HorizontalTextAlignment="Center" Style="{StaticResource TextoAclaracion}" />
 
         </VerticalStackLayout>
     </ScrollView>

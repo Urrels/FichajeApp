@@ -32,7 +32,7 @@ public class KioscoEmpleado
     public string Accion => $"Fichar {Proximo.ToLowerInvariant()}";
 }
 
-public record ResultadoFichaje(bool Exito, string Mensaje, bool RequiereMotivo = false);
+public record ResultadoFichaje(bool Exito, string Mensaje, bool RequiereMotivo = false, string? Tipo = null);
 
 public record ResultadoConsulta<T>(bool Exito, string Mensaje, T? Datos);
 
@@ -216,7 +216,7 @@ public class ApiService
             if (response.IsSuccessStatusCode)
             {
                 var data = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-                return new ResultadoFichaje(true, data?.GetValueOrDefault("mensaje") ?? "Fichaje registrado correctamente");
+                return new ResultadoFichaje(true, data?.GetValueOrDefault("mensaje") ?? "Fichaje registrado correctamente", Tipo: data?.GetValueOrDefault("tipo"));
             }
 
             var error = await response.Content.ReadFromJsonAsync<Dictionary<string, string?>>();

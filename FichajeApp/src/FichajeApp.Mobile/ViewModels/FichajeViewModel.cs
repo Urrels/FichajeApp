@@ -42,7 +42,32 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
     public string Estado
     {
         get => _estado;
-        set { _estado = value; OnPropertyChanged(); }
+        set { _estado = value; OnPropertyChanged(); OnPropertyChanged(nameof(HayEstado)); }
+    }
+
+    private bool _hayError;
+    private bool _confirmacionVisible;
+    private string _confirmacionTexto = string.Empty;
+
+    public bool HayError
+    {
+        get => _hayError;
+        private set { _hayError = value; OnPropertyChanged(); OnPropertyChanged(nameof(HayEstado)); }
+    }
+
+    // El texto gris de avance ("Obteniendo ubicación…") se ve solo si no es un error
+    public bool HayEstado => !HayError && !string.IsNullOrWhiteSpace(Estado);
+
+    public bool ConfirmacionVisible
+    {
+        get => _confirmacionVisible;
+        private set { _confirmacionVisible = value; OnPropertyChanged(); }
+    }
+
+    public string ConfirmacionTexto
+    {
+        get => _confirmacionTexto;
+        private set { _confirmacionTexto = value; OnPropertyChanged(); }
     }
 
     // Lo que va a ser el próximo fichaje: se muestra en el botón para saber si se está entrando o saliendo
@@ -92,6 +117,7 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
     {
         Procesando = true;
         MostrarMapa = false;
+        Reiniciar();
 
         // Cómo ficha este cliente: con o sin ubicación, con o sin foto
         var config = await _apiService.ObtenerConfiguracionFichajeAsync();
@@ -102,7 +128,7 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
             Estado = "Obteniendo ubicación...";
             if (!await _geoService.PedirPermisoAsync())
             {
-                Estado = "Permiso de ubicación denegado";
+                Fallar("Necesitamos el permiso de ubicación para fichar. Habilitalo en Ajustes → Apps → Fichaje → Permisos.");
                 Procesando = false;
                 return;
             }
@@ -114,7 +140,7 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         {
             if (config.FotoObligatoria)
             {
-                Estado = "Para fichar con foto tenés que estar de acuerdo. Consultalo con tu empresa.";
+                Fallar("Para fichar con foto tenés que estar de acuerdo. Consultalo con tu empresa.");
                 Procesando = false;
                 return;
             }
@@ -125,12 +151,12 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
             try { foto = await FotoFichaje.TomarAsync(); }
             catch (Exception ex)
             {
-                if (config.FotoObligatoria) { Estado = TextosDeError.CamaraNoDisponible; Procesando = false; return; }
+                if (config.FotoObligatoria) { Fallar(TextosDeError.CamaraNoDisponible); Procesando = false; return; }
             }
 
             if (foto is null && config.FotoObligatoria)
             {
-                Estado = "Este fichaje requiere una foto.";
+                Fallar("Este fichaje requiere una foto. Sacate una y volvé a intentar.");
                 Procesando = false;
                 return;
             }
@@ -144,8 +170,8 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         var (bioExito, bioMensaje) = await _biometricService.AutenticarAsync();
         var ubicacion = await ubicacionTask;
 
-        if (!bioExito) { Estado = bioMensaje; Procesando = false; return; }
-        if (!ubicacion.Exito) { Estado = ubicacion.Mensaje; Procesando = false; return; }
+        if (!bioExito) { Fallar(bioMensaje); Procesando = false; return; }
+        if (!ubicacion.Exito) { Fallar(ubicacion.Mensaje); Procesando = false; return; }
 
         Estado = "Registrando fichaje...";
         var fichaje = new FichajeRequest
@@ -169,7 +195,7 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
 
             if (string.IsNullOrWhiteSpace(motivo))
             {
-                Estado = "Fichaje cancelado: falta el motivo";
+                Fallar("Cancelamos el fichaje porque falta el motivo. Volvé a intentar.");
                 Procesando = false;
                 return;
             }
@@ -179,15 +205,47 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
             resultado = await _apiService.RegistrarFichajeAsync(fichaje);
         }
 
-        Estado = resultado.Mensaje;
-        if (!resultado.Exito && resultado.Mensaje.Contains("lo bastante precisa", StringComparison.OrdinalIgnoreCase))
-            Estado += "\n\nSi sigue pasando al aire libre: en Ajustes → Apps → Fichaje → Permisos → Ubicación, elegí «Precisa» (no «Aproximada») y activá el GPS en modo alta precisión.";
-        if (resultado.Exito)
+        if (!resultado.Exito)
         {
-            if (config.PideUbicacion) MostrarUbicacion(ubicacion.Lat, ubicacion.Lon);
-            await ActualizarProximoAsync();
+            var texto = resultado.Mensaje;
+            if (texto.Contains("lo bastante precisa", StringComparison.OrdinalIgnoreCase))
+                texto += "\n\nSi sigue pasando al aire libre: en Ajustes → Apps → Fichaje → Permisos → Ubicación, elegí «Precisa» (no «Aproximada») y activá el GPS en modo alta precisión.";
+            Fallar(texto);
+            Procesando = false;
+            return;
         }
+
+        if (config.PideUbicacion) MostrarUbicacion(ubicacion.Lat, ubicacion.Lon);
+        Estado = string.Empty;
+        await ActualizarProximoAsync();
         Procesando = false;
+        await MostrarConfirmacionAsync(resultado.Tipo ?? "Fichaje");
+    }
+
+    // Al empezar un fichaje se limpia lo del anterior
+    private void Reiniciar()
+    {
+        HayError = false;
+        ConfirmacionVisible = false;
+    }
+
+    // Un error se ve distinto a un mensaje de avance (banner rojo, no el mismo texto gris)
+    private void Fallar(string texto)
+    {
+        Estado = texto;
+        HayError = true;
+    }
+
+    // El fichaje es el momento clave de la app: una confirmación clara con el tipo y la hora, y una vibración corta
+    private async Task MostrarConfirmacionAsync(string tipo)
+    {
+        ConfirmacionTexto = TextosDeError.FichajeRegistrado(tipo, DateTime.Now);
+        ConfirmacionVisible = true;
+        try { HapticFeedback.Default.Perform(HapticFeedbackType.Click); } catch { /* sin vibración en este teléfono */ }
+
+        var esta = ConfirmacionTexto;
+        await Task.Delay(TimeSpan.FromSeconds(8));
+        if (ConfirmacionTexto == esta) ConfirmacionVisible = false;   // no se oculta una confirmación más nueva
     }
 
     // --- ISessionObserver ---

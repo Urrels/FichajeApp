@@ -33,13 +33,16 @@ public class LoginViewModel : INotifyPropertyChanged
     public string Estado
     {
         get => _estado;
-        set { _estado = value; OnPropertyChanged(); }
+        set { _estado = value; OnPropertyChanged(); OnPropertyChanged(nameof(HayError)); }
     }
+
+    // Lo que dice Estado es un error salvo mientras se está verificando
+    public bool HayError => !Procesando && !string.IsNullOrWhiteSpace(Estado);
 
     public bool Procesando
     {
         get => _procesando;
-        set { _procesando = value; OnPropertyChanged(); }
+        set { _procesando = value; OnPropertyChanged(); OnPropertyChanged(nameof(HayError)); }
     }
 
     public event Action? LoginExitoso;
