@@ -14,6 +14,7 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiMaps()
+            .UseMauiCommunityToolkit()
             .UseMauiCommunityToolkitCamera()
             .ConfigureFonts(fonts =>
             {
@@ -25,6 +26,7 @@ public static class MauiProgram
         // se accede vía SessionManager.Instance, no necesita el contenedor de DI.
         builder.Services.AddSingleton<IClienteService, ClienteService>();
         builder.Services.AddSingleton<AparienciaService>();
+        builder.Services.AddSingleton<IFeedback, Feedback>();
         builder.Services.AddSingleton<AuthService>();
         builder.Services.AddSingleton<ConfiguracionApiService>();
         builder.Services.AddTransient<ConfiguracionViewModel>();

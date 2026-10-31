@@ -78,4 +78,49 @@
         <Setter Property="PlaceholderColor" Value="{DynamicResource ColorTextoSuave}" />
     </Style>
 
+    <!-- Escala de espacios (múltiplos de 4): usar solo estos valores para padding y márgenes -->
+    <x:Double x:Key="Esp1">4</x:Double>
+    <x:Double x:Key="Esp2">8</x:Double>
+    <x:Double x:Key="Esp3">12</x:Double>
+    <x:Double x:Key="Esp4">16</x:Double>
+    <x:Double x:Key="Esp6">24</x:Double>
+    <x:Double x:Key="Esp8">32</x:Double>
+
+    <!-- Tarjeta: superficie blanca con borde fino y esquinas de 12. Un solo estilo en vez de repetir cuatro propiedades -->
+    <Style x:Key="Tarjeta" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{DynamicResource ColorSuperficie}" />
+        <Setter Property="Stroke" Value="{DynamicResource ColorBorde}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <!-- Botones: el principal es el de la marca (estilo implícito); estos son para lo secundario y lo destructivo -->
+    <Style x:Key="BotonSecundario" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{DynamicResource ColorPrimario}" />
+        <Setter Property="BorderColor" Value="{DynamicResource ColorPrimario}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+
+    <Style x:Key="BotonPeligro" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="#C62828" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+
+    <!-- Tres niveles de texto: título, cuerpo (el predeterminado) y aclaración -->
+    <Style x:Key="TextoTitulo" TargetType="Label">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{DynamicResource ColorTexto}" />
+    </Style>
+
+    <Style x:Key="TextoAclaracion" TargetType="Label">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextColor" Value="{DynamicResource ColorTextoSuave}" />
+    </Style>
 </ResourceDictionary>

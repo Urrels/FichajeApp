@@ -310,8 +310,8 @@ public class AdminApiService
             await File.WriteAllBytesAsync(ruta, await respuesta.Content.ReadAsByteArrayAsync());
             return new ResultadoConsulta<string>(true, "OK", ruta);
         }
-        catch (OperationCanceledException) { return new ResultadoConsulta<string>(false, "El servidor no respondió a tiempo", null); }
-        catch (Exception ex) { return new ResultadoConsulta<string>(false, $"Error de conexión: {ex.Message}", null); }
+        catch (OperationCanceledException) { return new ResultadoConsulta<string>(false, TextosDeError.TiempoAgotado, null); }
+        catch (Exception ex) { return new ResultadoConsulta<string>(false, TextosDeError.DeExcepcion(ex), null); }
     }
 
     // ---- núcleo ----
@@ -332,8 +332,8 @@ public class AdminApiService
             var datos = await respuesta.Content.ReadFromJsonAsync<T>();
             return new ResultadoConsulta<T>(true, "OK", datos);
         }
-        catch (OperationCanceledException) { return new ResultadoConsulta<T>(false, "El servidor no respondió a tiempo", default); }
-        catch (Exception ex) { return new ResultadoConsulta<T>(false, $"Error de conexión: {ex.Message}", default); }
+        catch (OperationCanceledException) { return new ResultadoConsulta<T>(false, TextosDeError.TiempoAgotado, default); }
+        catch (Exception ex) { return new ResultadoConsulta<T>(false, TextosDeError.DeExcepcion(ex), default); }
     }
 
     // Header por request: el HttpClient es compartido y no se muta
@@ -343,7 +343,7 @@ public class AdminApiService
         if (string.IsNullOrEmpty(token))
         {
             _auth.NotificarSesionExpirada();
-            error = "Sesión expirada, iniciá sesión de nuevo";
+            error = TextosDeError.SesionVencida;
             return null;
         }
 
@@ -362,7 +362,7 @@ public class AdminApiService
         if (respuesta.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
             _auth.NotificarSesionExpirada();
-            return "Sesión expirada, iniciá sesión de nuevo";
+            return TextosDeError.SesionVencida;
         }
         if (respuesta.StatusCode == System.Net.HttpStatusCode.Forbidden)
             return "No tenés permiso para esta acción";

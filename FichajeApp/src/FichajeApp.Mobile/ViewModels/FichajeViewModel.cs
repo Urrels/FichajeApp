@@ -125,7 +125,7 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
             try { foto = await FotoFichaje.TomarAsync(); }
             catch (Exception ex)
             {
-                if (config.FotoObligatoria) { Estado = $"No se pudo usar la cámara: {ex.Message}"; Procesando = false; return; }
+                if (config.FotoObligatoria) { Estado = TextosDeError.CamaraNoDisponible; Procesando = false; return; }
             }
 
             if (foto is null && config.FotoObligatoria)

@@ -96,5 +96,14 @@ Las fotos de la prueba anterior quedan en `datos/fotos`; si querés borrarlas, b
 - [ ] Hay una copia de seguridad de la carpeta `datos`.
 - [ ] La API **no arranca en producción** con el `Jwt__Secret` de ejemplo (comprobado).
 
+## I2. Mensajes y estilo (ver [GUIA_DE_ESTILO.md](GUIA_DE_ESTILO.md))
+- [ ] Con el teléfono en **modo avión**, cualquier pantalla muestra "No pudimos conectarnos. Revisá tu internet y probá de nuevo." (nunca un texto en inglés o con "Exception").
+- [ ] Guardar algo (Apariencia, Cómo se ficha, valor hora, feriados) muestra un **snackbar verde** de unos 3 s, sin botón "Aceptar".
+- [ ] Un error al guardar muestra un **snackbar rojo** con el motivo.
+- [ ] Cerrar período, marcar como pagada, dar de baja, eliminar rol o feriado piden confirmación con el **verbo** en el botón ("Dar de baja", "Eliminar feriado") y dicen la consecuencia.
+- [ ] Un PIN incorrecto en el kiosco dice "Ese PIN no coincide. Probá de nuevo.".
+- [ ] Si el kiosco no puede cargar la lista (por ejemplo, el modo está apagado), aparece una **pantalla de error** con el botón "Reintentar", no una línea de texto.
+- [ ] Si la planilla conectada se borró, "Conectar Google Sheets" muestra el aviso en un **banner rojo**.
+
 ## J. En el teléfono real
 Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, modo avión y rotación.

@@ -141,7 +141,7 @@ public class ApiService
             if (string.IsNullOrEmpty(token))
             {
                 _authService.NotificarSesionExpirada();
-                return new ResultadoConsulta<T>(false, "Sesión expirada, iniciá sesión de nuevo", default);
+                return new ResultadoConsulta<T>(false, TextosDeError.SesionVencida, default);
             }
 
             // Header por request: el HttpClient es compartido y no se muta
@@ -154,7 +154,7 @@ public class ApiService
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 _authService.NotificarSesionExpirada();
-                return new ResultadoConsulta<T>(false, "Sesión expirada, iniciá sesión de nuevo", default);
+                return new ResultadoConsulta<T>(false, TextosDeError.SesionVencida, default);
             }
 
             if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
@@ -175,11 +175,11 @@ public class ApiService
         }
         catch (OperationCanceledException)
         {
-            return new ResultadoConsulta<T>(false, "El servidor no respondió a tiempo", default);
+            return new ResultadoConsulta<T>(false, TextosDeError.TiempoAgotado, default);
         }
         catch (Exception ex)
         {
-            return new ResultadoConsulta<T>(false, $"Error de conexión: {ex.Message}", default);
+            return new ResultadoConsulta<T>(false, TextosDeError.DeExcepcion(ex), default);
         }
     }
 
@@ -191,7 +191,7 @@ public class ApiService
             if (string.IsNullOrEmpty(token))
             {
                 _authService.NotificarSesionExpirada();
-                return new ResultadoFichaje(false, "Sesión expirada, iniciá sesión de nuevo");
+                return new ResultadoFichaje(false, TextosDeError.SesionVencida);
             }
 
             // Header por request: el HttpClient es compartido y no se muta
@@ -207,7 +207,7 @@ public class ApiService
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 _authService.NotificarSesionExpirada();
-                return new ResultadoFichaje(false, "Sesión expirada, iniciá sesión de nuevo");
+                return new ResultadoFichaje(false, TextosDeError.SesionVencida);
             }
 
             if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
@@ -221,16 +221,16 @@ public class ApiService
 
             var error = await response.Content.ReadFromJsonAsync<Dictionary<string, string?>>();
             var requiereMotivo = error?.GetValueOrDefault("codigo") == "MOTIVO_REQUERIDO";
-            return new ResultadoFichaje(false, error?.GetValueOrDefault("mensaje") ?? "Error al fichar", requiereMotivo);
+            return new ResultadoFichaje(false, TextosDeError.Para(error?.GetValueOrDefault("codigo"), error?.GetValueOrDefault("mensaje")), requiereMotivo);
         }
         catch (OperationCanceledException)
         {
             // Sin reintento automático: el POST no es idempotente y un reintento podría duplicar el fichaje.
-            return new ResultadoFichaje(false, "El servidor no respondió a tiempo. Revisá tu conexión y verificá si el fichaje quedó registrado.");
+            return new ResultadoFichaje(false, TextosDeError.FichajeSinConfirmar);
         }
         catch (Exception ex)
         {
-            return new ResultadoFichaje(false, $"Error de conexión: {ex.Message}");
+            return new ResultadoFichaje(false, TextosDeError.DeExcepcion(ex));
         }
     }
 }

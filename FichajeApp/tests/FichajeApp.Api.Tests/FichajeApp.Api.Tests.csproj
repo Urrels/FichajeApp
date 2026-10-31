@@ -28,6 +28,7 @@
   <ItemGroup>
     <!-- Código puro de la app móvil (sin MAUI): se prueba desde acá -->
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\DireccionServidor.cs" Link="Mobile\DireccionServidor.cs" />
+    <Compile Include="..\..\src\FichajeApp.Mobile\Services\TextosDeError.cs" Link="Mobile\TextosDeError.cs" />
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\SessionManager.cs" Link="Mobile\SessionManager.cs" />
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\ISessionObserver.cs" Link="Mobile\ISessionObserver.cs" />
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\Configuracion.cs" Link="Mobile\Configuracion.cs" />

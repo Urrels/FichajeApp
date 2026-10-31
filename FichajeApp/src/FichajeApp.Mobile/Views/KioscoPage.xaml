@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
              x:Class="FichajeApp.Mobile.Views.KioscoPage"
              Title="Kiosco"
              Shell.NavBarIsVisible="False"
@@ -19,7 +20,10 @@
         <Entry Grid.Row="1" Margin="16,12,16,4" Placeholder="Buscar mi nombre" Text="{Binding Busqueda}" />
 
         <!-- Lista de empleados -->
-        <CollectionView Grid.Row="2" ItemsSource="{Binding Empleados}" SelectionMode="Single"
+        <ctl:EstadoDeError Grid.Row="2" IsVisible="{Binding HayError}" Titulo="No pudimos cargar la lista"
+                           Mensaje="{Binding ErrorDeCarga}" TextoBoton="Reintentar" Reintentar="OnReintentar" />
+
+        <CollectionView Grid.Row="2" IsVisible="{Binding SinError}" ItemsSource="{Binding Empleados}" SelectionMode="Single"
                         SelectionChanged="OnEmpleado" Margin="16,0">
             <CollectionView.ItemTemplate>
                 <DataTemplate>

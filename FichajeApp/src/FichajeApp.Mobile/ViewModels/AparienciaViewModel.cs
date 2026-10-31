@@ -60,8 +60,11 @@ public class AparienciaViewModel : VmBase
     private string? _logoNuevoBase64;
     private bool _quitarLogo;
 
-    public AparienciaViewModel(AdminApiService api, IClienteService clientes, AparienciaService remota)
+    private readonly IFeedback _feedback;
+
+    public AparienciaViewModel(AdminApiService api, IClienteService clientes, AparienciaService remota, IFeedback feedback)
     {
+        _feedback = feedback;
         _api = api;
         _clientes = clientes;
         _remota = remota;
@@ -146,7 +149,7 @@ public class AparienciaViewModel : VmBase
         }
         catch (Exception ex)
         {
-            await Dialogos.Aviso("No se pudo cargar la imagen", ex.Message);
+            await Dialogos.Aviso("No se pudo cargar la imagen", TextosDeError.ImagenNoValida);
         }
     }
 
@@ -179,27 +182,27 @@ public class AparienciaViewModel : VmBase
         var r = await _api.GuardarApariencia(Nombre, ColoresApp.Normalizar(Primario), ColoresApp.Normalizar(Texto),
             ColoresApp.Normalizar(Acento), _logoNuevoBase64, _quitarLogo);
 
-        if (!r.Exito) { await Dialogos.Aviso("No se pudo guardar", r.Mensaje); return; }
+        if (!r.Exito) { await _feedback.ErrorAsync(TextosDeError.Para(null, r.Mensaje)); return; }
 
         await _remota.ActualizarAsync(); // trae lo guardado y lo aplica a toda la app
         Cargar();
-        Estado = "Guardado. Ya lo ven todos los usuarios.";
+        await _feedback.ExitoAsync("Cambios guardados. Ya los ven todos.");
     }).ContinueWith(_ => Notificar(nameof(PuedeGuardar)));
 
     public async Task RestaurarAsync()
     {
-        if (!await Dialogos.Confirmar("Volver a los originales",
-                "Se borran los colores, el nombre y el logo que definiste y se usan los que trae la app.", "Restaurar"))
+        if (!await Dialogos.Confirmar("¿Volver a los originales?",
+                "Se borran los colores, el nombre y el logo que elegiste y la app usa los que trae de fábrica.", "Volver a los originales"))
             return;
 
         await ConEspera(async () =>
         {
             var r = await _api.GuardarApariencia(null, null, null, null, null, true);
-            if (!r.Exito) { await Dialogos.Aviso("No se pudo restaurar", r.Mensaje); return; }
+            if (!r.Exito) { await _feedback.ErrorAsync(TextosDeError.Para(null, r.Mensaje)); return; }
 
             await _remota.ActualizarAsync();
             Cargar();
-            Estado = "Se restauró la apariencia original.";
+            await _feedback.ExitoAsync("Volvimos a la apariencia original.");
         });
     }
 }

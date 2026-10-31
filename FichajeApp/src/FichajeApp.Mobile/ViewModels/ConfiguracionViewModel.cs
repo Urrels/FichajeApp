@@ -101,7 +101,7 @@ public class ConfiguracionViewModel : VmBase
         }
         catch (Exception ex)
         {
-            await Dialogos.Aviso("No se pudo leer el archivo", ex.Message);
+            await Dialogos.Aviso("No se pudo leer el archivo", TextosDeError.ArchivoNoValido);
         }
     }
 

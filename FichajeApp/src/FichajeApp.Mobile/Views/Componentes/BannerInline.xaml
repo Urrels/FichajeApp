@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Border xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="FichajeApp.Mobile.Views.Componentes.BannerInline"
+        Padding="12" StrokeThickness="1" StrokeShape="RoundRectangle 12">
+
+    <!-- Aviso que se queda fijo dentro de la pantalla: un problema recuperable, no una pantalla de error entera -->
+    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+        <Label x:Name="Icono" FontSize="18" VerticalOptions="Start" />
+        <Label x:Name="Contenido" Grid.Column="1" FontSize="13" />
+    </Grid>
+</Border>

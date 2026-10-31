@@ -12,7 +12,7 @@
             <Label FontSize="13"
                    Text="Es un código que sirve para conectar tu planilla de Google por primera vez. Evita que otra persona que descargue la app configure tu servidor. No es tu PIN ni tu contraseña de Google." />
 
-            <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+            <Border Style="{StaticResource Tarjeta}" Padding="12">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Si sos cliente" FontAttributes="Bold" />
                     <Label FontSize="13" Text="Te lo envía la empresa que te dio la app (por WhatsApp, mail o mensaje), junto con el aviso de que tu servidor está listo." />
@@ -32,7 +32,7 @@
                 <Label FontSize="13"
                        Text="Como administrás el servidor, el código lo conseguís de cualquiera de estas tres formas. Después se lo enviás al cliente." />
 
-                <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                <Border Style="{StaticResource Tarjeta}" Padding="12">
                     <VerticalStackLayout Spacing="8">
                         <Label Text="Opción 1 · En la consola de la API" FontAttributes="Bold" />
                         <Label FontSize="13" Text="Iniciá la API y buscá el aviso amarillo «Código de activación para la app». Copiá el código que sigue." />
@@ -41,7 +41,7 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                <Border Style="{StaticResource Tarjeta}" Padding="12">
                     <VerticalStackLayout Spacing="8">
                         <Label Text="Opción 2 · En un archivo del servidor" FontAttributes="Bold" />
                         <Label FontSize="13" Text="Abrí la carpeta de la API, entrá a «datos» y abrí «clave-instalacion.txt» con el Bloc de notas." />
@@ -49,7 +49,7 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <Border Padding="12" StrokeShape="RoundRectangle 12" BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
+                <Border Style="{StaticResource Tarjeta}" Padding="12">
                     <VerticalStackLayout Spacing="8">
                         <Label Text="Opción 3 · Elegirlo vos" FontAttributes="Bold" />
                         <Label FontSize="13" Text="Agregá el bloque «Setup» en appsettings con el código que quieras, guardá y reiniciá la API." />

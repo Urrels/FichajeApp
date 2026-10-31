@@ -63,7 +63,7 @@ public class UsuariosViewModel : VmBase
             case "Desbloquear": await Ejecutar(() => _api.Desbloquear(usuario.Id), "Usuario desbloqueado"); break;
             case "Ver historial": await HistorialAsync(usuario); break;
             case "Dar de baja":
-                if (await Dialogos.Confirmar("Dar de baja", $"{usuario.NombreCompleto} no podrá volver a entrar. Sus fichajes se conservan.", "Dar de baja"))
+                if (await Dialogos.Confirmar($"¿Dar de baja a {usuario.NombreCompleto}?", "Ya no va a poder entrar a la app. Sus fichajes se conservan y podés reactivarlo cuando quieras.", "Dar de baja"))
                     await Ejecutar(() => _api.DarDeBaja(usuario.Id), "Usuario dado de baja");
                 break;
             case "Reactivar": await Ejecutar(() => _api.Reactivar(usuario.Id), "Usuario reactivado"); break;
