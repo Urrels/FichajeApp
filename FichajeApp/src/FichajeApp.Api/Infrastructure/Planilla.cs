@@ -43,7 +43,7 @@ public static class Planilla
         [UsuarioHistorial] = new[] { "Id", "FechaHora", "EmpleadoId", "Tipo", "RealizadoPor", "Nombre", "Email", "Activo", "Bloqueado", "Intentos", "RolIds", "VersionOrigen" },
         [Parametros] = new[] { "Clave", "Valor", "Descripcion" },
         [ValorHora] = new[] { "EmpleadoId", "Valor", "VigenteDesde", "CargadoPor" },
-        [Feriados] = new[] { "Fecha", "Descripcion" },
+        [Feriados] = new[] { "Fecha", "Descripcion", "Tipo", "Origen" },
         [ExcedentesAprobados] = new[] { "Empleado", "Fecha", "AprobadoPor" },
         [Apariencia] = new[] { "Clave", "Valor" },
         [Liquidaciones] = new[] { "Id", "Desde", "Hasta", "Estado", "CerradaPor", "FechaCierre", "PagadaPor", "FechaPago" },

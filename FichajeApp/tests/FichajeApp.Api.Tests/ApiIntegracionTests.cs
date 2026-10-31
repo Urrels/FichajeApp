@@ -39,6 +39,7 @@ public class ApiFactory : WebApplicationFactory<Program>
             servicios.RemoveAll<IAparienciaRepositorio>();
             servicios.RemoveAll<IConfiguracionFichajeRepositorio>();
             servicios.RemoveAll<IAlmacenFotos>();
+            servicios.RemoveAll<FichajeApp.Api.Servicios.IProveedorFeriados>();
             servicios.RemoveAll<FichajeApp.Api.Services.ISitiosRepository>();
             servicios.RemoveAll<IFichajeStorageStrategy>();
 
@@ -52,6 +53,7 @@ public class ApiFactory : WebApplicationFactory<Program>
             servicios.AddSingleton<IAparienciaRepositorio>(Datos.AparienciaRepo);
             servicios.AddSingleton<IConfiguracionFichajeRepositorio>(Datos.ConfigFichajeRepo);
             servicios.AddSingleton<IAlmacenFotos>(Datos.Fotos);
+            servicios.AddSingleton<FichajeApp.Api.Servicios.IProveedorFeriados>(Datos.ProveedorFeriados);
             servicios.AddSingleton<FichajeApp.Api.Services.ISitiosRepository, SitiosVacio>();
             servicios.AddSingleton<IFichajeStorageStrategy, StorageVacio>();
         });

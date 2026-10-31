@@ -115,3 +115,8 @@ Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, mo
 - [ ] Fichar: tarjeta verde con "Entrada/Salida registrada" y hora, vibración corta, se oculta a los segundos. Un error (sin GPS, sin foto) sale en banner rojo.
 - [ ] Kiosco: tras fichar, tarjeta verde con nombre y hora; buscar un nombre inexistente muestra "No encontramos ese nombre".
 - [ ] Listas vacías (Bitácora, Fichajes a corregir, Liquidación, Roles, Usuarios) muestran un cartel con qué hacer en lugar de una pantalla en blanco.
+## N. Feriados oficiales
+- [ ] Liquidación → Configuración → Feriados → **Actualizar feriados oficiales**: dice cuántos se agregaron y la lista pasa a mostrar los del año actual y el siguiente. Repetirlo dice que ya estaban al día.
+- [ ] Los puentes y no laborables figuran como `(opcional)`. Una persona que trabaja un puente cobra sin recargo; en Parámetros → *Recargo en puentes* se puede activar.
+- [ ] Un feriado cargado a mano con la misma fecha que uno oficial conserva su nombre después de actualizar.
+- [ ] Con el servidor sin internet, *Actualizar* muestra el aviso de conexión y no cambia nada.

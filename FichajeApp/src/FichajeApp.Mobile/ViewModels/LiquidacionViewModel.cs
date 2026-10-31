@@ -199,8 +199,20 @@ public class LiquidacionViewModel : VmBase
             [$"Máx. horas de entrada abierta: {p.MaxHorasFichajeAbierto}"] = v => p.MaxHorasFichajeAbierto = (int)v
         };
 
-        var elegida = await Dialogos.Elegir("Parámetros (tocá uno para cambiarlo)", lineas.Keys);
+        var puentes = $"Recargo en puentes y no laborables: {(p.PagarPuentes ? "sí" : "no")}";
+        var elegida = await Dialogos.Elegir("Parámetros (tocá uno para cambiarlo)", lineas.Keys.Append(puentes));
         if (elegida is null) return;
+
+        if (elegida == puentes)
+        {
+            const string Si = "Sí, pagar el recargo", No = "No, solo feriados obligatorios";
+            var decision = await Dialogos.Elegir("Puentes y no laborables: ¿suman recargo de feriado al trabajarlos?", new[] { Si, No });
+            if (decision is null) return;
+            p.PagarPuentes = decision == Si;
+            var cambio = await _api.GuardarParametros(p);
+            await _feedback.ResultadoAsync(cambio.Exito, "Parámetro guardado.", cambio.Mensaje);
+            return;
+        }
 
         var valor = await Dialogos.Numero("Parámetro", elegida.Split(':')[0]);
         if (valor is null) return;
@@ -243,14 +255,20 @@ public class LiquidacionViewModel : VmBase
         if (!r.Exito || r.Datos is null) { await Dialogos.Aviso("No se pudo", r.Mensaje); return; }
 
         const string Agregar = "➕ Agregar un feriado";
+        const string Actualizar = "🔄 Actualizar feriados oficiales";
         var lineas = r.Datos.ToDictionary(f => f.Texto, f => f);
-        var opciones = new List<string> { Agregar };
+        var opciones = new List<string> { Actualizar, Agregar };
         opciones.AddRange(lineas.Keys);
 
         var elegida = await Dialogos.Elegir("Feriados (se pagan con el recargo de domingo)", opciones);
         if (elegida is null) return;
 
-        if (elegida == Agregar)
+        if (elegida == Actualizar)
+        {
+            var sync = await _api.SincronizarFeriados();
+            await _feedback.ResultadoAsync(sync.Exito, sync.Datos?.Mensaje ?? "Feriados actualizados.", sync.Mensaje);
+        }
+        else if (elegida == Agregar)
         {
             var fecha = await Dialogos.Fecha("Feriado", DateTime.Today);
             if (fecha is null) return;

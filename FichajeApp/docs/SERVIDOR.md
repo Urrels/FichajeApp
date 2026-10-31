@@ -14,6 +14,7 @@ La app de Play Store habla con la API por internet con **HTTPS**. Hace falta **u
 | `Setup__Clave` | Código de activación que le mandás al cliente (ver README). |
 | `Fichaje__FotosRetencionDias` | Días que se guardan las fotos (90 por defecto, `0` = nunca se borran). |
 | `Fichaje__PrecisionMaxMetros` | Valor **inicial** del error máximo del GPS que se acepta al fichar (50 m por defecto). El administrador lo cambia desde la app (Cómo se ficha → Precisión del GPS) y eso manda sobre este valor. Adentro de un edificio el GPS suele dar ±30 a ±150 m: para un cliente que ficha en un lugar cerrado conviene "Flexible" (100 m) o ubicación "Ninguna". |
+| `Feriados__SincronizacionAutomatica` | `true` por defecto: una vez por día (y al arrancar) el servidor trae los feriados nacionales de la API pública ArgentinaDatos a la pestaña **Feriados**. Lo cargado a mano nunca se pisa. Si el servidor no tiene salida a internet, ponerlo en `false` (los feriados se cargan a mano). El administrador también puede forzarlo desde Liquidación → Configuración → Feriados → Actualizar. |
 | `Proxy__Confiar=true` | Solo si hay un proxy delante (Caddy, Railway, Render…). Sin esto el límite de intentos de login vería una sola IP para todos. Ya viene activado en el `Dockerfile`. |
 | `Setup__Carpeta` | Carpeta persistente para `datos` (en el `Dockerfile`: `/datos`). |
 
