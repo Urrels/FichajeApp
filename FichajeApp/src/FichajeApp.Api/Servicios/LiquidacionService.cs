@@ -46,7 +46,7 @@ public class LiquidacionService
         {
             Jornadas = jornadas,
             ValoresHora = await _repositorio.ListarValoresHoraAsync(),
-            Feriados = (await _repositorio.ListarFeriadosAsync()).Where(f => f.PagaRecargo(parametros.PagarPuentes))
+            Feriados = (await _repositorio.ListarFeriadosAsync()).Where(f => !f.Excluido && f.PagaRecargo(parametros.PagarPuentes))
                 .Select(f => f.Fecha.Date).ToHashSet(),
             ExcedentesAprobados = (await _repositorio.ListarExcedentesAprobadosAsync())
                 .Select(x => (x.Empleado.ToLowerInvariant(), x.Fecha.Date)).ToHashSet(),
@@ -190,17 +190,29 @@ public class LiquidacionService
     }
 
     public async Task<List<Feriado>> ListarFeriadosAsync(DateTime desde, DateTime hasta) =>
-        (await _repositorio.ListarFeriadosAsync()).Where(f => f.Fecha >= desde.Date && f.Fecha <= hasta.Date).ToList();
+        (await _repositorio.ListarFeriadosAsync()).Where(f => !f.Excluido && f.Fecha >= desde.Date && f.Fecha <= hasta.Date).ToList();
 
     public async Task GuardarFeriadoAsync(string actor, DateTime fecha, string descripcion)
     {
-        await _repositorio.GuardarFeriadoAsync(new Feriado { Fecha = fecha.Date, Descripcion = (descripcion ?? "").Trim(), Origen = Feriado.OrigenManual });
+        if (fecha.Year < 2000 || fecha.Year > 2100)
+            throw new InvalidOperationException("La fecha del feriado no es válida.");
+        var texto = FeriadosService.LimpiarTexto(descripcion, 100, string.Empty);
+        if (texto.Length == 0)
+            throw new InvalidOperationException("Escribí un nombre para el feriado.");
+
+        await _repositorio.GuardarFeriadoAsync(new Feriado { Fecha = fecha.Date, Descripcion = texto, Origen = Feriado.OrigenManual });
         await _bitacora.RegistrarAsync(actor, "FERIADO_GUARDADO:" + fecha.ToString("yyyyMMdd"));
     }
 
     public async Task EliminarFeriadoAsync(string actor, DateTime fecha)
     {
-        await _repositorio.EliminarFeriadoAsync(fecha.Date);
+        // Uno oficial no se borra: se marca como excluido, porque si no la sincronización diaria lo volvería a traer
+        var existente = (await _repositorio.ListarFeriadosAsync()).FirstOrDefault(f => f.Fecha.Date == fecha.Date);
+        if (existente is { Origen: Feriado.OrigenApi })
+            await _repositorio.GuardarFeriadoAsync(new Feriado
+                { Fecha = existente.Fecha, Descripcion = existente.Descripcion, Tipo = existente.Tipo, Origen = Feriado.OrigenExcluido });
+        else
+            await _repositorio.EliminarFeriadoAsync(fecha.Date);
         await _bitacora.RegistrarAsync(actor, "FERIADO_ELIMINADO:" + fecha.ToString("yyyyMMdd"));
     }
 

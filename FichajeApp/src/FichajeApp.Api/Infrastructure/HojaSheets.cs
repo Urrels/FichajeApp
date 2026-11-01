@@ -125,6 +125,17 @@ public class HojaSheets
         await pedido.ExecuteAsync();
     }
 
+    // Varias filas al final en un solo pedido (una sincronización no tiene que gastar la cuota de Google)
+    public async Task AgregarVariasAsync(IEnumerable<IList<object>> filas)
+    {
+        var lista = filas.ToList();
+        if (lista.Count == 0) return;
+        var pedido = Valores.Append(new ValueRange { Values = lista }, _cliente.SpreadsheetId, $"{Nombre}!A:A");
+        pedido.ValueInputOption = SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.RAW;
+        pedido.InsertDataOption = SpreadsheetsResource.ValuesResource.AppendRequest.InsertDataOptionEnum.INSERTROWS;
+        await pedido.ExecuteAsync();
+    }
+
     public async Task ActualizarAsync(int fila, IList<object> valores, string primeraColumna = "A")
     {
         var pedido = Valores.Update(new ValueRange { Values = new List<IList<object>> { valores } },
@@ -134,18 +145,20 @@ public class HojaSheets
     }
 
     // Reemplaza todas las filas de datos (se usa para tablas de relación chicas, como RolPermiso).
-    // No es atómico: los servicios que lo usan se serializan con un lock.
+    // Primero se escribe lo nuevo y recién después se borra lo que sobra debajo: si se corta a mitad de camino quedan filas
+    // de más, nunca la tabla vacía. Los servicios que lo usan se serializan con un lock.
     public async Task ReemplazarTodoAsync(IEnumerable<IList<object>> filas)
     {
-        await Valores.Clear(new ClearValuesRequest(), _cliente.SpreadsheetId, $"{Nombre}!A2:Z").ExecuteAsync();
-
         var lista = filas.ToList();
-        if (lista.Count == 0) return;
+        if (lista.Count > 0)
+        {
+            var pedido = Valores.Update(new ValueRange { Values = lista },
+                _cliente.SpreadsheetId, $"{Nombre}!A2");
+            pedido.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
+            await pedido.ExecuteAsync();
+        }
 
-        var pedido = Valores.Update(new ValueRange { Values = lista },
-            _cliente.SpreadsheetId, $"{Nombre}!A2");
-        pedido.ValueInputOption = SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.RAW;
-        await pedido.ExecuteAsync();
+        await Valores.Clear(new ClearValuesRequest(), _cliente.SpreadsheetId, $"{Nombre}!A{2 + lista.Count}:Z").ExecuteAsync();
     }
 
     public static string Fecha(DateTime f) => f.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);

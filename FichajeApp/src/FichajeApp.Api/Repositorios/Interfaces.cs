@@ -71,6 +71,9 @@ public interface ILiquidacionRepositorio
     Task GuardarFeriadoAsync(Feriado feriado);
     Task EliminarFeriadoAsync(DateTime fecha);
 
+    // Aplica los feriados oficiales (ver FusionFeriados) en una sola operación, sin pisar lo manual aunque cambie en el medio
+    Task<ResultadoSincronizacion> AplicarOficialesAsync(IReadOnlyCollection<Feriado> oficiales, DateTime hoy);
+
     Task<List<(string Empleado, DateTime Fecha)>> ListarExcedentesAprobadosAsync();
     Task AprobarExcedenteAsync(string empleado, DateTime fecha, string aprobadoPor);
     Task RevocarExcedenteAsync(string empleado, DateTime fecha);
