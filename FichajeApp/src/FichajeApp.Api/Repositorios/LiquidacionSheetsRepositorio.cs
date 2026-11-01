@@ -112,13 +112,45 @@ public class LiquidacionSheetsRepositorio : ILiquidacionRepositorio
 
     // ---- Feriados ----
 
-    public async Task<List<Feriado>> ListarFeriadosAsync() =>
-        (await _feriados.LeerAsync("A:D")).Select(f => new Feriado
+    // Una fecha ilegible (año 1) se descarta y, si una fecha está repetida a mano, vale la última fila
+    private static List<Feriado> LeerFeriados(IEnumerable<FilaHoja> filas) =>
+        filas.Select(f => new Feriado
             {
                 Fecha = f.Fecha(0).Date, Descripcion = f.Texto(1), Tipo = f.Texto(2),
-                Origen = f.Texto(3) == Feriado.OrigenApi ? Feriado.OrigenApi : Feriado.OrigenManual
+                Origen = f.Texto(3) switch
+                {
+                    Feriado.OrigenApi => Feriado.OrigenApi,
+                    Feriado.OrigenExcluido => Feriado.OrigenExcluido,
+                    _ => Feriado.OrigenManual
+                }
             })
+            .Where(f => f.Fecha.Year >= 2000)
+            .GroupBy(f => f.Fecha).Select(g => g.Last())
             .OrderBy(f => f.Fecha).ToList();
+
+    private static IList<object> FilaDe(Feriado f) =>
+        new List<object> { HojaSheets.Fecha(f.Fecha), f.Descripcion, f.Tipo, f.Origen };
+
+    public async Task<List<Feriado>> ListarFeriadosAsync() => LeerFeriados(await _feriados.LeerAsync("A:D"));
+
+    public async Task<ResultadoSincronizacion> AplicarOficialesAsync(IReadOnlyCollection<Feriado> oficiales, DateTime hoy)
+    {
+        // Se lee y se escribe dentro del mismo lock: un feriado que alguien cargue a mano mientras tanto no se pisa
+        await _escritura.WaitAsync();
+        try
+        {
+            var actuales = LeerFeriados(await _feriados.LeerAsync("A:D"));
+            var plan = FusionFeriados.Planificar(actuales, oficiales, hoy);
+
+            if (plan.Actualizar.Count + plan.Retirar.Count > 0)
+                await _feriados.ReemplazarTodoAsync(FusionFeriados.Aplicar(actuales, plan).Select(FilaDe));
+            else
+                await _feriados.AgregarVariasAsync(plan.Agregar.Select(FilaDe));
+
+            return FusionFeriados.Resumen(plan);
+        }
+        finally { _escritura.Release(); }
+    }
 
     public async Task GuardarFeriadoAsync(Feriado feriado)
     {

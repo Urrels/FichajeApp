@@ -404,9 +404,9 @@ public class LiquidacionController : AdminControllerBase
     public async Task<IActionResult> SincronizarFeriados()
     {
         var r = await _feriados.SincronizarAsync(Actor);
-        var mensaje = r.Agregados + r.Actualizados == 0
+        var mensaje = r.Agregados + r.Actualizados + r.Retirados == 0
             ? "Los feriados ya estaban al día."
-            : $"Feriados actualizados: {r.Agregados} nuevos y {r.Actualizados} modificados.";
-        return Ok(new { mensaje, r.Agregados, r.Actualizados, r.Omitidos });
+            : $"Feriados actualizados: {r.Agregados} nuevos, {r.Actualizados} modificados y {r.Retirados} retirados.";
+        return Ok(new { mensaje, r.Agregados, r.Actualizados, r.Retirados, r.Omitidos });
     }
 }

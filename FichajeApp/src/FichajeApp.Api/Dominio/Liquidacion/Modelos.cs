@@ -32,7 +32,10 @@ public class Feriado
     // "manual" (lo cargó una persona) o "api" (lo trajo la sincronización). Lo manual nunca se pisa.
     public string Origen { get; set; } = OrigenManual;
 
-    public const string OrigenManual = "manual", OrigenApi = "api";
+    // "excluido" = vino de la API y el administrador lo eliminó: queda guardado para que la sincronización no lo vuelva a traer
+    public const string OrigenManual = "manual", OrigenApi = "api", OrigenExcluido = "excluido";
+
+    public bool Excluido => Origen == OrigenExcluido;
 
     public bool EsOpcional => Tipo is "puente" or "nolaborable";
 

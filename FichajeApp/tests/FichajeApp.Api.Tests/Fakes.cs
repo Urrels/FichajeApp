@@ -258,6 +258,15 @@ public class LiquidacionFalso : ILiquidacionRepositorio
     public Task GuardarFeriadoAsync(Feriado f) { Feriados.RemoveAll(x => x.Fecha == f.Fecha); Feriados.Add(f); return Task.CompletedTask; }
     public Task EliminarFeriadoAsync(DateTime fecha) { Feriados.RemoveAll(x => x.Fecha == fecha); return Task.CompletedTask; }
 
+    public Task<ResultadoSincronizacion> AplicarOficialesAsync(IReadOnlyCollection<Feriado> oficiales, DateTime hoy)
+    {
+        var plan = FusionFeriados.Planificar(Feriados, oficiales, hoy);
+        var nuevos = FusionFeriados.Aplicar(Feriados, plan);
+        Feriados.Clear();
+        Feriados.AddRange(nuevos);
+        return Task.FromResult(FusionFeriados.Resumen(plan));
+    }
+
     public Task<List<(string Empleado, DateTime Fecha)>> ListarExcedentesAprobadosAsync() => Task.FromResult(Excedentes.ToList());
     public Task AprobarExcedenteAsync(string e, DateTime f, string por) { Excedentes.Add((e, f)); return Task.CompletedTask; }
     public Task RevocarExcedenteAsync(string e, DateTime f) { Excedentes.RemoveAll(x => x.Empleado == e && x.Fecha == f); return Task.CompletedTask; }
