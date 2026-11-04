@@ -221,6 +221,22 @@ public class AlmacenFotosFalso : IAlmacenFotos
     }
 }
 
+public class AlmacenPerfilesFalso : IAlmacenPerfiles
+{
+    public Dictionary<int, (byte[] Bytes, long Version)> Datos { get; } = new();
+    private long _version = 1000;
+
+    public Task GuardarAsync(int empleadoId, byte[] bytes) { Datos[empleadoId] = (bytes, ++_version); return Task.CompletedTask; }
+
+    public Task<(byte[] Bytes, string Mime, long Version)?> LeerAsync(int empleadoId) =>
+        Task.FromResult(Datos.TryGetValue(empleadoId, out var f) ? ((byte[], string, long)?)(f.Bytes, "image/jpeg", f.Version) : null);
+
+    public Task<bool> EliminarAsync(int empleadoId) => Task.FromResult(Datos.Remove(empleadoId));
+
+    public Task<IReadOnlyDictionary<int, long>> VersionesAsync() =>
+        Task.FromResult<IReadOnlyDictionary<int, long>>(Datos.ToDictionary(k => k.Key, k => k.Value.Version));
+}
+
 // Guarda en memoria los fichajes y devuelve el último tipo como lo haría la hoja
 public class StorageEnMemoria : IFichajeStorageStrategy
 {
@@ -319,6 +335,7 @@ public class Entorno
     public AparienciaFalso AparienciaRepo { get; } = new();
     public ConfiguracionFichajeFalso ConfigFichajeRepo { get; } = new();
     public AlmacenFotosFalso Fotos { get; } = new();
+    public AlmacenPerfilesFalso Perfiles { get; } = new();
     public StorageEnMemoria StorageFichajes { get; } = new();
     public RelojFalso Reloj { get; } = new();
     public ProveedorFeriadosFalso ProveedorFeriados { get; } = new();

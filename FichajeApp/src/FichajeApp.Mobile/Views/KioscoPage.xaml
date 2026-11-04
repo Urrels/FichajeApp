@@ -44,12 +44,8 @@
                     <Border Margin="0,5" Padding="14,12" StrokeShape="RoundRectangle 16"
                             BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
-                            <!-- Avatar con las iniciales -->
-                            <Grid WidthRequest="46" HeightRequest="46" VerticalOptions="Center">
-                                <Ellipse Fill="{DynamicResource ColorPrimario}" Opacity="0.14" />
-                                <Label Text="{Binding Iniciales}" FontSize="17" FontAttributes="Bold" HorizontalOptions="Center"
-                                       VerticalOptions="Center" TextColor="{DynamicResource ColorPrimario}" />
-                            </Grid>
+                            <!-- Avatar: la foto de perfil o las iniciales -->
+                            <ctl:AvatarUsuario Tamano="46" VerticalOptions="Center" Nombre="{Binding Nombre}" EmpleadoId="{Binding Id}" />
                             <Label Grid.Column="1" Text="{Binding Nombre}" FontSize="18" VerticalOptions="Center" TextColor="{DynamicResource ColorTexto}" />
                             <!-- Qué va a fichar: verde si entra, ámbar si sale -->
                             <Border Grid.Column="2" VerticalOptions="Center" Padding="12,6" StrokeThickness="0"

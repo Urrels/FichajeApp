@@ -7,6 +7,7 @@ using FichajeApp.Api.Dominio.Liquidacion;
 using FichajeApp.Api.Dominio.Seguridad;
 using FichajeApp.Api.Repositorios;
 using FichajeApp.Api.Servicios;
+using FichajeApp.Api.Storage;
 
 namespace FichajeApp.Api.Controllers;
 
@@ -71,11 +72,18 @@ public class UsuariosController : AdminControllerBase
 {
     private readonly UsuariosAdminService _usuarios;
     private readonly RolesService _roles;
+    private readonly IEmpleadosRepositorio _empleados;
+    private readonly IAlmacenPerfiles _perfiles;
+    private readonly BitacoraService _bitacora;
 
-    public UsuariosController(UsuariosAdminService usuarios, RolesService roles)
+    public UsuariosController(UsuariosAdminService usuarios, RolesService roles, IEmpleadosRepositorio empleados,
+        IAlmacenPerfiles perfiles, BitacoraService bitacora)
     {
         _usuarios = usuarios;
         _roles = roles;
+        _empleados = empleados;
+        _perfiles = perfiles;
+        _bitacora = bitacora;
     }
 
     public record CrearUsuarioRequest(string NombreCompleto, string Email, string Pin, List<int> RolIds);
@@ -135,6 +143,25 @@ public class UsuariosController : AdminControllerBase
     {
         await _usuarios.AsignarRolesAsync(Actor, id, r.RolIds);
         return Ok(new { mensaje = "Roles asignados" });
+    }
+
+    // Foto de perfil de otra persona (por ejemplo, la saca el administrador al dar de alta)
+    [HttpPut("{id:int}/foto")]
+    public async Task<IActionResult> GuardarFoto(int id, [FromBody] PerfilController.FotoRequest r)
+    {
+        var persona = await _empleados.ObtenerPorIdAsync(id) ?? throw new InvalidOperationException("El usuario no existe.");
+        await _perfiles.GuardarAsync(id, PerfilController.Decodificar(r.FotoBase64));
+        await _bitacora.RegistrarAsync(Actor, "FOTO_PERFIL_MODIFICADA:" + persona.NombreCompleto);
+        return Ok(new { mensaje = "Foto de perfil guardada" });
+    }
+
+    [HttpDelete("{id:int}/foto")]
+    public async Task<IActionResult> QuitarFoto(int id)
+    {
+        var persona = await _empleados.ObtenerPorIdAsync(id) ?? throw new InvalidOperationException("El usuario no existe.");
+        await _perfiles.EliminarAsync(id);
+        await _bitacora.RegistrarAsync(Actor, "FOTO_PERFIL_QUITADA:" + persona.NombreCompleto);
+        return Ok(new { mensaje = "Foto de perfil quitada" });
     }
 
     [HttpGet("{id:int}/historial")]

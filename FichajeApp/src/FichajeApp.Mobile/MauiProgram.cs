@@ -53,6 +53,7 @@ public static class MauiProgram
 
         // Administración: usuarios, roles, bitácora, corrección de fichajes y liquidación
         builder.Services.AddSingleton<AdminApiService>();
+        builder.Services.AddSingleton<PerfilFotos>();
         builder.Services.AddTransient<UsuariosViewModel>();
         builder.Services.AddTransient<RolesViewModel>();
         builder.Services.AddTransient<BitacoraViewModel>();
