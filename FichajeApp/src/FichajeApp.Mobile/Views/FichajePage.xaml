@@ -14,7 +14,8 @@
         <!-- Cabecera: cliente, empleado y hora -->
         <Border Grid.Row="0" StrokeThickness="0" BackgroundColor="{DynamicResource ColorPrimario}"
                 StrokeShape="RoundRectangle 0,0,32,32" Padding="24,56,24,28">
-            <VerticalStackLayout Spacing="2">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout Spacing="2">
                 <Label Text="{DynamicResource NombreCliente}"
                        TextColor="{DynamicResource ColorPrimarioTexto}"
                        Opacity="0.85" FontSize="14" />
@@ -26,6 +27,14 @@
                 <Label x:Name="FechaLabel" FontSize="14" Opacity="0.85"
                        TextColor="{DynamicResource ColorPrimarioTexto}" />
             </VerticalStackLayout>
+                <!-- Tu foto de perfil: tocala para cambiarla -->
+                <ctl:AvatarUsuario x:Name="MiFoto" Grid.Column="1" Tamano="60" VerticalOptions="Start"
+                                   SemanticProperties.Description="Tu foto de perfil" SemanticProperties.Hint="Tocá para cambiarla">
+                    <ctl:AvatarUsuario.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMiFotoTapped" />
+                    </ctl:AvatarUsuario.GestureRecognizers>
+                </ctl:AvatarUsuario>
+            </Grid>
         </Border>
 
         <!-- Botón principal de fichaje -->

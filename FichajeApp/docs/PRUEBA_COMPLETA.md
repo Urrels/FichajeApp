@@ -120,3 +120,9 @@ Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, mo
 - [ ] Los puentes y no laborables figuran como `(opcional)`. Una persona que trabaja un puente cobra sin recargo; en Parámetros → *Recargo en puentes* se puede activar.
 - [ ] Un feriado cargado a mano con la misma fecha que uno oficial conserva su nombre después de actualizar.
 - [ ] Con el servidor sin internet, *Actualizar* muestra el aviso de conexión y no cambia nada.
+
+## P. Foto de perfil
+- [ ] En Fichar, tocar la foto redonda de arriba a la derecha: *Sacar una foto nueva* abre la cámara frontal y la foto queda en el encabezado. *Quitar mi foto* vuelve a las iniciales.
+- [ ] Administración → Usuarios → una persona → *Foto de perfil*: el administrador le saca o le quita la foto.
+- [ ] La foto se ve en la lista de Usuarios y en la lista del kiosco; en otro teléfono aparece sin hacer nada (se baja sola).
+- [ ] Cambiar la foto desde un teléfono y abrir la lista en otro: a lo sumo en un minuto se ve la nueva.

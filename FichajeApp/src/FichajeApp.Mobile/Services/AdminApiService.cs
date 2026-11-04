@@ -322,6 +322,37 @@ public class AdminApiService
         catch (Exception ex) { return new ResultadoConsulta<string>(false, TextosDeError.DeExcepcion(ex), null); }
     }
 
+    // ---- Fotos de perfil ----
+
+    public Task<ResultadoConsulta<Dictionary<string, long>>> VersionesDePerfil() =>
+        Pedir<Dictionary<string, long>>(HttpMethod.Get, "perfil/versiones");
+
+    // Baja la foto de una persona al archivo indicado; false si no tiene o falló (no es un error: se muestran las iniciales)
+    public async Task<bool> DescargarFotoDePerfil(int empleadoId, string ruta)
+    {
+        try
+        {
+            using var pedido = Crear(HttpMethod.Get, $"perfil/{empleadoId}/foto", null, out _);
+            if (pedido is null) return false;
+
+            using var cts = new CancellationTokenSource(Espera);
+            using var respuesta = await _http.SendAsync(pedido, cts.Token);
+            if (!respuesta.IsSuccessStatusCode) return false;
+
+            Directory.CreateDirectory(Path.GetDirectoryName(ruta)!);
+            await File.WriteAllBytesAsync(ruta, await respuesta.Content.ReadAsByteArrayAsync());
+            return true;
+        }
+        catch { return false; }
+    }
+
+    // empleadoId null = la foto propia
+    public Task<ResultadoConsulta<Respuesta>> GuardarFotoDePerfil(int? empleadoId, string fotoBase64) =>
+        Pedir<Respuesta>(HttpMethod.Put, empleadoId is null ? "perfil/foto" : $"admin/usuarios/{empleadoId}/foto", new { fotoBase64 });
+
+    public Task<ResultadoConsulta<Respuesta>> QuitarFotoDePerfil(int? empleadoId) =>
+        Pedir<Respuesta>(HttpMethod.Delete, empleadoId is null ? "perfil/foto" : $"admin/usuarios/{empleadoId}/foto");
+
     // ---- núcleo ----
 
     private async Task<ResultadoConsulta<T>> Pedir<T>(HttpMethod metodo, string ruta, object? cuerpo = null)

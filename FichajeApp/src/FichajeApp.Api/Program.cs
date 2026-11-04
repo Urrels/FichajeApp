@@ -61,6 +61,7 @@ builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSheetsReposito
 builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSheetsRepositorio>();
 builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSheetsRepositorio>();
 builder.Services.AddSingleton<IAlmacenFotos, AlmacenFotosEnDisco>();
+builder.Services.AddSingleton<IAlmacenPerfiles, AlmacenPerfilesEnDisco>();
 builder.Services.AddSingleton<LimpiezaFotos>();
 builder.Services.AddHostedService<LimpiezaFotosHostedService>();
 

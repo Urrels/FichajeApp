@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Grid xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+      xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+      x:Class="FichajeApp.Mobile.Views.Componentes.AvatarUsuario"
+      x:Name="Raiz"
+      WidthRequest="44" HeightRequest="44">
+
+    <!-- Círculo con las iniciales; si la persona tiene foto de perfil, la foto se dibuja encima -->
+    <Ellipse Fill="{DynamicResource ColorPrimario}" Opacity="0.14" />
+    <Label x:Name="IniciallesLabel" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"
+           TextColor="{DynamicResource ColorPrimario}" />
+    <Border x:Name="MarcoFoto" StrokeShape="Ellipse" StrokeThickness="0" Padding="0" IsVisible="False">
+        <Image x:Name="Foto" Aspect="AspectFill" />
+    </Border>
+</Grid>
