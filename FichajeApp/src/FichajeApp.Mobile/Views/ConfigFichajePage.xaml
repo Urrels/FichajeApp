@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
+             xmlns:iconos="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
              x:Class="FichajeApp.Mobile.Views.ConfigFichajePage"
              Title="Cómo se ficha"
              BackgroundColor="{DynamicResource ColorFondo}">
@@ -14,21 +15,21 @@
 
             <!-- Cada ajuste es una tarjeta: se ve el valor actual y se toca para cambiarlo -->
             <Label Text="UBICACIÓN" Style="{StaticResource EncabezadoSeccion}" />
-            <ctl:OpcionDeMenu Titulo="¿Se pide la ubicación?" Valor="{Binding UbicacionTexto}"
+            <ctl:OpcionDeMenu Titulo="¿Se pide la ubicación?" Icono="{x:Static iconos:MaterialOutlined.Pin_drop}" Valor="{Binding UbicacionTexto}"
                               Descripcion="Libre registra dónde ficha cada persona; «Solo en la sede» rechaza fuera de ella."
                               Tocado="OnUbicacion" />
-            <ctl:OpcionDeMenu Titulo="Precisión del GPS" Valor="{Binding PrecisionTexto}"
+            <ctl:OpcionDeMenu Titulo="Precisión del GPS" Icono="{x:Static iconos:MaterialOutlined.My_location}" Valor="{Binding PrecisionTexto}"
                               Descripcion="Error máximo que se acepta. Adentro de un edificio el GPS suele tener 30 a 150 m: si les sale «no es lo bastante precisa», elegí Flexible."
                               Tocado="OnPrecision" />
 
             <Label Text="FOTO" Style="{StaticResource EncabezadoSeccion}" />
-            <ctl:OpcionDeMenu Titulo="¿Se saca una foto al fichar?" Valor="{Binding FotoTexto}"
+            <ctl:OpcionDeMenu Titulo="¿Se saca una foto al fichar?" Icono="{x:Static iconos:MaterialOutlined.Photo_camera}" Valor="{Binding FotoTexto}"
                               Descripcion="Las fotos las ve solo un supervisor. La primera vez, cada empleado recibe un aviso y tiene que estar de acuerdo."
                               Tocado="OnFoto" />
             <Label Text="{Binding RetencionTexto}" Style="{StaticResource TextoAclaracion}" Margin="4,0,0,0" />
 
             <Label Text="MODO" Style="{StaticResource EncabezadoSeccion}" />
-            <ctl:OpcionDeMenu Titulo="¿Cómo ficha tu equipo?" Valor="{Binding ModoTexto}"
+            <ctl:OpcionDeMenu Titulo="¿Cómo ficha tu equipo?" Icono="{x:Static iconos:MaterialOutlined.Smartphone}" Valor="{Binding ModoTexto}"
                               Descripcion="Kiosco es para varias personas en el mismo teléfono (uno por sucursal). Viene apagado: al activarlo se crea el rol Kiosco."
                               Tocado="OnModo" />
 

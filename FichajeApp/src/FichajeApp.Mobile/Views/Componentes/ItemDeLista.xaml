@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Border xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="FichajeApp.Mobile.Views.Componentes.ItemDeLista"
+        x:Name="Raiz"
+        Style="{StaticResource Tarjeta}"
+        Margin="0,4"
+        Padding="14,12">
+
+    <!-- Una fila de lista: avatar con iniciales (opcional), título, detalle y un texto a la derecha (importe, estado) -->
+    <Grid ColumnDefinitions="Auto,*,Auto">
+        <Grid WidthRequest="44" HeightRequest="44" VerticalOptions="Center" Margin="0,0,14,0"
+              IsVisible="{Binding ConAvatar, Source={x:Reference Raiz}}">
+            <Ellipse Fill="{DynamicResource ColorPrimario}" Opacity="0.14" />
+            <Label Text="{Binding Iniciales, Source={x:Reference Raiz}}" FontSize="16" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" TextColor="{DynamicResource ColorPrimario}" />
+        </Grid>
+        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+            <Label Text="{Binding Titulo, Source={x:Reference Raiz}}" FontSize="16" FontAttributes="Bold"
+                   TextColor="{DynamicResource ColorTexto}" />
+            <Label Text="{Binding Detalle, Source={x:Reference Raiz}}" Style="{StaticResource TextoAclaracion}"
+                   IsVisible="{Binding TieneDetalle, Source={x:Reference Raiz}}" />
+        </VerticalStackLayout>
+        <Label Grid.Column="2" Text="{Binding Lateral, Source={x:Reference Raiz}}" FontSize="15" FontAttributes="Bold"
+               VerticalOptions="Center" TextColor="{DynamicResource ColorPrimario}" Margin="14,0,0,0"
+               IsVisible="{Binding TieneLateral, Source={x:Reference Raiz}}" />
+    </Grid>
+</Border>

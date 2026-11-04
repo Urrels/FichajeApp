@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
              x:Class="FichajeApp.Mobile.Views.LiquidacionPage"
-             Title="Liquidación de horas">
+             Title="Liquidación de horas"
+             BackgroundColor="{DynamicResource ColorFondo}">
 
     <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Padding="12" RowSpacing="8">
 
@@ -23,13 +24,7 @@
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Grid ColumnDefinitions="*,Auto" Padding="6,6" ColumnSpacing="8">
-                        <VerticalStackLayout>
-                            <Label Text="{Binding Empleado}" FontAttributes="Bold" />
-                            <Label Text="{Binding Detalle}" FontSize="12" />
-                        </VerticalStackLayout>
-                        <Label Grid.Column="1" Text="{Binding ImporteTexto}" FontAttributes="Bold" VerticalOptions="Center" />
-                    </Grid>
+                    <ctl:ItemDeLista Titulo="{Binding Empleado}" Detalle="{Binding Detalle}" Lateral="{Binding ImporteTexto}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
