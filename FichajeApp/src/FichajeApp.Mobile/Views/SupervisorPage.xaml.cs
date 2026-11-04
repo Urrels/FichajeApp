@@ -1,15 +1,20 @@
-using System.Globalization;
-using Microsoft.Maui.Controls.Maps;
-using Microsoft.Maui.Devices.Sensors;
-using Microsoft.Maui.Maps;
+using Mapsui;
+using Mapsui.Projections;
+using Mapsui.Tiling;
+using Mapsui.UI.Maui;
 using FichajeApp.Mobile.Services;
 using FichajeApp.Mobile.ViewModels;
 
 namespace FichajeApp.Mobile.Views;
 
+// El mapa es OpenStreetMap con Mapsui: gratis y sin clave (Google Maps pedía una clave y facturación activa)
 public partial class SupervisorPage : ContentPage
 {
     private static readonly TimeSpan IntervaloActualizacion = TimeSpan.FromSeconds(30);
+
+    // Entrada en verde y salida en ámbar (los mismos tonos que las etiquetas del kiosco)
+    private static readonly Color ColorEntrada = Color.FromArgb("#2E7D32");
+    private static readonly Color ColorSalida = Color.FromArgb("#B26A00");
 
     private readonly SupervisorViewModel _viewModel;
     private bool _visible;
@@ -21,12 +26,26 @@ public partial class SupervisorPage : ContentPage
         _viewModel.DatosActualizados += () => MainThread.BeginInvokeOnMainThread(RedibujarMapa);
         _viewModel.SesionFinalizada += OnSesionFinalizada;
         BindingContext = _viewModel;
+
+        // No se reemplaza Mapa.Map: MapView ya le agregó sus capas de pines y dibujos, y con un Map nuevo no se ven
+        // OpenStreetMap pide identificar la app en el User-Agent
+        Mapa.Map.Layers.Insert(0, OpenStreetMap.CreateTileLayer("FichajeApp-supervisor"));
+        Mapa.IsMyLocationButtonVisible = false;
+        Mapa.IsZoomButtonVisible = true;
+        // Tocar un pin muestra quién es, a qué hora y dónde
+        Mapa.PinClicked += (_, e) =>
+        {
+            if (e.Pin is null) return;
+            e.Pin.ShowCallout();
+            e.Handled = true;
+        };
+        // Antes de que haya fichajes se muestra Argentina entera en vez del océano
+        CentrarEn(-34.6037, -58.3816, resolucion: 600);
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        AvisoMapa.IsVisible = FaltaClaveDeMaps();
         _visible = true;
         // Mientras la pantalla está a la vista, "Hoy" y "Presentes" se ponen al día solos: antes había que volver a tocar el botón
         Dispatcher.StartTimer(IntervaloActualizacion, () =>
@@ -43,25 +62,6 @@ public partial class SupervisorPage : ContentPage
         base.OnDisappearing();
     }
 
-    // La clave de Maps vive en el manifest de Android; si quedó el valor de ejemplo el mapa sale en blanco
-    private static bool FaltaClaveDeMaps()
-    {
-#if ANDROID
-        try
-        {
-            var contexto = Android.App.Application.Context;
-#pragma warning disable CA1422
-            var info = contexto.PackageManager!.GetApplicationInfo(contexto.PackageName!, Android.Content.PM.PackageInfoFlags.MetaData);
-#pragma warning restore CA1422
-            var clave = info.MetaData?.GetString("com.google.android.geo.API_KEY");
-            return string.IsNullOrWhiteSpace(clave) || clave.StartsWith("TU_API_KEY", StringComparison.OrdinalIgnoreCase);
-        }
-        catch { return false; }
-#else
-        return false;
-#endif
-    }
-
     private async void OnHoyClicked(object sender, EventArgs e) => await _viewModel.MostrarHoyAsync();
     private async void OnPresentesClicked(object sender, EventArgs e) => await _viewModel.MostrarPresentesAsync();
     private async void OnHistorialClicked(object sender, EventArgs e) => await _viewModel.BuscarHistorialAsync();
@@ -73,8 +73,7 @@ public partial class SupervisorPage : ContentPage
         if (e.CurrentSelection.FirstOrDefault() is not FichajeItem f) return;
 
         if (f.TieneUbicacion)
-            Mapa.MoveToRegion(MapSpan.FromCenterAndRadius(
-                new Location(f.Latitud, f.Longitud), Distance.FromMeters(250)));
+            CentrarEn(f.Latitud, f.Longitud, resolucion: 1.5);
 
         if (f.TieneFoto)
         {
@@ -84,10 +83,18 @@ public partial class SupervisorPage : ContentPage
         }
     }
 
+    // resolución = metros por píxel: 1.5 deja ver una cuadra, 600 todo el país
+    private void CentrarEn(double latitud, double longitud, double resolucion)
+    {
+        var (x, y) = SphericalMercator.FromLonLat(longitud, latitud);
+        var punto = new MPoint(x, y);
+        Mapa.Map.Navigator.CenterOnAndZoomTo(punto, resolucion, 400);
+    }
+
     private void RedibujarMapa()
     {
         Mapa.Pins.Clear();
-        Mapa.MapElements.Clear();
+        Mapa.Drawables.Clear();
 
         // Los fichajes sin ubicación (cliente que no la pide) no se dibujan en el mapa
         var items = _viewModel.Items.Where(i => i.TieneUbicacion).ToList();
@@ -95,41 +102,52 @@ public partial class SupervisorPage : ContentPage
 
         foreach (var f in items)
         {
-            var enlace = string.Create(CultureInfo.InvariantCulture,
-                $"https://www.google.com/maps?q={f.Latitud},{f.Longitud}");
-
-            var pin = new Pin
+            Mapa.Pins.Add(new Pin(Mapa)
             {
                 Label = $"{f.NombreCompleto} · {f.FechaHora:HH:mm}",
                 Address = $"{f.TipoFichaje} · {f.Lugar}",
-                Location = new Location(f.Latitud, f.Longitud),
-                Type = PinType.Place
-            };
-            // Tocar el globo del pin abre ese punto en Google Maps
-            pin.InfoWindowClicked += async (_, _) => await Launcher.Default.OpenAsync(new Uri(enlace));
-            Mapa.Pins.Add(pin);
+                Position = new Position(f.Latitud, f.Longitud),
+                Type = PinType.Pin,
+                Color = f.TipoFichaje == "Salida" ? ColorSalida : ColorEntrada,
+                Scale = 0.9f
+            });
+            // El globo con el texto por defecto sale enorme: se achica
+            var globo = Mapa.Pins[^1].Callout;
+            globo.TitleFontSize = 15;
+            globo.SubtitleFontSize = 12;
         }
 
         if (_viewModel.HayRecorrido)
         {
-            var linea = new Polyline { StrokeColor = Colors.Blue, StrokeWidth = 6 };
+            var linea = new Polyline { StrokeColor = Colors.Blue, StrokeWidth = 4 };
             foreach (var f in items)
-                linea.Geopath.Add(new Location(f.Latitud, f.Longitud));
-            Mapa.MapElements.Add(linea);
+                linea.Positions.Add(new Position(f.Latitud, f.Longitud));
+            Mapa.Drawables.Add(linea);
         }
 
         // En una actualización automática no se mueve el mapa: alguien puede estar mirando otra zona
         if (!_viewModel.EncuadrarMapa) return;
 
-        // Encuadra todos los puntos (con un mínimo de zoom para un solo punto)
-        var minLat = items.Min(f => f.Latitud);
-        var maxLat = items.Max(f => f.Latitud);
-        var minLon = items.Min(f => f.Longitud);
-        var maxLon = items.Max(f => f.Longitud);
-        var centro = new Location((minLat + maxLat) / 2, (minLon + maxLon) / 2);
-        Mapa.MoveToRegion(new MapSpan(centro,
-            Math.Max((maxLat - minLat) * 1.4, 0.005),
-            Math.Max((maxLon - minLon) * 1.4, 0.005)));
+        EncuadrarTodos(items);
+    }
+
+    // Botón "ver todos": vuelve a mostrar todos los puntos después de mover o acercar el mapa
+    private void OnVerTodosClicked(object sender, EventArgs e) =>
+        EncuadrarTodos(_viewModel.Items.Where(i => i.TieneUbicacion).ToList());
+
+    private void EncuadrarTodos(List<FichajeItem> items)
+    {
+        if (items.Count == 0) return;
+        if (items.Count == 1)
+        {
+            CentrarEn(items[0].Latitud, items[0].Longitud, resolucion: 2);
+            return;
+        }
+
+        // Encuadra todos los puntos con un margen generoso: el dibujo del pin sobresale por arriba de su punto
+        var puntos = items.Select(f => SphericalMercator.FromLonLat(f.Longitud, f.Latitud)).ToList();
+        var caja = new MRect(puntos.Min(p => p.x), puntos.Min(p => p.y), puntos.Max(p => p.x), puntos.Max(p => p.y));
+        Mapa.Map.Navigator.ZoomToBox(caja.Grow(Math.Max(caja.Width, caja.Height) * 0.5 + 200), MBoxFit.Fit, 400);
     }
 
     private async void OnSesionFinalizada()
