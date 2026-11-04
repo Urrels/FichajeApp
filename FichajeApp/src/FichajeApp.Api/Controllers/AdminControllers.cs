@@ -302,12 +302,17 @@ public class LiquidacionController : AdminControllerBase
     private readonly LiquidacionService _liquidacion;
     private readonly IEmpleadosRepositorio _empleados;
     private readonly FeriadosService _feriados;
+    private readonly AparienciaService _apariencia;
+    private readonly TimeProvider _tiempo;
 
-    public LiquidacionController(LiquidacionService liquidacion, IEmpleadosRepositorio empleados, FeriadosService feriados)
+    public LiquidacionController(LiquidacionService liquidacion, IEmpleadosRepositorio empleados, FeriadosService feriados,
+        AparienciaService apariencia, TimeProvider tiempo)
     {
         _liquidacion = liquidacion;
         _empleados = empleados;
         _feriados = feriados;
+        _apariencia = apariencia;
+        _tiempo = tiempo;
     }
 
     // Para el selector de empleado del valor hora (este permiso no incluye listar usuarios)
@@ -365,6 +370,19 @@ public class LiquidacionController : AdminControllerBase
 
         return File(Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(sb.ToString())).ToArray(),
             "text/csv", $"liquidacion-{id}.csv");
+    }
+
+    // El mismo informe en PDF (resumen por empleado y detalle por día), para imprimir o mandar
+    [HttpGet("liquidaciones/{id:int}/pdf")]
+    public async Task<IActionResult> Pdf(int id)
+    {
+        var periodo = (await _liquidacion.ListarLiquidacionesAsync()).FirstOrDefault(l => l.Id == id)
+            ?? throw new InvalidOperationException("La liquidación no existe.");
+        var dias = await _liquidacion.ObtenerDiasDeLiquidacionAsync(id);
+        var empresa = (await _apariencia.ObtenerPublicaAsync()).Nombre ?? string.Empty;
+
+        var bytes = ReportePdf.Liquidacion(periodo, dias, empresa, _tiempo.GetLocalNow().DateTime);
+        return File(bytes, "application/pdf", $"liquidacion-{periodo.Desde:yyyyMMdd}-{periodo.Hasta:yyyyMMdd}.pdf");
     }
 
     // Un nombre que empiece con = + - @ podría ejecutarse como fórmula al abrir el CSV en Excel

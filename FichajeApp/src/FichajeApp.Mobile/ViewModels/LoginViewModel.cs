@@ -60,11 +60,22 @@ public class LoginViewModel : INotifyPropertyChanged
 
         var (exito, mensaje) = await _authService.LoginAsync(Email, Pin);
 
-        Estado = mensaje;
+        // Solo los errores se muestran: "Login exitoso" salía en el cartel rojo de error y, al cerrar sesión, seguía ahí
+        Estado = exito ? string.Empty : mensaje;
         Procesando = false;
 
         if (exito)
+        {
+            Pin = string.Empty;
             LoginExitoso?.Invoke();
+        }
+    }
+
+    // Al volver al login (por ejemplo después de cerrar sesión) no tiene que quedar nada de la vez anterior
+    public void Limpiar()
+    {
+        Estado = string.Empty;
+        Pin = string.Empty;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
