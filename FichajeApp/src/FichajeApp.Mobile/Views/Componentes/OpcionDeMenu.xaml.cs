@@ -8,6 +8,13 @@ public partial class OpcionDeMenu : Border
     public static readonly BindableProperty ValorProperty = BindableProperty.Create(nameof(Valor), typeof(string), typeof(OpcionDeMenu), string.Empty,
         propertyChanged: (b, _, _) => ((OpcionDeMenu)b).OnPropertyChanged(nameof(TieneValor)));
 
+    public static readonly BindableProperty IconoProperty = BindableProperty.Create(nameof(Icono), typeof(string), typeof(OpcionDeMenu), string.Empty,
+        propertyChanged: (b, _, _) => ((OpcionDeMenu)b).OnPropertyChanged(nameof(TieneIcono)));
+
+    // Glifo de Material Symbols (por ejemplo MaterialOutlined.Group)
+    public string Icono { get => (string)GetValue(IconoProperty); set => SetValue(IconoProperty, value); }
+    public bool TieneIcono => !string.IsNullOrWhiteSpace(Icono);
+
     public string Titulo { get => (string)GetValue(TituloProperty); set => SetValue(TituloProperty, value); }
     public string Descripcion { get => (string)GetValue(DescripcionProperty); set => SetValue(DescripcionProperty, value); }
 

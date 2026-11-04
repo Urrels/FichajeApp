@@ -2,14 +2,27 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             xmlns:iconos="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
              x:Class="FichajeApp.Mobile.Views.BitacoraPage"
-             Title="Bitácora">
+             Title="Bitácora"
+             BackgroundColor="{DynamicResource ColorFondo}">
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="12" RowSpacing="8">
 
         <VerticalStackLayout Spacing="6">
-            <Entry Placeholder="Usuario (email)" Text="{Binding Usuario}" Keyboard="Email" />
-            <Entry Placeholder="Acción (ej. LOGIN, ROL_, FICHAJE)" Text="{Binding Accion}" />
+            <material:TextField Title="Usuario (email)" Text="{Binding Usuario}" Keyboard="Email">
+                <material:TextField.Icon>
+                    <FontImageSource FontFamily="MaterialOutlined" Glyph="{x:Static iconos:MaterialOutlined.Person}"
+                                     Color="{DynamicResource ColorTextoSuave}" />
+                </material:TextField.Icon>
+            </material:TextField>
+            <material:TextField Title="Acción (ej. LOGIN, ROL_, FICHAJE)" Text="{Binding Accion}">
+                <material:TextField.Icon>
+                    <FontImageSource FontFamily="MaterialOutlined" Glyph="{x:Static iconos:MaterialOutlined.Filter_alt}"
+                                     Color="{DynamicResource ColorTextoSuave}" />
+                </material:TextField.Icon>
+            </material:TextField>
             <Button Text="Buscar" Clicked="OnBuscar" />
         </VerticalStackLayout>
 
@@ -21,10 +34,7 @@
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <VerticalStackLayout Padding="6,5">
-                        <Label Text="{Binding Accion}" FontAttributes="Bold" />
-                        <Label Text="{Binding Texto}" FontSize="12" />
-                    </VerticalStackLayout>
+                    <ctl:ItemDeLista Titulo="{Binding Accion}" Detalle="{Binding Texto}" ConAvatar="False" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

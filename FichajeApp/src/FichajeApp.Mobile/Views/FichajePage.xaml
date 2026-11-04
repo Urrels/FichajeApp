@@ -2,6 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:iconos="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
              x:Class="FichajeApp.Mobile.Views.FichajePage"
              Title="Fichaje"
              Shell.NavBarIsVisible="False"
@@ -9,31 +11,56 @@
 
     <Grid RowDefinitions="Auto,*,Auto">
 
-        <!-- Cabecera: cliente y empleado -->
-        <VerticalStackLayout Grid.Row="0"
-                             BackgroundColor="{DynamicResource ColorPrimario}"
-                             Padding="24,64,24,32"
-                             Spacing="4">
-            <Label Text="{DynamicResource NombreCliente}"
-                   TextColor="{DynamicResource ColorPrimarioTexto}"
-                   Opacity="0.85" FontSize="14" />
-            <Label Text="{Binding NombreCompleto, StringFormat='Hola, {0}'}"
-                   TextColor="{DynamicResource ColorPrimarioTexto}"
-                   FontSize="24" FontAttributes="Bold" />
-        </VerticalStackLayout>
+        <!-- Cabecera: cliente, empleado y hora -->
+        <Border Grid.Row="0" StrokeThickness="0" BackgroundColor="{DynamicResource ColorPrimario}"
+                StrokeShape="RoundRectangle 0,0,32,32" Padding="24,56,24,28">
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{DynamicResource NombreCliente}"
+                       TextColor="{DynamicResource ColorPrimarioTexto}"
+                       Opacity="0.85" FontSize="14" />
+                <Label Text="{Binding NombreCompleto, StringFormat='Hola, {0}'}"
+                       TextColor="{DynamicResource ColorPrimarioTexto}"
+                       FontSize="22" FontAttributes="Bold" />
+                <Label x:Name="HoraLabel" Margin="0,12,0,0" FontSize="52" FontAttributes="Bold"
+                       TextColor="{DynamicResource ColorPrimarioTexto}" />
+                <Label x:Name="FechaLabel" FontSize="14" Opacity="0.85"
+                       TextColor="{DynamicResource ColorPrimarioTexto}" />
+            </VerticalStackLayout>
+        </Border>
 
         <!-- Botón principal de fichaje -->
         <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" Spacing="24" Padding="24">
 
             <Grid HorizontalOptions="Center" VerticalOptions="Center">
+                <!-- Halo que respira detrás del botón (ver OnAppearing) -->
+                <Ellipse x:Name="Halo" WidthRequest="250" HeightRequest="250" InputTransparent="True"
+                         Fill="{DynamicResource ColorPrimario}" Opacity="0.14" />
                 <Button Text="{Binding TextoBoton}"
                         WidthRequest="200" HeightRequest="200"
                         CornerRadius="100"
-                        FontSize="24" FontAttributes="Bold"
+                        FontSize="22" FontAttributes="Bold"
+                        ContentLayout="Top,10"
                         BackgroundColor="{DynamicResource ColorPrimario}"
                         TextColor="{DynamicResource ColorPrimarioTexto}"
                         Clicked="OnFicharClicked"
-                        IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
+                        IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}">
+                    <Button.ImageSource>
+                        <FontImageSource FontFamily="MaterialOutlined" Glyph="{x:Static iconos:MaterialOutlined.Fingerprint}"
+                                         Size="56" Color="{DynamicResource ColorPrimarioTexto}" />
+                    </Button.ImageSource>
+                    <Button.Shadow>
+                        <Shadow Brush="{DynamicResource ColorPrimario}" Offset="0,10" Radius="24" Opacity="0.45" />
+                    </Button.Shadow>
+                </Button>
+                <!-- Brillo suave arriba: da volumen sin depender del color de la marca -->
+                <Ellipse WidthRequest="200" HeightRequest="200" InputTransparent="True">
+                    <Ellipse.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#33FFFFFF" Offset="0.0" />
+                            <GradientStop Color="#00FFFFFF" Offset="0.6" />
+                        </LinearGradientBrush>
+                    </Ellipse.Fill>
+                </Ellipse>
                 <ActivityIndicator IsRunning="{Binding Procesando}"
                                    IsVisible="{Binding Procesando}"
                                    Color="{DynamicResource ColorAcento}"

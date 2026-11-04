@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
+             xmlns:iconos="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
              x:Class="FichajeApp.Mobile.Views.AdminPage"
              Title="Administración"
              BackgroundColor="{DynamicResource ColorFondo}">
@@ -14,21 +15,21 @@
 
             <!-- Cada opción aparece solo si el usuario tiene el permiso (ver OnAppearing). Agrupadas por tema, no una pila de botones -->
             <Label x:Name="SeccionPersonas" Text="PERSONAS" Style="{StaticResource EncabezadoSeccion}" />
-            <ctl:OpcionDeMenu x:Name="UsuariosButton" Titulo="Usuarios" Descripcion="Altas, bajas, PIN y roles de cada persona" Tocado="OnUsuarios" IsVisible="False" />
-            <ctl:OpcionDeMenu x:Name="RolesButton" Titulo="Roles y permisos" Descripcion="Quién puede hacer qué en la app" Tocado="OnRoles" IsVisible="False" />
-            <ctl:OpcionDeMenu x:Name="BitacoraButton" Titulo="Bitácora" Descripcion="Quién hizo qué y cuándo" Tocado="OnBitacora" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="UsuariosButton" Icono="{x:Static iconos:MaterialOutlined.Group}" Titulo="Usuarios" Descripcion="Altas, bajas, PIN y roles de cada persona" Tocado="OnUsuarios" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="RolesButton" Icono="{x:Static iconos:MaterialOutlined.Admin_panel_settings}" Titulo="Roles y permisos" Descripcion="Quién puede hacer qué en la app" Tocado="OnRoles" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="BitacoraButton" Icono="{x:Static iconos:MaterialOutlined.History}" Titulo="Bitácora" Descripcion="Quién hizo qué y cuándo" Tocado="OnBitacora" IsVisible="False" />
 
             <Label x:Name="SeccionAsistencia" Text="ASISTENCIA Y PAGOS" Style="{StaticResource EncabezadoSeccion}" />
-            <ctl:OpcionDeMenu x:Name="FichajesButton" Titulo="Corregir fichajes" Descripcion="Entradas o salidas que faltan o están mal" Tocado="OnFichajes" IsVisible="False" />
-            <ctl:OpcionDeMenu x:Name="LiquidacionButton" Titulo="Liquidación de horas" Descripcion="Calcular y cerrar el pago de cada período" Tocado="OnLiquidacion" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="FichajesButton" Icono="{x:Static iconos:MaterialOutlined.Edit_calendar}" Titulo="Corregir fichajes" Descripcion="Entradas o salidas que faltan o están mal" Tocado="OnFichajes" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="LiquidacionButton" Icono="{x:Static iconos:MaterialOutlined.Payments}" Titulo="Liquidación de horas" Descripcion="Calcular y cerrar el pago de cada período" Tocado="OnLiquidacion" IsVisible="False" />
 
             <Label x:Name="SeccionConfiguracion" Text="CONFIGURACIÓN" Style="{StaticResource EncabezadoSeccion}" />
-            <ctl:OpcionDeMenu x:Name="ConfigFichajeButton" Titulo="Cómo se ficha" Descripcion="Ubicación, precisión del GPS, foto y modo kiosco" Tocado="OnConfigFichaje" IsVisible="False" />
-            <ctl:OpcionDeMenu x:Name="AparienciaButton" Titulo="Apariencia" Descripcion="Nombre, colores y logo de la app" Tocado="OnApariencia" IsVisible="False" />
-            <ctl:OpcionDeMenu x:Name="ConexionButton" Titulo="Conexión con Google Sheets" Descripcion="La planilla donde se guardan los datos" Tocado="OnConexion" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="ConfigFichajeButton" Icono="{x:Static iconos:MaterialOutlined.Tune}" Titulo="Cómo se ficha" Descripcion="Ubicación, precisión del GPS, foto y modo kiosco" Tocado="OnConfigFichaje" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="AparienciaButton" Icono="{x:Static iconos:MaterialOutlined.Palette}" Titulo="Apariencia" Descripcion="Nombre, colores y logo de la app" Tocado="OnApariencia" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="ConexionButton" Icono="{x:Static iconos:MaterialOutlined.Cloud_sync}" Titulo="Conexión con Google Sheets" Descripcion="La planilla donde se guardan los datos" Tocado="OnConexion" IsVisible="False" />
 
             <Label x:Name="SeccionCuenta" Text="MI CUENTA" Style="{StaticResource EncabezadoSeccion}" />
-            <ctl:OpcionDeMenu x:Name="PinButton" Titulo="Cambiar mi PIN" Descripcion="El PIN con el que entrás a la app" Tocado="OnCambiarPin" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="PinButton" Icono="{x:Static iconos:MaterialOutlined.Password}" Titulo="Cambiar mi PIN" Descripcion="El PIN con el que entrás a la app" Tocado="OnCambiarPin" IsVisible="False" />
 
             <Button Text="Cerrar sesión" Style="{StaticResource BotonSecundario}" Clicked="OnCerrarSesion" Margin="0,16,0,8" />
 

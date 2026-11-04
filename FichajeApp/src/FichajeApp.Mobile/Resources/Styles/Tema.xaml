@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material">
 
     <!-- Tokens de diseño. Los valores marcados "del cliente" se pisan al iniciar con los de
          Clientes/<cliente>/cliente.json y con lo que el administrador defina desde la app
          (ver ClienteService.AplicarTema). -->
 
     <x:String x:Key="NombreCliente">Fichaje</x:String>
+
+    <!-- Los campos Material usan el color de la marca al enfocarse y un borde suave en reposo -->
+    <Style TargetType="material:TextField">
+        <Setter Property="AccentColor" Value="{DynamicResource ColorPrimario}" />
+        <Setter Property="BorderColor" Value="{DynamicResource ColorBorde}" />
+        <Setter Property="TextColor" Value="{DynamicResource ColorTexto}" />
+    </Style>
 
     <!-- del cliente -->
     <Color x:Key="ColorPrimario">#1B5E9B</Color>
