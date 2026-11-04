@@ -301,12 +301,12 @@ public class AdminApiService
     public Task<ResultadoConsulta<Respuesta>> EliminarFeriado(DateTime fecha) =>
         Pedir<Respuesta>(HttpMethod.Delete, $"admin/liquidacion/feriados?fecha={Formato.Fecha(fecha)}");
 
-    // Baja el CSV de una liquidación a la carpeta temporal y devuelve la ruta (para compartirlo)
-    public async Task<ResultadoConsulta<string>> DescargarCsv(int liquidacionId)
+    // Baja el informe de una liquidación cerrada ("csv" o "pdf") a la carpeta temporal y devuelve la ruta (para compartirlo)
+    public async Task<ResultadoConsulta<string>> DescargarInforme(int liquidacionId, string formato, string? nombre = null)
     {
         try
         {
-            using var pedido = Crear(HttpMethod.Get, $"admin/liquidacion/liquidaciones/{liquidacionId}/csv", null, out var error);
+            using var pedido = Crear(HttpMethod.Get, $"admin/liquidacion/liquidaciones/{liquidacionId}/{formato}", null, out var error);
             if (pedido is null) return new ResultadoConsulta<string>(false, error!, null);
 
             using var cts = new CancellationTokenSource(Espera);
@@ -314,7 +314,7 @@ public class AdminApiService
             var fallo = await RevisarErrores(respuesta);
             if (fallo != null) return new ResultadoConsulta<string>(false, fallo, null);
 
-            var ruta = Path.Combine(FileSystem.CacheDirectory, $"liquidacion-{liquidacionId}.csv");
+            var ruta = Path.Combine(FileSystem.CacheDirectory, $"{nombre ?? $"liquidacion-{liquidacionId}"}.{formato}");
             await File.WriteAllBytesAsync(ruta, await respuesta.Content.ReadAsByteArrayAsync());
             return new ResultadoConsulta<string>(true, "OK", ruta);
         }
