@@ -9,10 +9,6 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="{DynamicResource ColorFondo}">
 
-    <ContentPage.Behaviors>
-        <toolkit:StatusBarBehavior StatusBarColor="{DynamicResource ColorPrimario}" StatusBarStyle="LightContent" />
-    </ContentPage.Behaviors>
-
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- Cabecera: cliente, empleado y hora -->

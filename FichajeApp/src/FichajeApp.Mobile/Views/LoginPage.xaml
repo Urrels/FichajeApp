@@ -10,11 +10,6 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="{DynamicResource ColorFondo}">
 
-    <!-- La barra de estado toma el color de la marca, no el violeta por defecto de Android -->
-    <ContentPage.Behaviors>
-        <toolkit:StatusBarBehavior StatusBarColor="{DynamicResource ColorPrimario}" StatusBarStyle="LightContent" />
-    </ContentPage.Behaviors>
-
     <Grid RowDefinitions="Auto,*">
 
         <!-- Cabecera con la identidad del cliente -->
