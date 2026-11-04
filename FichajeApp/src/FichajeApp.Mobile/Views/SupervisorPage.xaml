@@ -4,15 +4,37 @@
              xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
              xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
              x:Class="FichajeApp.Mobile.Views.SupervisorPage"
-             Title="Supervisor">
+             Title="Supervisor"
+             BackgroundColor="{DynamicResource ColorFondo}">
 
-    <Grid RowDefinitions="Auto,Auto,2*,Auto,3*" RowSpacing="6" Padding="10">
+    <Grid RowDefinitions="Auto,Auto,2*,Auto,3*" RowSpacing="8" Padding="12">
 
-        <!-- Modo de consulta -->
-        <Grid Grid.Row="0" ColumnDefinitions="*,*,*" ColumnSpacing="6">
-            <Button Grid.Column="0" Text="Hoy" Clicked="OnHoyClicked" />
-            <Button Grid.Column="1" Text="Presentes" Clicked="OnPresentesClicked" />
-            <Button Grid.Column="2" Text="Historial" Clicked="OnHistorialClicked" />
+        <!-- Modo de consulta: el activo se ve relleno, los otros con borde -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,*,*" ColumnSpacing="8">
+            <Button Grid.Column="0" Text="Hoy" Clicked="OnHoyClicked" Style="{StaticResource BotonSecundario}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding EsHoy}" Value="True">
+                        <Setter Property="BackgroundColor" Value="{DynamicResource ColorPrimario}" />
+                        <Setter Property="TextColor" Value="{DynamicResource ColorPrimarioTexto}" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+            <Button Grid.Column="1" Text="Presentes" Clicked="OnPresentesClicked" Style="{StaticResource BotonSecundario}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding EsPresentes}" Value="True">
+                        <Setter Property="BackgroundColor" Value="{DynamicResource ColorPrimario}" />
+                        <Setter Property="TextColor" Value="{DynamicResource ColorPrimarioTexto}" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
+            <Button Grid.Column="2" Text="Historial" Clicked="OnHistorialClicked" Style="{StaticResource BotonSecundario}">
+                <Button.Triggers>
+                    <DataTrigger TargetType="Button" Binding="{Binding EsHistorial}" Value="True">
+                        <Setter Property="BackgroundColor" Value="{DynamicResource ColorPrimario}" />
+                        <Setter Property="TextColor" Value="{DynamicResource ColorPrimarioTexto}" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
         </Grid>
 
         <!-- Filtros: solo en Historial -->
@@ -31,25 +53,32 @@
             <Button Text="Buscar" Clicked="OnBuscarClicked" />
         </VerticalStackLayout>
 
-        <maps:Map Grid.Row="2" x:Name="Mapa" />
+        <Border Grid.Row="2" Style="{StaticResource Tarjeta}" Padding="0" StrokeShape="RoundRectangle 16">
+            <Grid>
+                <maps:Map x:Name="Mapa" />
+                <!-- Sin clave de Google Maps el mapa no dibuja nada: se avisa en vez de dejar un recuadro vacío -->
+                <ctl:BannerInline x:Name="AvisoMapa" IsVisible="False" Severidad="Aviso" Margin="10" VerticalOptions="Start"
+                                  Texto="Falta la clave de Google Maps en esta versión de la app: el mapa no puede cargar. La lista de abajo funciona igual." />
+            </Grid>
+        </Border>
 
-        <Label Grid.Row="3" Text="{Binding Estado}" HorizontalOptions="Center" />
+        <Label Grid.Row="3" Text="{Binding Estado}" Style="{StaticResource TextoAclaracion}" HorizontalOptions="Center"
+               HorizontalTextAlignment="Center" />
 
-        <CollectionView Grid.Row="4"
-                        ItemsSource="{Binding Items}"
-                        SelectionMode="Single"
-                        SelectionChanged="OnItemSelected">
-            <CollectionView.EmptyView>
-                <ctl:EstadoVacio Icono="🕒" Titulo="No hay fichajes para mostrar" Mensaje="Probá con otra fecha o con otra persona." />
-            </CollectionView.EmptyView>
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <VerticalStackLayout Padding="6,4">
-                        <Label Text="{Binding NombreCompleto}" FontAttributes="Bold" />
-                        <Label Text="{Binding Resumen}" FontSize="12" />
-                    </VerticalStackLayout>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+        <!-- Deslizar hacia abajo actualiza; además se actualiza sola cada 30 s -->
+        <RefreshView Grid.Row="4" Command="{Binding RefrescarCommand}" IsRefreshing="{Binding Refrescando}">
+            <CollectionView ItemsSource="{Binding Items}"
+                            SelectionMode="Single"
+                            SelectionChanged="OnItemSelected">
+                <CollectionView.EmptyView>
+                    <ctl:EstadoVacio Icono="🕒" Titulo="No hay fichajes para mostrar" Mensaje="Probá con otra fecha o con otra persona." />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <ctl:ItemDeLista Titulo="{Binding NombreCompleto}" Detalle="{Binding Resumen}" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
     </Grid>
 </ContentPage>
