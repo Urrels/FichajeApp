@@ -45,16 +45,11 @@ Si falla, el mensaje dice qué falta: planilla no compartida, API de Sheets sin 
   puesto como `io.github.urrels.fichaje.<cliente>` (usa tu usuario de GitHub). Podés cambiarlo por otro, por ejemplo
   `ar.tunombre.fichaje.clientea`, **hasta la primera vez que subas la app a Play: después no se puede cambiar**. Reglas: solo
   letras minúsculas, números y guion bajo; dos o más partes separadas por puntos; cada parte empieza con una letra.
-- `Platforms/Android/AndroidManifest.xml`: reemplazar `TU_API_KEY_DE_GOOGLE_MAPS` por una clave de Maps (ver abajo).
 
-### Clave de Google Maps (para el mapa del supervisor)
-1. En <https://console.cloud.google.com>, con el proyecto de tu cuenta de servicio: *APIs y servicios → Biblioteca → Maps SDK for Android → Habilitar*.
-2. *Credenciales → Crear credenciales → Clave de API*.
-3. Editá la clave → *Restricciones de la aplicación → Apps de Android* → agregá el `ApplicationId` y la huella **SHA-1**:
-   - la de pruebas: `keytool -list -v -keystore "%USERPROFILE%\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android`
-   - la de producción: Play Console → tu app → *Integridad de la app → Firma de la app* → "Certificado de firma de la clave de firma de la app" (SHA-1).
-4. Restringila también a *Maps SDK for Android* y pegala en el manifest. La misma app usa una clave por cliente (una por `ApplicationId`).
-5. La facturación de Google Cloud tiene que estar activa para que el mapa cargue (hay un uso gratuito mensual; revisá los precios vigentes).
+### El mapa del supervisor
+El mapa usa OpenStreetMap (Mapsui): **no necesita ninguna clave ni facturación**. Los mapas públicos de OpenStreetMap piden un uso razonable
+(una app interna con pocos supervisores está bien). Si algún día el tráfico crece, se cambia la fuente de mapas por otra (por ejemplo MapTiler,
+que tiene plan gratuito) en `SupervisorPage.xaml.cs` (`OpenStreetMap.CreateTileLayer`). El crédito "© OpenStreetMap contributors" lo muestra el propio mapa: no lo saques.
 - Los **colores, el nombre y el logo interno** después los puede cambiar el administrador desde la app (Administración → Apariencia).
   El **ícono del launcher** no: solo cambia con una versión nueva.
 

@@ -6,7 +6,6 @@
 	             android:supportsRtl="true"
 	             android:networkSecurityConfig="@xml/network_security_config">
 		<!-- Clave de Google Maps SDK for Android: reemplazar por la real (restringirla por paquete y SHA-1) -->
-		<meta-data android:name="com.google.android.geo.API_KEY" android:value="TU_API_KEY_DE_GOOGLE_MAPS" />
 		<uses-library android:name="org.apache.http.legacy" android:required="false" />
 	</application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

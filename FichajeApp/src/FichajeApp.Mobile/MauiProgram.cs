@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 using UraniumUI;
 using UraniumUI.Icons.MaterialSymbols;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder
             .UseMauiApp<App>()
-            .UseMauiMaps()
+            .UseSkiaSharp()
             .UseMauiCommunityToolkit()
             .UseMauiCommunityToolkitCamera()
             .UseUraniumUI()
