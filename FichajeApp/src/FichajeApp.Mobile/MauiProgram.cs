@@ -1,4 +1,6 @@
 using CommunityToolkit.Maui;
+using UraniumUI;
+using UraniumUI.Icons.MaterialSymbols;
 using Microsoft.Extensions.Logging;
 using FichajeApp.Mobile.Services;
 using FichajeApp.Mobile.ViewModels;
@@ -16,8 +18,11 @@ public static class MauiProgram
             .UseMauiMaps()
             .UseMauiCommunityToolkit()
             .UseMauiCommunityToolkitCamera()
+            .UseUraniumUI()
+            .UseUraniumUIMaterial()
             .ConfigureFonts(fonts =>
             {
+                fonts.AddMaterialSymbolsFonts();
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
