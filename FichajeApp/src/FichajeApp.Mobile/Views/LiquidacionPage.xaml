@@ -32,10 +32,10 @@
         <Label Grid.Row="3" Text="{Binding Total}" FontSize="16" FontAttributes="Bold" HorizontalOptions="End" />
 
         <VerticalStackLayout Grid.Row="4" Spacing="6">
-            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
-                <Button Text="Cerrar período" Clicked="OnCerrar" />
-                <Button Grid.Column="1" Text="Cerradas" Clicked="OnCerradas" />
-                <Button Grid.Column="2" Text="Configuración" Clicked="OnConfiguracion" />
+            <Button Text="Cerrar período" Clicked="OnCerrar" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button Text="Cerradas" Clicked="OnCerradas" Style="{StaticResource BotonSecundario}" />
+                <Button Grid.Column="1" Text="Configuración" Clicked="OnConfiguracion" Style="{StaticResource BotonSecundario}" />
             </Grid>
             <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
         </VerticalStackLayout>

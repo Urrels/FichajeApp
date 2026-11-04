@@ -18,6 +18,9 @@ public partial class FichajePage : ContentPage
         _viewModel = viewModel;
         _viewModel.SesionFinalizada += OnSesionFinalizada;
         BindingContext = _viewModel;
+        SizeChanged += (_, _) => AjustarBoton();
+        Cabecera.SizeChanged += (_, _) => AjustarBoton();
+        Pie.SizeChanged += (_, _) => AjustarBoton();   // el pie cambia de alto cuando aparece un mensaje
     }
 
     protected override async void OnAppearing()
@@ -27,11 +30,24 @@ public partial class FichajePage : ContentPage
         ActualizarReloj();
         Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () => { ActualizarReloj(); return _visible; });
         _ = RespirarAsync();
+        _ = _viewModel.PrepararUbicacionAsync(); // sin esperar: el GPS engancha mientras la persona se prepara (y antes de la consulta al servidor)
         await _viewModel.ActualizarProximoAsync();
-        _ = _viewModel.PrepararUbicacionAsync(); // sin esperar: el GPS engancha mientras la persona se prepara
         var sesion = SessionManager.Instance;
         PinButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarPin);
         PanelButton.IsVisible = sesion.EsSupervisor || sesion.EsAdministrador;
+    }
+
+    // En una pantalla corta (o con la letra grande del sistema) el botón de 200 quedaba tapado por lo de abajo: se achica a lo que entra
+    private void AjustarBoton()
+    {
+        if (Height <= 0 || Cabecera.Height <= 0 || Pie.Height <= 0) return;
+        var libre = Height - Cabecera.Height - Pie.Height;
+        var lado = Math.Clamp(libre - 70, 120, 200);
+        BotonFichar.WidthRequest = BotonFichar.HeightRequest = lado;
+        Brillo.WidthRequest = Brillo.HeightRequest = lado;
+        Halo.WidthRequest = Halo.HeightRequest = lado + 50;
+        TextoBoton.MaximumWidthRequest = lado * 0.78;   // "Fichar entrada" pasa a dos renglones en vez de salirse del círculo
+        AvisoPermisos.IsVisible = libre > 380;
     }
 
     protected override void OnDisappearing()
@@ -65,8 +81,9 @@ public partial class FichajePage : ContentPage
 
     private void OnCerrarSesion(object sender, EventArgs e) => _authService.Logout();
 
-    private async void OnFicharClicked(object sender, EventArgs e)
+    private async void OnFicharTapped(object? sender, TappedEventArgs e)
     {
+        if (_viewModel.Procesando) return; // mientras trabaja, el toque no hace nada (antes el botón se deshabilitaba)
         await _viewModel.FicharAsync();
     }
 

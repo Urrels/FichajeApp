@@ -30,6 +30,7 @@ public partial class LoginPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        _viewModel.Limpiar();
         MostrarServidorPersonalizado();
         if (_yaOfrecioConfigurar) return;
         _yaOfrecioConfigurar = true;

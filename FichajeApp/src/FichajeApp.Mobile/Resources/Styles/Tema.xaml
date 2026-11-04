@@ -42,6 +42,8 @@
         <Setter Property="Padding" Value="14,10" />
         <Setter Property="MinimumHeightRequest" Value="44" />
         <Setter Property="MinimumWidthRequest" Value="44" />
+        <!-- Si el texto no entra (pantalla angosta o letra grande del sistema) pasa a dos renglones en vez de cortarse -->
+        <Setter Property="LineBreakMode" Value="WordWrap" />
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">
@@ -111,6 +113,12 @@
         <Setter Property="BorderWidth" Value="1" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+
+    <!-- Para filas de tres botones juntos: poco relleno y sin crecer con la letra del sistema, así la palabra entra entera -->
+    <Style x:Key="BotonCompacto" TargetType="Button" BasedOn="{StaticResource BotonSecundario}">
+        <Setter Property="Padding" Value="4,8" />
+        <Setter Property="FontAutoScalingEnabled" Value="False" />
     </Style>
 
     <Style x:Key="BotonPeligro" TargetType="Button">
