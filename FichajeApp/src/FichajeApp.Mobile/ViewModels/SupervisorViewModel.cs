@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows.Input;
 using System.Runtime.CompilerServices;
 using FichajeApp.Mobile.Services;
 
@@ -25,11 +26,33 @@ public class SupervisorViewModel : INotifyPropertyChanged, ISessionObserver
     public event Action? DatosActualizados;
     public event Action? SesionFinalizada;
 
+    // La última consulta se guarda para poder repetirla sola (actualización automática) o al deslizar la lista
+    private Func<Task<ResultadoConsulta<List<FichajeItem>>>>? _ultimaConsulta;
+    private string _textoVacio = string.Empty;
+    private string _firma = string.Empty;
+    private bool _refrescando;
+
     public SupervisorViewModel(ApiService apiService)
     {
         _apiService = apiService;
+        RefrescarCommand = new Command(async () => await RefrescarAsync(manual: true));
         SessionManager.Instance.Suscribir(this);
     }
+
+    public ICommand RefrescarCommand { get; }
+
+    public bool Refrescando
+    {
+        get => _refrescando;
+        private set { _refrescando = value; OnPropertyChanged(); }
+    }
+
+    // Verdadero cuando la lista cambió por una acción de la persona (hay que encuadrar el mapa);
+    // falso en una actualización automática (no se mueve el mapa mientras alguien lo está mirando)
+    public bool EncuadrarMapa { get; private set; } = true;
+
+    public bool EsHoy => Modo == "Hoy";
+    public bool EsPresentes => Modo == "Presentes";
 
     public ObservableCollection<FichajeItem> Items { get; } = new();
     public ObservableCollection<string> Empleados { get; } = new() { Todos };
@@ -37,7 +60,7 @@ public class SupervisorViewModel : INotifyPropertyChanged, ISessionObserver
     public string Modo
     {
         get => _modo;
-        private set { _modo = value; OnPropertyChanged(); OnPropertyChanged(nameof(EsHistorial)); }
+        private set { _modo = value; OnPropertyChanged(); OnPropertyChanged(nameof(EsHistorial)); OnPropertyChanged(nameof(EsHoy)); OnPropertyChanged(nameof(EsPresentes)); }
     }
 
     public bool EsHistorial => Modo == "Historial";
@@ -123,6 +146,8 @@ public class SupervisorViewModel : INotifyPropertyChanged, ISessionObserver
 
     private async Task CargarAsync(Func<Task<ResultadoConsulta<List<FichajeItem>>>> consulta, string textoVacio)
     {
+        _ultimaConsulta = consulta;
+        _textoVacio = textoVacio;
         Procesando = true;
         Estado = "Cargando...";
 
@@ -133,16 +158,69 @@ public class SupervisorViewModel : INotifyPropertyChanged, ISessionObserver
         {
             foreach (var item in resultado.Datos)
                 Items.Add(item);
-            Estado = Items.Count == 0 ? textoVacio : $"{Items.Count} fichaje(s)";
+            _firma = Firma(resultado.Datos);
+            Estado = TextoEstado();
         }
         else
         {
+            _firma = string.Empty;
             Estado = resultado.Mensaje;
         }
 
         Procesando = false;
+        EncuadrarMapa = true;
         OnPropertyChanged(nameof(HayRecorrido));
         DatosActualizados?.Invoke();
+    }
+
+    // Repite la última consulta sin tocar la pantalla si no hay nada nuevo. Sirve para que el mapa y la lista
+    // se pongan al día solos mientras el supervisor los mira. Un error de una actualización automática no pisa lo que se ve.
+    public async Task RefrescarAsync(bool manual = false)
+    {
+        if (Procesando || _ultimaConsulta is null)
+        {
+            Refrescando = false;
+            return;
+        }
+
+        if (manual) Refrescando = true;
+        try
+        {
+            var resultado = await _ultimaConsulta();
+            if (resultado.Exito && resultado.Datos is not null)
+            {
+                var firma = Firma(resultado.Datos);
+                if (firma != _firma)
+                {
+                    _firma = firma;
+                    Items.Clear();
+                    foreach (var item in resultado.Datos)
+                        Items.Add(item);
+                    EncuadrarMapa = false;
+                    OnPropertyChanged(nameof(HayRecorrido));
+                    DatosActualizados?.Invoke();
+                }
+                Estado = TextoEstado();
+            }
+            else if (manual)
+            {
+                Estado = resultado.Mensaje;
+            }
+        }
+        finally { Refrescando = false; }
+    }
+
+    private static string Firma(IEnumerable<FichajeItem> items) =>
+        string.Join("|", items.Select(i => $"{i.NombreCompleto}/{i.FechaHora:O}/{i.TipoFichaje}/{i.Latitud}/{i.Longitud}"));
+
+    // "3 fichajes · 1 sin ubicación (no se ve en el mapa) · actualizado 15:42"
+    private string TextoEstado()
+    {
+        if (Items.Count == 0) return _textoVacio;
+        var sinUbicacion = Items.Count(i => !i.TieneUbicacion);
+        return $"{Items.Count} fichaje(s)"
+            + (sinUbicacion > 0 ? $" · {sinUbicacion} sin ubicación (no se ven en el mapa)" : "")
+            + $" · actualizado {DateTime.Now:HH:mm}";
     }
 
     // --- ISessionObserver ---

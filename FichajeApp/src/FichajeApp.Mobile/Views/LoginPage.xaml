@@ -66,7 +66,6 @@
 
                 <Button Text="Ingresar"
                         HeightRequest="50"
-                        CornerRadius="25"
                         FontAttributes="Bold"
                         BackgroundColor="{DynamicResource ColorPrimario}"
                         TextColor="{DynamicResource ColorPrimarioTexto}"

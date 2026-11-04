@@ -15,7 +15,10 @@ COPY --from=build /app .
 RUN mkdir /datos && chown app /datos
 VOLUME /datos
 
-ENV ASPNETCORE_URLS=http://+:8080 \
+# La API toma la hora del servidor para fichajes, "Hoy" y liquidación: en el contenedor es UTC y los fichajes quedaban 3 h corridos
+# (y los de la noche caían en el día siguiente). TZ lo corrige; se puede pisar con otra zona al desplegar.
+ENV TZ=America/Argentina/Buenos_Aires \
+    ASPNETCORE_URLS=http://+:8080 \
     ASPNETCORE_ENVIRONMENT=Production \
     Setup__Carpeta=/datos \
     Proxy__Confiar=true

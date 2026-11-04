@@ -9,7 +9,10 @@ namespace FichajeApp.Mobile.Views;
 
 public partial class SupervisorPage : ContentPage
 {
+    private static readonly TimeSpan IntervaloActualizacion = TimeSpan.FromSeconds(30);
+
     private readonly SupervisorViewModel _viewModel;
+    private bool _visible;
 
     public SupervisorPage(ApiService apiService)
     {
@@ -23,7 +26,40 @@ public partial class SupervisorPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        AvisoMapa.IsVisible = FaltaClaveDeMaps();
+        _visible = true;
+        // Mientras la pantalla está a la vista, "Hoy" y "Presentes" se ponen al día solos: antes había que volver a tocar el botón
+        Dispatcher.StartTimer(IntervaloActualizacion, () =>
+        {
+            if (_visible && !_viewModel.EsHistorial) _ = _viewModel.RefrescarAsync();
+            return _visible;
+        });
         await _viewModel.IniciarAsync();
+    }
+
+    protected override void OnDisappearing()
+    {
+        _visible = false;
+        base.OnDisappearing();
+    }
+
+    // La clave de Maps vive en el manifest de Android; si quedó el valor de ejemplo el mapa sale en blanco
+    private static bool FaltaClaveDeMaps()
+    {
+#if ANDROID
+        try
+        {
+            var contexto = Android.App.Application.Context;
+#pragma warning disable CA1422
+            var info = contexto.PackageManager!.GetApplicationInfo(contexto.PackageName!, Android.Content.PM.PackageInfoFlags.MetaData);
+#pragma warning restore CA1422
+            var clave = info.MetaData?.GetString("com.google.android.geo.API_KEY");
+            return string.IsNullOrWhiteSpace(clave) || clave.StartsWith("TU_API_KEY", StringComparison.OrdinalIgnoreCase);
+        }
+        catch { return false; }
+#else
+        return false;
+#endif
     }
 
     private async void OnHoyClicked(object sender, EventArgs e) => await _viewModel.MostrarHoyAsync();
@@ -81,6 +117,9 @@ public partial class SupervisorPage : ContentPage
                 linea.Geopath.Add(new Location(f.Latitud, f.Longitud));
             Mapa.MapElements.Add(linea);
         }
+
+        // En una actualización automática no se mueve el mapa: alguien puede estar mirando otra zona
+        if (!_viewModel.EncuadrarMapa) return;
 
         // Encuadra todos los puntos (con un mínimo de zoom para un solo punto)
         var minLat = items.Min(f => f.Latitud);
