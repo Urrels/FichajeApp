@@ -53,8 +53,9 @@ public partial class FichajePage : ContentPage
     {
         while (_visible)
         {
-            await Halo.ScaleTo(1.08, 1400, Easing.SinInOut);
-            await Halo.ScaleTo(1.0, 1400, Easing.SinInOut);
+            // Con las animaciones del sistema apagadas ScaleTo termina al instante: el Delay evita un bucle sin pausa
+            await Task.WhenAll(Halo.ScaleTo(1.08, 1400, Easing.SinInOut), Task.Delay(1400));
+            await Task.WhenAll(Halo.ScaleTo(1.0, 1400, Easing.SinInOut), Task.Delay(1400));
         }
     }
 

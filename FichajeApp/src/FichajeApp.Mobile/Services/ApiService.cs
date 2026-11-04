@@ -30,6 +30,9 @@ public class KioscoEmpleado
     public string Nombre { get; set; } = string.Empty;
     public string Proximo { get; set; } = "Entrada";
     public string Accion => $"Fichar {Proximo.ToLowerInvariant()}";
+
+    // Las dos primeras letras del nombre y apellido, para el avatar de la lista
+    public string Iniciales => string.Concat(Nombre.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
 }
 
 public record ResultadoFichaje(bool Exito, string Mensaje, bool RequiereMotivo = false, string? Tipo = null);

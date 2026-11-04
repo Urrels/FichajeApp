@@ -2,6 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             xmlns:iconos="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
              x:Class="FichajeApp.Mobile.Views.KioscoPage"
              Title="Kiosco"
              Shell.NavBarIsVisible="False"
@@ -11,13 +13,21 @@
     <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
 
         <!-- Cabecera: empresa y sucursal -->
-        <VerticalStackLayout Grid.Row="0" BackgroundColor="{DynamicResource ColorPrimario}" Padding="24,48,24,20" Spacing="2">
-            <Label Text="{DynamicResource NombreCliente}" TextColor="{DynamicResource ColorPrimarioTexto}" Opacity="0.85" FontSize="14" />
-            <Label Text="{Binding Sucursal}" TextColor="{DynamicResource ColorPrimarioTexto}" FontSize="24" FontAttributes="Bold" />
-            <Label Text="Tocá tu nombre para fichar" TextColor="{DynamicResource ColorPrimarioTexto}" Opacity="0.85" FontSize="13" />
-        </VerticalStackLayout>
+        <Border Grid.Row="0" StrokeThickness="0" BackgroundColor="{DynamicResource ColorPrimario}"
+                StrokeShape="RoundRectangle 0,0,32,32" Padding="24,28,24,28">
+            <VerticalStackLayout Spacing="2">
+                <Label Text="{DynamicResource NombreCliente}" TextColor="{DynamicResource ColorPrimarioTexto}" Opacity="0.85" FontSize="14" />
+                <Label Text="{Binding Sucursal}" TextColor="{DynamicResource ColorPrimarioTexto}" FontSize="26" FontAttributes="Bold" />
+                <Label Text="Tocá tu nombre para fichar" TextColor="{DynamicResource ColorPrimarioTexto}" Opacity="0.85" FontSize="14" />
+            </VerticalStackLayout>
+        </Border>
 
-        <Entry Grid.Row="1" Margin="16,12,16,4" Placeholder="Buscar mi nombre" Text="{Binding Busqueda}" />
+        <material:TextField Grid.Row="1" Margin="16,16,16,4" Title="Buscar mi nombre" Text="{Binding Busqueda}">
+            <material:TextField.Icon>
+                <FontImageSource FontFamily="MaterialOutlined" Glyph="{x:Static iconos:MaterialOutlined.Search}"
+                                 Color="{DynamicResource ColorTextoSuave}" />
+            </material:TextField.Icon>
+        </material:TextField>
 
         <!-- Lista de empleados -->
         <ctl:EstadoDeError Grid.Row="2" IsVisible="{Binding HayError}" Titulo="No pudimos cargar la lista"
@@ -31,12 +41,32 @@
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Border Margin="0,4" Padding="14,12" StrokeShape="RoundRectangle 12"
+                    <Border Margin="0,5" Padding="14,12" StrokeShape="RoundRectangle 16"
                             BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorBorde}">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="{Binding Nombre}" FontSize="17" VerticalOptions="Center" TextColor="{DynamicResource ColorTexto}" />
-                            <Label Grid.Column="1" Text="{Binding Proximo}" FontAttributes="Bold" VerticalOptions="Center"
-                                   TextColor="{DynamicResource ColorAcento}" />
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                            <!-- Avatar con las iniciales -->
+                            <Grid WidthRequest="46" HeightRequest="46" VerticalOptions="Center">
+                                <Ellipse Fill="{DynamicResource ColorPrimario}" Opacity="0.14" />
+                                <Label Text="{Binding Iniciales}" FontSize="17" FontAttributes="Bold" HorizontalOptions="Center"
+                                       VerticalOptions="Center" TextColor="{DynamicResource ColorPrimario}" />
+                            </Grid>
+                            <Label Grid.Column="1" Text="{Binding Nombre}" FontSize="18" VerticalOptions="Center" TextColor="{DynamicResource ColorTexto}" />
+                            <!-- Qué va a fichar: verde si entra, ámbar si sale -->
+                            <Border Grid.Column="2" VerticalOptions="Center" Padding="12,6" StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 14" BackgroundColor="#E8F5E9">
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding Proximo}" Value="Salida">
+                                        <Setter Property="BackgroundColor" Value="#FFF4E0" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label Text="{Binding Proximo}" FontSize="14" FontAttributes="Bold" TextColor="#2E7D32">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding Proximo}" Value="Salida">
+                                            <Setter Property="TextColor" Value="#B26A00" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
                         </Grid>
                     </Border>
                 </DataTemplate>
@@ -48,7 +78,12 @@
                 BackgroundColor="{DynamicResource ColorSuperficie}" Stroke="{DynamicResource ColorPrimario}">
             <VerticalStackLayout Spacing="10">
                 <Label Text="{Binding TituloPin}" FontSize="18" FontAttributes="Bold" TextColor="{DynamicResource ColorTexto}" />
-                <Entry Text="{Binding Pin}" Placeholder="Tu PIN" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
+                <material:TextField Text="{Binding Pin}" Title="Tu PIN" IsPassword="True" Keyboard="Numeric" MaxLength="4">
+                    <material:TextField.Icon>
+                        <FontImageSource FontFamily="MaterialOutlined" Glyph="{x:Static iconos:MaterialOutlined.Lock}"
+                                         Color="{DynamicResource ColorTextoSuave}" />
+                    </material:TextField.Icon>
+                </material:TextField>
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                     <Button Text="Cancelar" Clicked="OnCancelar" BackgroundColor="Transparent" TextColor="{DynamicResource ColorTexto}" />
                     <Button Grid.Column="1" Text="Confirmar" Clicked="OnConfirmar"

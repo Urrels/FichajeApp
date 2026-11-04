@@ -138,6 +138,13 @@ public class ClienteService : IClienteService
         recursos["ColorAcento"] = Color.FromArgb(actual.Acento);
         recursos["ColorPrimarioOscuro"] = Oscurecer(primario, 0.25f);
 
+        // Los controles Material (UraniumUI) leen estos nombres: que usen el color de la marca y no el verde por defecto
+        var primarioTexto = Color.FromArgb(actual.PrimarioTexto);
+        recursos["Primary"] = primario;
+        recursos["PrimaryDark"] = primario;
+        recursos["OnPrimary"] = primarioTexto;
+        recursos["OnPrimaryDark"] = primarioTexto;
+
         // El logo del servidor lleva ?v=<versión>: si cambia la imagen, cambia la versión y se baja de nuevo
         recursos["LogoCliente"] = actual.TieneLogo && !string.IsNullOrEmpty(remota?.VersionLogo)
             ? ImageSource.FromUri(new Uri($"{BaseUrl}/apariencia/logo?v={remota.VersionLogo}"))
