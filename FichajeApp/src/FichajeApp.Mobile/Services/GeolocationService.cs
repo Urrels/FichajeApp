@@ -13,10 +13,12 @@ public class GeolocationService : IGeolocationService
 {
     // Con ±20 m ya no se espera más. Si cumple lo que pide el servidor se espera apenas unos segundos más por si mejora.
     private const double PrecisionDeSobraMetros = 20;
-    private static readonly TimeSpan EsperaMinima = TimeSpan.FromSeconds(4);
+    private static readonly TimeSpan EsperaMinima = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan PlazoMaximo = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan VigenciaDeUnaLectura = TimeSpan.FromSeconds(45);
     private static readonly TimeSpan EdadMaximaDeLaUltimaConocida = TimeSpan.FromMinutes(2);
+    // Una posición que el teléfono ya tenía de hace segundos y que cumple la precisión pedida se usa al instante, sin esperar al GPS
+    private static readonly TimeSpan EdadParaUsarAlInstante = TimeSpan.FromSeconds(40);
 
     private readonly object _candado = new();
     private Task<Location?>? _busqueda;
@@ -90,6 +92,9 @@ public class GeolocationService : IGeolocationService
 
     private async Task<Location?> BuscarAsync(double requerida)
     {
+        var alInstante = await RecienteYPrecisaAsync(requerida);
+        if (alInstante is not null) return alInstante;
+
         Location? mejor = null;
         var inicio = DateTime.UtcNow;
         var suficiente = new TaskCompletionSource();
@@ -170,15 +175,30 @@ public class GeolocationService : IGeolocationService
         catch { return null; }
     }
 
+    private static async Task<Location?> RecienteYPrecisaAsync(double requerida)
+    {
+        try
+        {
+            var ultima = await Geolocation.Default.GetLastKnownLocationAsync();
+            return ultima is not null
+                   && !ultima.IsFromMockProvider
+                   && DateTimeOffset.UtcNow - ultima.Timestamp <= EdadParaUsarAlInstante
+                   && (ultima.Accuracy ?? double.MaxValue) <= requerida
+                ? ultima
+                : null;
+        }
+        catch { return null; }
+    }
+
     private void Avisar(string texto) => Progreso?.Invoke(texto);
 
-    // La dirección es opcional: si falla o tarda más de 3 s, el fichaje sigue sin ella.
+    // La dirección es opcional: si falla o tarda más de 1,5 s, el fichaje sigue sin ella.
     private static async Task<string?> ObtenerDireccionAsync(double lat, double lon)
     {
         try
         {
             var geocoding = Geocoding.Default.GetPlacemarksAsync(lat, lon);
-            if (await Task.WhenAny(geocoding, Task.Delay(TimeSpan.FromSeconds(3))) != geocoding)
+            if (await Task.WhenAny(geocoding, Task.Delay(TimeSpan.FromMilliseconds(1500))) != geocoding)
                 return null;
             var placemarks = await geocoding;
             var p = placemarks?.FirstOrDefault();

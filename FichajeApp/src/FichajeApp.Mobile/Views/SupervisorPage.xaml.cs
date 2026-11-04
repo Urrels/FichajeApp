@@ -18,6 +18,7 @@ public partial class SupervisorPage : ContentPage
 
     private readonly SupervisorViewModel _viewModel;
     private bool _visible;
+    private bool _encuadrePendiente;   // los datos llegaron antes de que el mapa tuviera tamaño: se encuadra cuando lo tenga
 
     public SupervisorPage(ApiService apiService)
     {
@@ -31,6 +32,9 @@ public partial class SupervisorPage : ContentPage
         // OpenStreetMap pide identificar la app en el User-Agent
         Mapa.Map.Layers.Insert(0, OpenStreetMap.CreateTileLayer("FichajeApp-supervisor"));
         Mapa.IsMyLocationButtonVisible = false;
+        Mapa.MyLocationEnabled = false;
+        Mapa.MyLocationLayer.Enabled = false; // si no, dibuja un punto azul en (0, 0), en medio del océano
+        Mapa.SizeChanged += (_, _) => { if (_encuadrePendiente) EsperarMapaYEncuadrar(); };
         Mapa.IsZoomButtonVisible = true;
         // Tocar un pin muestra quién es, a qué hora y dónde
         Mapa.PinClicked += (_, e) =>
@@ -40,7 +44,7 @@ public partial class SupervisorPage : ContentPage
             e.Handled = true;
         };
         // Antes de que haya fichajes se muestra Argentina entera en vez del océano
-        CentrarEn(-34.6037, -58.3816, resolucion: 600);
+        CentrarEn(-34.6037, -58.3816, resolucion: 600, duracion: 0);
     }
 
     protected override async void OnAppearing()
@@ -84,11 +88,11 @@ public partial class SupervisorPage : ContentPage
     }
 
     // resolución = metros por píxel: 1.5 deja ver una cuadra, 600 todo el país
-    private void CentrarEn(double latitud, double longitud, double resolucion)
+    private void CentrarEn(double latitud, double longitud, double resolucion, int duracion = 400)
     {
         var (x, y) = SphericalMercator.FromLonLat(longitud, latitud);
         var punto = new MPoint(x, y);
-        Mapa.Map.Navigator.CenterOnAndZoomTo(punto, resolucion, 400);
+        Mapa.Map.Navigator.CenterOnAndZoomTo(punto, resolucion, duracion);
     }
 
     private void RedibujarMapa()
@@ -128,16 +132,46 @@ public partial class SupervisorPage : ContentPage
         // En una actualización automática no se mueve el mapa: alguien puede estar mirando otra zona
         if (!_viewModel.EncuadrarMapa) return;
 
+        // Mapsui ignora los movimientos que se piden antes de su primer dibujo (pasa al abrir la pantalla con los datos ya listos):
+        // se repite el encuadre un instante después, solo si nadie tocó el mapa mientras tanto
+        var firma = string.Join("|", items.Select(i => $"{i.Latitud},{i.Longitud}"));
+        foreach (var espera in new[] { 700, 1800 })
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(espera), () =>
+            {
+                if (_visible && _viewModel.EncuadrarMapa && firma == string.Join("|", ConUbicacion().Select(i => $"{i.Latitud},{i.Longitud}")))
+                    EncuadrarTodos(ConUbicacion());
+            });
+
         EncuadrarTodos(items);
     }
 
     // Botón "ver todos": vuelve a mostrar todos los puntos después de mover o acercar el mapa
     private void OnVerTodosClicked(object sender, EventArgs e) =>
-        EncuadrarTodos(_viewModel.Items.Where(i => i.TieneUbicacion).ToList());
+        EncuadrarTodos(ConUbicacion());
+
+    // El control de Mapsui toma su tamaño unos instantes después que la pantalla; si los datos llegan antes, se espera (hasta 6 s)
+    private void EsperarMapaYEncuadrar()
+    {
+        var intentos = 0;
+        Dispatcher.StartTimer(TimeSpan.FromMilliseconds(200), () =>
+        {
+            if (!_encuadrePendiente) return false;
+            if (Mapa.Map.Navigator.Viewport.Width > 0)
+            {
+                _encuadrePendiente = false;
+                EncuadrarTodos(ConUbicacion());
+                return false;
+            }
+            return ++intentos < 30;
+        });
+    }
+
+    private List<FichajeItem> ConUbicacion() => _viewModel.Items.Where(i => i.TieneUbicacion).ToList();
 
     private void EncuadrarTodos(List<FichajeItem> items)
     {
         if (items.Count == 0) return;
+        if (Mapa.Map.Navigator.Viewport.Width <= 0) { _encuadrePendiente = true; EsperarMapaYEncuadrar(); return; }
         if (items.Count == 1)
         {
             CentrarEn(items[0].Latitud, items[0].Longitud, resolucion: 2);
@@ -147,7 +181,10 @@ public partial class SupervisorPage : ContentPage
         // Encuadra todos los puntos con un margen generoso: el dibujo del pin sobresale por arriba de su punto
         var puntos = items.Select(f => SphericalMercator.FromLonLat(f.Longitud, f.Latitud)).ToList();
         var caja = new MRect(puntos.Min(p => p.x), puntos.Min(p => p.y), puntos.Max(p => p.x), puntos.Max(p => p.y));
-        Mapa.Map.Navigator.ZoomToBox(caja.Grow(Math.Max(caja.Width, caja.Height) * 0.5 + 200), MBoxFit.Fit, 400);
+        // Se calcula a mano la resolución (metros por píxel) que hace entrar todos los puntos: ZoomToBox no hacía nada con puntos muy cercanos
+        var vista = Mapa.Map.Navigator.Viewport;
+        var resolucion = Math.Max(caja.Width / vista.Width, caja.Height / vista.Height) * 2.3; // 2,3 = margen: el dibujo del pin sobresale por arriba de su punto
+        Mapa.Map.Navigator.CenterOnAndZoomTo(caja.Centroid, Math.Max(resolucion, 2), 400);
     }
 
     private async void OnSesionFinalizada()
