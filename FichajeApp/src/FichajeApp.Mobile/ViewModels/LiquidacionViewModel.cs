@@ -131,13 +131,15 @@ public class LiquidacionViewModel : VmBase
         if (elegida is null) return;
 
         var liquidacion = lineas[elegida];
-        var opciones = new List<string> { "Ver resumen", "Compartir CSV" };
+        const string Pdf = "Descargar PDF", Csv = "Descargar CSV (Excel)";
+        var opciones = new List<string> { "Ver resumen", Pdf, Csv };
         if (liquidacion.Estado == "Cerrada") opciones.Add("Marcar como pagada");
 
         switch (await Dialogos.Elegir(liquidacion.Texto, opciones))
         {
             case "Ver resumen": await ResumenDeAsync(liquidacion); break;
-            case "Compartir CSV": await CompartirCsvAsync(liquidacion); break;
+            case Pdf: await CompartirInformeAsync(liquidacion, "pdf", "application/pdf"); break;
+            case Csv: await CompartirInformeAsync(liquidacion, "csv", "text/csv"); break;
             case "Marcar como pagada":
                 if (await Dialogos.Confirmar("¿Marcar como pagada?", "Una vez marcada, ya no se puede volver atrás.", "Marcar como pagada"))
                 {
@@ -158,15 +160,21 @@ public class LiquidacionViewModel : VmBase
         await Dialogos.Aviso(liquidacion.Texto, texto);
     }
 
-    private async Task CompartirCsvAsync(PeriodoLiquidadoItem liquidacion)
+    // Baja el informe y abre el menú de Android para guardarlo, mandarlo por WhatsApp o mail, o abrirlo en otra app
+    private async Task CompartirInformeAsync(PeriodoLiquidadoItem liquidacion, string formato, string tipo)
     {
-        var r = await _api.DescargarCsv(liquidacion.Id);
-        if (!r.Exito || r.Datos is null) { await Dialogos.Aviso("No se pudo", r.Mensaje); return; }
+        Procesando = true;
+        Estado = formato == "pdf" ? "Armando el PDF…" : "Armando el CSV…";
+        ResultadoConsulta<string> r;
+        try { r = await _api.DescargarInforme(liquidacion.Id, formato, $"liquidacion-{liquidacion.Desde:yyyy-MM-dd}-a-{liquidacion.Hasta:yyyy-MM-dd}"); }
+        finally { Procesando = false; Estado = string.Empty; }
+
+        if (!r.Exito || r.Datos is null) { await Dialogos.Aviso("No se pudo descargar", r.Mensaje); return; }
 
         await Share.Default.RequestAsync(new ShareFileRequest
         {
-            Title = $"Liquidación {liquidacion.Desde:dd-MM}-{liquidacion.Hasta:dd-MM}",
-            File = new ShareFile(r.Datos)
+            Title = $"Liquidación {liquidacion.Desde:dd-MM}-{liquidacion.Hasta:dd-MM} ({formato.ToUpperInvariant()})",
+            File = new ShareFile(r.Datos, tipo)
         });
     }
 
