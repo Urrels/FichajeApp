@@ -2,10 +2,18 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             xmlns:iconos="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
              x:Class="FichajeApp.Mobile.Views.LoginPage"
              Title="Iniciar sesión"
              Shell.NavBarIsVisible="False"
              BackgroundColor="{DynamicResource ColorFondo}">
+
+    <!-- La barra de estado toma el color de la marca, no el violeta por defecto de Android -->
+    <ContentPage.Behaviors>
+        <toolkit:StatusBarBehavior StatusBarColor="{DynamicResource ColorPrimario}" StatusBarStyle="LightContent" />
+    </ContentPage.Behaviors>
 
     <Grid RowDefinitions="Auto,*">
 
@@ -46,19 +54,20 @@
                 <Label Text="Iniciar sesión" FontSize="20" FontAttributes="Bold"
                        TextColor="{DynamicResource ColorTexto}" />
 
-                <Entry Placeholder="Email"
-                       Keyboard="Email"
-                       TextColor="{DynamicResource ColorTexto}"
-                       Text="{Binding Email}" />
+                <material:TextField Title="Email" Keyboard="Email" Text="{Binding Email}">
+                    <material:TextField.Icon>
+                        <FontImageSource FontFamily="MaterialOutlined" Glyph="{x:Static iconos:MaterialOutlined.Mail}"
+                                         Color="{DynamicResource ColorTextoSuave}" />
+                    </material:TextField.Icon>
+                </material:TextField>
 
-                <Entry Placeholder="PIN"
-                       IsPassword="True"
-                       Keyboard="Numeric"
-                       MaxLength="4"
-                       ReturnType="Done"
-                       Completed="OnPinCompleted"
-                       TextColor="{DynamicResource ColorTexto}"
-                       Text="{Binding Pin}" />
+                <material:TextField Title="PIN" IsPassword="True" Keyboard="Numeric" MaxLength="4"
+                                    ReturnType="Done" Completed="OnPinCompleted" Text="{Binding Pin}">
+                    <material:TextField.Icon>
+                        <FontImageSource FontFamily="MaterialOutlined" Glyph="{x:Static iconos:MaterialOutlined.Lock}"
+                                         Color="{DynamicResource ColorTextoSuave}" />
+                    </material:TextField.Icon>
+                </material:TextField>
 
                 <Button Text="Ingresar"
                         HeightRequest="50"
