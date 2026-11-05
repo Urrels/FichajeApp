@@ -8,8 +8,10 @@ public interface IGeolocationService
     // precisionRequeridaMetros: lo que acepta el servidor; sirve para no esperar de más cuando la lectura ya alcanza
     Task<UbicacionResultado> ObtenerUbicacionAsync(double precisionRequeridaMetros);
 
-    // Empieza a buscar señal al abrir la pantalla de fichar, así el GPS ya está enganchado al tocar el botón
+    // Al abrir la pantalla de fichar: pide el permiso si falta y empieza a escuchar, así la posición ya está al tocar el botón
+    // (Detener la apaga al salir de la pantalla)
     Task PrecalentarAsync(double precisionRequeridaMetros);
+    void Detener();
 
     // Texto de avance de la búsqueda ("Buscando señal GPS… ±45 m")
     Action<string>? Progreso { get; set; }

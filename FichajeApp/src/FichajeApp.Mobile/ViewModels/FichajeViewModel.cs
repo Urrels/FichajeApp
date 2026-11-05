@@ -80,6 +80,9 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         if (config.PideUbicacion) await _geoService.PrecalentarAsync(config.PrecisionMaxMetros);
     }
 
+    // Al salir de la pantalla o pasar la app a segundo plano: se deja de escuchar el GPS
+    public void DetenerUbicacion() => _geoService.Detener();
+
     public async Task ActualizarProximoAsync()
     {
         _proximo = await _apiService.ObtenerProximoTipoAsync() ?? _proximo;

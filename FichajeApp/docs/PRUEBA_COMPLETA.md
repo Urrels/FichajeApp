@@ -156,3 +156,11 @@ Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, mo
 - [ ] Con un texto que no se lee sobre el principal aparece el cartel rojo y Guardar queda apagado.
 - [ ] Salir de la pantalla sin guardar devuelve la app a los colores guardados; Guardar los deja para todos.
 - [ ] Los carteles de error rojos (login, Fichar, Kiosco, Configuración, Apariencia) tienen el texto **centrado**, con la cruz a la izquierda.
+
+## S. Ubicación siempre lista
+- [ ] Al abrir **Fichar** por primera vez, el teléfono pide el permiso de ubicación enseguida (no recién al tocar el botón). Elegir «Mientras la app está en uso».
+- [ ] Con la pantalla de Fichar abierta unos segundos, tocar el botón: la ubicación no hace esperar (con buena señal, instantáneo; adentro de un edificio, un par de segundos).
+- [ ] Mientras Fichar está a la vista aparece el ícono de ubicación arriba; al ir a otra pantalla o a la pantalla de inicio del teléfono, desaparece (la app no rastrea en segundo plano).
+- [ ] Volver a la app desde segundo plano retoma la ubicación sola.
+- [ ] Dejar la pantalla de Fichar abierta más de 10 minutos y tocar el botón igual ficha (con una espera corta si hace falta).
+- [ ] Con el GPS del teléfono apagado, fichar muestra «El GPS está apagado…».
