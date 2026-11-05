@@ -6,9 +6,14 @@ namespace FichajeApp.Mobile.ViewModels;
 public class UsuariosViewModel : VmBase
 {
     private readonly AdminApiService _api;
+    private readonly PerfilFotos _perfiles;
     private string _busqueda = string.Empty;
 
-    public UsuariosViewModel(AdminApiService api) => _api = api;
+    public UsuariosViewModel(AdminApiService api, PerfilFotos perfiles)
+    {
+        _api = api;
+        _perfiles = perfiles;
+    }
 
     public ObservableCollection<UsuarioAdmin> Usuarios { get; } = new();
 
@@ -50,7 +55,7 @@ public class UsuariosViewModel : VmBase
 
     public async Task AccionesAsync(UsuarioAdmin usuario)
     {
-        var opciones = new List<string> { "Editar datos", "Asignar roles", "Restablecer PIN" };
+        var opciones = new List<string> { "Editar datos", "Foto de perfil", "Asignar roles", "Restablecer PIN" };
         if (usuario.Bloqueado) opciones.Add("Desbloquear");
         opciones.Add("Ver historial");
 
@@ -58,6 +63,7 @@ public class UsuariosViewModel : VmBase
         switch (elegida)
         {
             case "Editar datos": await EditarAsync(usuario); break;
+            case "Foto de perfil": await FotoDePerfilAsync(usuario); break;
             case "Asignar roles": await AsignarRolesAsync(usuario); break;
             case "Restablecer PIN": await RestablecerPinAsync(usuario); break;
             case "Desbloquear": await Ejecutar(() => _api.Desbloquear(usuario.Id), "Usuario desbloqueado"); break;
@@ -68,6 +74,26 @@ public class UsuariosViewModel : VmBase
                 break;
             case "Reactivar": await Ejecutar(() => _api.Reactivar(usuario.Id), "Usuario reactivado"); break;
         }
+    }
+
+    private async Task FotoDePerfilAsync(UsuarioAdmin u)
+    {
+        const string Sacar = "Sacar una foto", Quitar = "Quitar la foto";
+        var elegida = await Dialogos.Elegir($"Foto de {u.NombreCompleto}", new[] { Sacar, Quitar });
+        if (elegida is null) return;
+
+        if (elegida == Quitar)
+        {
+            await Ejecutar(() => _perfiles.QuitarAsync(u.Id), "Foto de perfil quitada");
+            return;
+        }
+
+        string? foto;
+        try { foto = await FotoFichaje.TomarAsync(); }
+        catch (Exception ex) { await Dialogos.Aviso("No se pudo sacar la foto", TextosDeError.DeExcepcion(ex)); return; }
+        if (foto is null) return;   // canceló
+
+        await Ejecutar(() => _perfiles.GuardarAsync(u.Id, foto), "Foto de perfil actualizada");
     }
 
     private async Task EditarAsync(UsuarioAdmin u)

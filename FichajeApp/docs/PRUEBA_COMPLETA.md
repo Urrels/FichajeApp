@@ -125,3 +125,9 @@ Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, mo
 - [ ] Liquidación → **Cerradas** → elegir un período: aparecen *Descargar PDF* y *Descargar CSV (Excel)*.
 - [ ] El PDF se abre en el teléfono y muestra el resumen por empleado, el total y el detalle por día. El CSV se abre en Excel con las columnas separadas.
 - [ ] Con muchos empleados el PDF sigue en una segunda página y cada página dice *Página X de N*.
+
+## P. Foto de perfil
+- [ ] En Fichar, tocar la foto redonda de arriba a la derecha: *Sacar una foto nueva* abre la cámara frontal y la foto queda en el encabezado. *Quitar mi foto* vuelve a las iniciales.
+- [ ] Administración → Usuarios → una persona → *Foto de perfil*: el administrador le saca o le quita la foto.
+- [ ] La foto se ve en la lista de Usuarios y en la lista del kiosco; en otro teléfono aparece sin hacer nada (se baja sola).
+- [ ] Cambiar la foto desde un teléfono y abrir la lista en otro: a lo sumo en un minuto se ve la nueva.

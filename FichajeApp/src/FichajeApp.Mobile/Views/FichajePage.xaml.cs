@@ -11,8 +11,13 @@ public partial class FichajePage : ContentPage
     private bool _visible;
     private static readonly System.Globalization.CultureInfo Es = new("es-AR");
 
-    public FichajePage(FichajeViewModel viewModel, AuthService authService)
+    private readonly PerfilFotos _perfiles;
+    private readonly IFeedback _feedback;
+
+    public FichajePage(FichajeViewModel viewModel, AuthService authService, PerfilFotos perfiles, IFeedback feedback)
     {
+        _perfiles = perfiles;
+        _feedback = feedback;
         InitializeComponent();
         _authService = authService;
         _viewModel = viewModel;
@@ -33,6 +38,8 @@ public partial class FichajePage : ContentPage
         _ = _viewModel.PrepararUbicacionAsync(); // sin esperar: el GPS engancha mientras la persona se prepara (y antes de la consulta al servidor)
         await _viewModel.ActualizarProximoAsync();
         var sesion = SessionManager.Instance;
+        MiFoto.Nombre = sesion.NombreCompleto ?? string.Empty;
+        MiFoto.EmpleadoId = sesion.EmpleadoId ?? 0;
         PinButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarPin);
         PanelButton.IsVisible = sesion.EsSupervisor || sesion.EsAdministrador;
     }
@@ -72,6 +79,34 @@ public partial class FichajePage : ContentPage
             // Con las animaciones del sistema apagadas ScaleTo termina al instante: el Delay evita un bucle sin pausa
             await Task.WhenAll(Halo.ScaleTo(1.08, 1400, Easing.SinInOut), Task.Delay(1400));
             await Task.WhenAll(Halo.ScaleTo(1.0, 1400, Easing.SinInOut), Task.Delay(1400));
+        }
+    }
+
+    // Tocar la propia foto: sacar una nueva con la cámara frontal o quitarla (vuelven a verse las iniciales)
+    private async void OnMiFotoTapped(object? sender, TappedEventArgs e)
+    {
+        const string Nueva = "Sacar una foto nueva", Quitar = "Quitar mi foto";
+        var elegida = await Dialogos.Elegir("Tu foto de perfil", new[] { Nueva, Quitar });
+        if (elegida is null) return;
+
+        try
+        {
+            if (elegida == Nueva)
+            {
+                var foto = await FotoFichaje.TomarAsync();
+                if (foto is null) return;   // canceló
+                var r = await _perfiles.GuardarAsync(null, foto);
+                await _feedback.ResultadoAsync(r.Exito, "Foto de perfil actualizada.", r.Mensaje);
+            }
+            else
+            {
+                var r = await _perfiles.QuitarAsync(null);
+                await _feedback.ResultadoAsync(r.Exito, "Foto de perfil quitada.", r.Mensaje);
+            }
+        }
+        catch (Exception ex)
+        {
+            await Dialogos.Aviso("No se pudo", TextosDeError.DeExcepcion(ex));
         }
     }
 

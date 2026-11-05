@@ -28,7 +28,7 @@
             </CollectionView.EmptyView>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <ctl:ItemDeLista Titulo="{Binding NombreCompleto}" Detalle="{Binding Detalle}" />
+                    <ctl:ItemDeLista Titulo="{Binding NombreCompleto}" Detalle="{Binding Detalle}" EmpleadoId="{Binding Id}" />
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
