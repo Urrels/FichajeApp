@@ -22,7 +22,13 @@
 
   <ItemGroup>
     <!-- El SDK Web ya incluye los *.json como Content: Update solo agrega la copia al output (Include duplicaba el item). -->
-    <Content Update="credentials\service-account.json" CopyToOutputDirectory="PreserveNewest" />
+    <Content Update="credentials\service-account.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Never" />
+
+    <!-- Nada de esto viaja al servidor al publicar: son archivos de esta máquina (credencial de Google, conexión cifrada, llaves, fotos)
+         y el servidor tiene los suyos. Subirlos pisaría o filtraría datos. -->
+    <Content Update="datos\**" CopyToPublishDirectory="Never" />
+    <Content Update="credentials\**" CopyToPublishDirectory="Never" />
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
 </Project>
