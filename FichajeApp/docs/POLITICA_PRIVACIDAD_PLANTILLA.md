@@ -20,6 +20,7 @@
 - **Ubicación precisa** (GPS) al momento de fichar, si la empresa lo activó. Solo cuando la persona toca "Fichar"; la app no
   sigue la ubicación en segundo plano.
 - **Foto de la cara** al fichar, si la empresa lo activó.
+- **Foto de perfil** (opcional): la carga la persona o un administrador para reconocerla en las listas de la app.
 - **Huella o PIN del teléfono:** se usa solo para confirmar que quien ficha es la persona; la app no recibe ni guarda la huella.
 
 ### Para qué se usan
@@ -30,7 +31,8 @@ Los supervisores y administradores de [EMPRESA DEL CLIENTE]. Las **fotos** las v
 
 ### Dónde se guardan y por cuánto tiempo
 - Fichajes, datos de empleados y liquidaciones: en una **planilla de Google Sheets** de la empresa y en el servidor de la aplicación.
-- Fotos: en el servidor de la aplicación, y **se borran automáticamente a los [90] días**.
+- Fotos de los fichajes: en el servidor de la aplicación, y **se borran automáticamente a los [90] días**.
+- Foto de perfil: en el servidor de la aplicación, **hasta que la persona o un administrador la quite**.
 - Los datos se transmiten cifrados (HTTPS).
 - Los datos de la planilla se conservan mientras dure la relación laboral y el plazo que exija la ley.
 

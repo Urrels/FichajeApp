@@ -6,7 +6,7 @@
       WidthRequest="44" HeightRequest="44">
 
     <!-- Círculo con las iniciales; si la persona tiene foto de perfil, la foto se dibuja encima -->
-    <Ellipse Fill="{DynamicResource ColorPrimario}" Opacity="0.14" />
+    <Ellipse x:Name="Circulo" Fill="{DynamicResource ColorPrimario}" Opacity="0.14" />
     <Label x:Name="IniciallesLabel" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"
            TextColor="{DynamicResource ColorPrimario}" />
     <Border x:Name="MarcoFoto" StrokeShape="Ellipse" StrokeThickness="0" Padding="0" IsVisible="False">

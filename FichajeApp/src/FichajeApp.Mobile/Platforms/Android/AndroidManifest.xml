@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-	<application android:allowBackup="true"
+	<application android:allowBackup="false"
 	             android:icon="@mipmap/appicon"
 	             android:roundIcon="@mipmap/appicon_round"
 	             android:supportsRtl="true"
 	             android:networkSecurityConfig="@xml/network_security_config">
-		<!-- Clave de Google Maps SDK for Android: reemplazar por la real (restringirla por paquete y SHA-1) -->
+		<!-- El mapa usa OpenStreetMap (Mapsui): no lleva ninguna clave -->
+			<!-- Sin copia de seguridad automática (allowBackup=false): el token de sesión no tiene que viajar a otro teléfono -->
 		<uses-library android:name="org.apache.http.legacy" android:required="false" />
 	</application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

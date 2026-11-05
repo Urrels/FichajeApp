@@ -28,7 +28,7 @@
                        TextColor="{DynamicResource ColorPrimarioTexto}" />
             </VerticalStackLayout>
                 <!-- Tu foto de perfil: tocala para cambiarla -->
-                <ctl:AvatarUsuario x:Name="MiFoto" Grid.Column="1" Tamano="60" VerticalOptions="Start"
+                <ctl:AvatarUsuario x:Name="MiFoto" Grid.Column="1" Tamano="60" SobreFondoOscuro="True" VerticalOptions="Start"
                                    SemanticProperties.Description="Tu foto de perfil" SemanticProperties.Hint="Tocá para cambiarla">
                     <ctl:AvatarUsuario.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnMiFotoTapped" />
