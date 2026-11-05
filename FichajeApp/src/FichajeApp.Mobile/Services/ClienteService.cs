@@ -14,7 +14,7 @@ public record AparienciaRemota(
     bool TieneLogo, string? VersionLogo);
 
 // Los valores que se están usando ahora (los del servidor encima de los del build)
-public record AparienciaActual(string Nombre, string Primario, string PrimarioTexto, string Acento, bool TieneLogo);
+public record AparienciaActual(string Nombre, string Primario, string PrimarioTexto, string Acento, bool TieneLogo, string? VersionLogo = null);
 
 // Identidad del cliente al que pertenece este build de la app (URL de la API, nombre y colores).
 // La config viene de Clientes/<cliente>/cliente.json, embebida al compilar con -p:Cliente=<cliente>.
@@ -112,7 +112,8 @@ public class ClienteService : IClienteService
         ColorValido(r?.ColorPrimario) ?? _config.Colores.Primario,
         ColorValido(r?.ColorPrimarioTexto) ?? _config.Colores.PrimarioTexto,
         ColorValido(r?.ColorAcento) ?? _config.Colores.Acento,
-        r?.TieneLogo == true);
+        r?.TieneLogo == true,
+        r?.VersionLogo);
 
     // Un color que no se pueda interpretar no tiene que romper la app: se usa el del cliente
     private static string? ColorValido(string? color) =>

@@ -17,19 +17,7 @@ public static class ColoresApp
         return t[1..].All(Uri.IsHexDigit) ? t.ToUpperInvariant() : null;
     }
 
-    private static double Luminancia(string color)
-    {
-        static double Canal(int v) { var c = v / 255.0; return c <= 0.03928 ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4); }
-        return 0.2126 * Canal(Convert.ToInt32(color.Substring(1, 2), 16))
-             + 0.7152 * Canal(Convert.ToInt32(color.Substring(3, 2), 16))
-             + 0.0722 * Canal(Convert.ToInt32(color.Substring(5, 2), 16));
-    }
-
-    public static double Contraste(string a, string b)
-    {
-        double la = Luminancia(a), lb = Luminancia(b);
-        return (Math.Max(la, lb) + 0.05) / (Math.Min(la, lb) + 0.05);
-    }
+    public static double Contraste(string a, string b) => ColorHsv.Contraste(a, b);
 
     public static readonly IReadOnlyDictionary<string, string> Paleta = new Dictionary<string, string>
     {
@@ -70,11 +58,70 @@ public class AparienciaViewModel : VmBase
         _remota = remota;
     }
 
+    // Cuál de los tres colores se está editando en el selector: 0 principal, 1 texto, 2 acento
+    private int _editando;
+    private bool _textoAMano;        // el texto se ajusta solo para leerse bien, salvo que la persona lo haya elegido
+    private bool _cargando;
+    private bool _vistaPreviaPendiente;
+
     public string Nombre { get => _nombre; set => Set(ref _nombre, value); }
     public string Primario { get => _primario; set { if (Set(ref _primario, value)) Cambio(); } }
     public string Texto { get => _texto; set { if (Set(ref _texto, value)) Cambio(); } }
     public string Acento { get => _acento; set { if (Set(ref _acento, value)) Cambio(); } }
     public ImageSource? Logo { get => _logo; private set => Set(ref _logo, value); }
+
+    public int Editando
+    {
+        get => _editando;
+        set
+        {
+            if (!Set(ref _editando, value)) return;
+            Notificar(nameof(HexEditando)); Notificar(nameof(TituloEditando));
+            Notificar(nameof(BordePrincipal)); Notificar(nameof(BordeTexto)); Notificar(nameof(BordeAcento));
+        }
+    }
+
+    // El color que muestra y modifica el selector (el selector lo enlaza en los dos sentidos)
+    public string HexEditando
+    {
+        get => _editando switch { 0 => Primario, 1 => Texto, _ => Acento };
+        set
+        {
+            // El selector puede devolver el mismo valor que acaba de recibir: eso no es que la persona lo haya elegido
+            if (string.Equals(value, HexEditando, StringComparison.OrdinalIgnoreCase)) return;
+            if (_editando == 1) { _textoAMano = true; Notificar(nameof(TextoAutomaticoDisponible)); }
+            switch (_editando)
+            {
+                case 0: Primario = value; break;
+                case 1: Texto = value; break;
+                default: Acento = value; break;
+            }
+        }
+    }
+
+    public string TituloEditando => _editando switch
+    {
+        0 => "Color principal: cabeceras y botones",
+        1 => "Color del texto sobre el principal",
+        _ => "Color de acento: indicadores"
+    };
+
+    // El borde marca cuál de los tres se está editando
+    private static readonly Color Marcado = Color.FromArgb("#212121"), NoMarcado = Color.FromArgb("#D6D6D6");
+    public Color BordePrincipal => _editando == 0 ? Marcado : NoMarcado;
+    public Color BordeTexto => _editando == 1 ? Marcado : NoMarcado;
+    public Color BordeAcento => _editando == 2 ? Marcado : NoMarcado;
+
+    // Si el texto se eligió a mano, se ofrece volver a que se ajuste solo
+    public bool TextoAutomaticoDisponible => _textoAMano;
+
+    public void VolverAlTextoAutomatico()
+    {
+        _textoAMano = false;
+        Notificar(nameof(TextoAutomaticoDisponible));
+        if (ColoresApp.Normalizar(Primario) is { } p) Texto = ColorHsv.TextoLegible(p);
+        if (_editando == 1) Notificar(nameof(HexEditando));
+    }
 
     public Color PrimarioColor => Color.FromArgb(ColoresApp.Normalizar(Primario) ?? "#BDBDBD");
     public Color TextoColor => Color.FromArgb(ColoresApp.Normalizar(Texto) ?? "#BDBDBD");
@@ -100,8 +147,40 @@ public class AparienciaViewModel : VmBase
 
     private void Cambio()
     {
-        Notificar(nameof(PrimarioColor)); Notificar(nameof(TextoColor)); Notificar(nameof(AcentoColor));
+        // Mientras no se haya elegido el texto a mano, se ajusta solo para que se lea bien sobre el principal
+        if (!_cargando && !_textoAMano && ColoresApp.Normalizar(Primario) is { } principal)
+        {
+            var legible = ColorHsv.TextoLegible(principal);
+            if (!string.Equals(_texto, legible, StringComparison.OrdinalIgnoreCase)) { _texto = legible; Notificar(nameof(Texto)); }
+        }
+
+        Notificar(nameof(PrimarioColor)); Notificar(nameof(TextoColor)); Notificar(nameof(AcentoColor)); Notificar(nameof(HexEditando));
         Notificar(nameof(Aviso)); Notificar(nameof(HayAviso)); Notificar(nameof(PuedeGuardar));
+        if (!_cargando) ProgramarVistaPrevia();
+    }
+
+    // Mientras se arrastra, toda la app cambia en vivo. Se aplica como mucho unas 15 veces por segundo para que no se trabe.
+    private void ProgramarVistaPrevia()
+    {
+        if (_vistaPreviaPendiente) return;
+        _vistaPreviaPendiente = true;
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            await Task.Delay(65);
+            _vistaPreviaPendiente = false;
+            AplicarEnVivo();
+        });
+    }
+
+    private void AplicarEnVivo()
+    {
+        var p = ColoresApp.Normalizar(Primario);
+        var t = ColoresApp.Normalizar(Texto);
+        var a = ColoresApp.Normalizar(Acento);
+        if (p is null || t is null || a is null) return;
+
+        var actual = _clientes.Actual;
+        _clientes.AplicarApariencia(new AparienciaRemota(Nombre, p, t, a, actual.TieneLogo, actual.VersionLogo), soloVistaPrevia: true);
     }
 
     // Parte de lo que se está usando ahora (el servidor encima del cliente)
@@ -110,26 +189,20 @@ public class AparienciaViewModel : VmBase
         var actual = _clientes.Actual;
         _logoNuevoBase64 = null;
         _quitarLogo = false;
+        _cargando = true;
         Nombre = actual.Nombre;
         Primario = actual.Primario;
         Texto = actual.PrimarioTexto;
         Acento = actual.Acento;
+        _cargando = false;
+        // Si el texto guardado no es el que se elegiría solo, se lo respeta: lo eligió una persona
+        _textoAMano = ColoresApp.Normalizar(actual.Primario) is { } p
+                      && !string.Equals(actual.PrimarioTexto, ColorHsv.TextoLegible(p), StringComparison.OrdinalIgnoreCase);
+        Notificar(nameof(TextoAutomaticoDisponible));
+        Editando = 0;
+        Cambio();
         Logo = Application.Current?.Resources.TryGetValue("LogoCliente", out var logo) == true ? logo as ImageSource : null;
-        Estado = string.Empty;
-    }
-
-    public async Task ElegirColorAsync(string cual)
-    {
-        var elegido = await Dialogos.Elegir($"Color {cual}", ColoresApp.Paleta.Select(c => $"{c.Key}  {c.Value}"));
-        if (elegido is null) return;
-
-        var hex = elegido[(elegido.LastIndexOf('#'))..];
-        switch (cual)
-        {
-            case "principal": Primario = hex; break;
-            case "del texto": Texto = hex; break;
-            default: Acento = hex; break;
-        }
+        Estado = "Mientras elegís, toda la app cambia en vivo. Si salís sin guardar, vuelve a lo anterior.";
     }
 
     // Elige una imagen del teléfono y la achica a 256 px: así pesa poco y entra en la planilla
@@ -169,7 +242,7 @@ public class AparienciaViewModel : VmBase
         var a = ColoresApp.Normalizar(Acento);
         if (p is null || t is null || a is null) return;
 
-        _clientes.AplicarApariencia(new AparienciaRemota(Nombre, p, t, a, _clientes.Actual.TieneLogo, null), soloVistaPrevia: true);
+        AplicarEnVivo();
         Estado = "Así se ve. Si no te gusta, salí sin guardar y vuelve a lo anterior.";
     }
 

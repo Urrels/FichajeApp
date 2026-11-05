@@ -33,6 +33,8 @@
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\SessionManager.cs" Link="Mobile\SessionManager.cs" />
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\ISessionObserver.cs" Link="Mobile\ISessionObserver.cs" />
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\Configuracion.cs" Link="Mobile\Configuracion.cs" />
+    <Compile Include="..\..\src\FichajeApp.Mobile\Services\ColorHsv.cs" Link="Mobile\ColorHsv.cs" />
+
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\BuscadorDeUbicacion.cs" Link="Mobile\BuscadorDeUbicacion.cs" />
   </ItemGroup>
 
