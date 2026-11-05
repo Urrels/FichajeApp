@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
              x:Class="FichajeApp.Mobile.Views.AparienciaPage"
              Title="Apariencia">
 
@@ -14,35 +15,40 @@
             <Entry Text="{Binding Nombre}" MaxLength="40" Placeholder="Nombre de la empresa" />
 
             <Label Text="Colores" FontAttributes="Bold" Margin="0,6,0,0" />
+            <Label Text="Tocá el color que querés cambiar y arrastrá. Toda la app cambia mientras elegís." FontSize="12" />
 
-            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                <BoxView Color="{Binding PrimarioColor}" WidthRequest="36" HeightRequest="36" CornerRadius="18" VerticalOptions="Center" />
-                <VerticalStackLayout Grid.Column="1">
-                    <Label Text="Principal (cabeceras y botones)" FontSize="12" />
-                    <Entry Text="{Binding Primario}" MaxLength="7" Placeholder="#RRGGBB" />
-                </VerticalStackLayout>
-                <Button Grid.Column="2" Text="Paleta" Clicked="OnPaletaPrincipal" VerticalOptions="End" />
+            <!-- Los tres colores: el que tiene el borde oscuro es el que se está editando abajo -->
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Border Stroke="{Binding BordePrincipal}" StrokeThickness="2" StrokeShape="RoundRectangle 14" Padding="8">
+                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnEditarPrincipal" /></Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                        <Border BackgroundColor="{Binding PrimarioColor}" WidthRequest="44" HeightRequest="44" StrokeShape="RoundRectangle 22" Stroke="#33000000" StrokeThickness="1" HorizontalOptions="Center" />
+                        <Label Text="Principal" FontSize="12" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="1" Stroke="{Binding BordeTexto}" StrokeThickness="2" StrokeShape="RoundRectangle 14" Padding="8">
+                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnEditarTexto" /></Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                        <Border BackgroundColor="{Binding TextoColor}" WidthRequest="44" HeightRequest="44" StrokeShape="RoundRectangle 22" Stroke="#33000000" StrokeThickness="1" HorizontalOptions="Center" />
+                        <Label Text="Texto" FontSize="12" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Grid.Column="2" Stroke="{Binding BordeAcento}" StrokeThickness="2" StrokeShape="RoundRectangle 14" Padding="8">
+                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnEditarAcento" /></Border.GestureRecognizers>
+                    <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                        <Border BackgroundColor="{Binding AcentoColor}" WidthRequest="44" HeightRequest="44" StrokeShape="RoundRectangle 22" Stroke="#33000000" StrokeThickness="1" HorizontalOptions="Center" />
+                        <Label Text="Acento" FontSize="12" HorizontalOptions="Center" />
+                    </VerticalStackLayout>
+                </Border>
             </Grid>
 
-            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                <BoxView Color="{Binding TextoColor}" WidthRequest="36" HeightRequest="36" CornerRadius="18" VerticalOptions="Center" />
-                <VerticalStackLayout Grid.Column="1">
-                    <Label Text="Texto sobre el principal" FontSize="12" />
-                    <Entry Text="{Binding Texto}" MaxLength="7" Placeholder="#RRGGBB" />
-                </VerticalStackLayout>
-                <Button Grid.Column="2" Text="Paleta" Clicked="OnPaletaTexto" VerticalOptions="End" />
-            </Grid>
+            <Label Text="{Binding TituloEditando}" FontSize="13" FontAttributes="Bold" />
+            <ctl:SelectorDeColor Hex="{Binding HexEditando, Mode=TwoWay}" />
 
-            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                <BoxView Color="{Binding AcentoColor}" WidthRequest="36" HeightRequest="36" CornerRadius="18" VerticalOptions="Center" />
-                <VerticalStackLayout Grid.Column="1">
-                    <Label Text="Acento (indicadores)" FontSize="12" />
-                    <Entry Text="{Binding Acento}" MaxLength="7" Placeholder="#RRGGBB" />
-                </VerticalStackLayout>
-                <Button Grid.Column="2" Text="Paleta" Clicked="OnPaletaAcento" VerticalOptions="End" />
-            </Grid>
+            <Button Text="Que el texto se ajuste solo" Clicked="OnTextoAutomatico" IsVisible="{Binding TextoAutomaticoDisponible}" />
+            <Label Text="El texto se ajusta solo para que se lea bien sobre el color principal. Si elegís uno a mano, queda fijo." FontSize="11" />
 
-            <Label Text="{Binding Aviso}" IsVisible="{Binding HayAviso}" TextColor="#C62828" FontSize="12" />
+            <ctl:BannerInline Severidad="Error" Texto="{Binding Aviso}" IsVisible="{Binding HayAviso}" />
 
             <Label Text="Logo" FontAttributes="Bold" Margin="0,6,0,0" />
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
@@ -58,7 +64,6 @@
 
             <Label Text="{Binding Estado}" FontSize="12" />
 
-            <Button Text="Ver cómo queda" Clicked="OnVistaPrevia" />
             <Button Text="Guardar" Clicked="OnGuardar" IsEnabled="{Binding PuedeGuardar}" />
             <Button Text="Volver a los originales" Clicked="OnRestaurar" />
             <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />

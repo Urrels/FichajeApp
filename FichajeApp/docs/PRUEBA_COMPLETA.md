@@ -146,3 +146,13 @@ Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, mo
 - [ ] En Administración → Roles, quien edita un rol no puede sumarle permisos que él no tiene (sí puede quitar).
 - [ ] Si el administrador le cambia el rol a alguien (o le quita un permiso a su rol), la sesión abierta de esa persona se cierra en su próximo pedido y tiene que volver a entrar.
 - [ ] Dar de baja o bloquear a alguien le corta la sesión enseguida (sin esperar un minuto).
+
+## T. Selector de colores y avisos de error
+- [ ] Administración → Apariencia → Colores: tocar Principal, Texto o Acento marca cuál se edita (borde oscuro).
+- [ ] Arrastrar el dedo por el cuadro (más pálido o intenso, más claro o oscuro) y por la barra de tono: el código `#RRGGBB`, la muestra y **toda la app** (encabezado y barra de estado) cambian mientras se arrastra, y la página no se desplaza.
+- [ ] Tocar un color sugerido lo aplica y mueve el cuadro y la barra.
+- [ ] Escribir un código a mano (con o sin `#`) también actualiza todo.
+- [ ] Cambiar el color principal ajusta solo el texto (blanco u oscuro) para que se lea. Elegir un texto a mano lo deja fijo y aparece «Que el texto se ajuste solo», que lo devuelve a automático.
+- [ ] Con un texto que no se lee sobre el principal aparece el cartel rojo y Guardar queda apagado.
+- [ ] Salir de la pantalla sin guardar devuelve la app a los colores guardados; Guardar los deja para todos.
+- [ ] Los carteles de error rojos (login, Fichar, Kiosco, Configuración, Apariencia) tienen el texto **centrado**, con la cruz a la izquierda.

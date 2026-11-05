@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FichajeApp.Mobile.Views.Componentes.SelectorDeColor">
+
+    <!-- Selector de color que se arrastra con el dedo: un cuadro (izquierda = más pálido, derecha = más intenso,
+         arriba = más claro, abajo = más oscuro), una barra de tono y colores sugeridos. Los cambios se ven en toda la app. -->
+    <VerticalStackLayout Spacing="12">
+
+        <GraphicsView x:Name="Cuadro" HeightRequest="190"
+                      StartInteraction="OnCuadro" DragInteraction="OnCuadro" EndInteraction="OnCuadroFin"
+                      SemanticProperties.Description="Cuadro de color: arrastrá para elegir qué tan intenso y qué tan claro" />
+
+        <GraphicsView x:Name="Tono" HeightRequest="36"
+                      StartInteraction="OnTono" DragInteraction="OnTono" EndInteraction="OnTonoFin"
+                      SemanticProperties.Description="Barra de tono: arrastrá para elegir el color" />
+
+        <Label Text="Colores sugeridos" FontSize="12" TextColor="{DynamicResource ColorTextoSuave}" />
+        <ScrollView Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+            <HorizontalStackLayout x:Name="Sugeridos" Spacing="10" Padding="2,2" />
+        </ScrollView>
+
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border x:Name="Muestra" WidthRequest="44" HeightRequest="44" StrokeShape="RoundRectangle 22" Stroke="#33000000" StrokeThickness="1" VerticalOptions="Center" />
+            <Entry x:Name="CodigoEntry" Grid.Column="1" MaxLength="7" Placeholder="#RRGGBB" Keyboard="Plain"
+                   TextChanged="OnCodigoCambio" Completed="OnCodigoListo" Unfocused="OnCodigoListo"
+                   SemanticProperties.Description="Código del color" />
+        </Grid>
+    </VerticalStackLayout>
+</ContentView>

@@ -4,9 +4,11 @@
         x:Class="FichajeApp.Mobile.Views.Componentes.BannerInline"
         Padding="12" StrokeThickness="1" StrokeShape="RoundRectangle 12">
 
-    <!-- Aviso que se queda fijo dentro de la pantalla: un problema recuperable, no una pantalla de error entera -->
-    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-        <Label x:Name="Icono" FontSize="18" VerticalOptions="Start" />
-        <Label x:Name="Contenido" Grid.Column="1" FontSize="13" />
+    <!-- Aviso que se queda fijo dentro de la pantalla: un problema recuperable, no una pantalla de error entera.
+         El texto va centrado en el cartel: el ícono ocupa la columna izquierda y una columna vacía del mismo ancho
+         a la derecha mantiene el equilibrio. -->
+    <Grid ColumnDefinitions="26,*,26" ColumnSpacing="6">
+        <Label x:Name="Icono" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" />
+        <Label x:Name="Contenido" Grid.Column="1" FontSize="13" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Center" />
     </Grid>
 </Border>

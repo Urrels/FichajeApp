@@ -26,12 +26,12 @@ public partial class AparienciaPage : ContentPage
         _viewModel.DescartarVistaPrevia();
     }
 
-    private async void OnPaletaPrincipal(object sender, EventArgs e) => await _viewModel.ElegirColorAsync("principal");
-    private async void OnPaletaTexto(object sender, EventArgs e) => await _viewModel.ElegirColorAsync("del texto");
-    private async void OnPaletaAcento(object sender, EventArgs e) => await _viewModel.ElegirColorAsync("de acento");
+    private void OnEditarPrincipal(object sender, TappedEventArgs e) => _viewModel.Editando = 0;
+    private void OnEditarTexto(object sender, TappedEventArgs e) => _viewModel.Editando = 1;
+    private void OnEditarAcento(object sender, TappedEventArgs e) => _viewModel.Editando = 2;
+    private void OnTextoAutomatico(object sender, EventArgs e) => _viewModel.VolverAlTextoAutomatico();
     private async void OnElegirLogo(object sender, EventArgs e) => await _viewModel.ElegirLogoAsync();
     private void OnQuitarLogo(object sender, EventArgs e) => _viewModel.QuitarLogo();
-    private void OnVistaPrevia(object sender, EventArgs e) => _viewModel.VistaPrevia();
     private async void OnGuardar(object sender, EventArgs e) => await _viewModel.GuardarAsync();
     private async void OnRestaurar(object sender, EventArgs e) => await _viewModel.RestaurarAsync();
 }
