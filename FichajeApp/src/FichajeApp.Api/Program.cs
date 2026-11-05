@@ -104,6 +104,7 @@ else
 builder.Services.AddSingleton<ISitiosService, SitiosService>();
 builder.Services.AddSingleton<SitiosAdminService>();
 builder.Services.AddSingleton<JwtService>();
+builder.Services.AddSingleton<SesionesVigentes>();
 builder.Services.AddSingleton<IAlmacenFotos, AlmacenFotosEnDisco>();
 builder.Services.AddSingleton<IAlmacenPerfiles, AlmacenPerfilesEnDisco>();
 builder.Services.AddSingleton<LimpiezaFotos>();
@@ -192,15 +193,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 }
 
                 var servicios = contexto.HttpContext.RequestServices;
-                var cache = servicios.GetRequiredService<IMemoryCache>();
-                var puedeEntrar = await cache.GetOrCreateAsync($"sesion:{id}", async entrada =>
+                var sesion = await servicios.GetRequiredService<SesionesVigentes>().ObtenerAsync(id, async () =>
                 {
-                    entrada.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(60);
                     var empleado = await servicios.GetRequiredService<IEmpleadosRepositorio>().ObtenerPorIdAsync(id);
-                    return empleado is { Activo: true, Bloqueado: false };
+                    if (empleado is not { Activo: true, Bloqueado: false }) return SesionVigente.Denegada;
+                    var (_, permisos) = await servicios.GetRequiredService<PermisosService>().ObtenerAsync(empleado);
+                    return new SesionVigente(true, permisos.ToHashSet());
                 });
 
-                if (puedeEntrar != true) contexto.Fail("Usuario dado de baja o bloqueado");
+                if (!sesion.PuedeEntrar)
+                {
+                    contexto.Fail("Usuario dado de baja o bloqueado");
+                    return;
+                }
+
+                // Los permisos viajan dentro del token: si la persona perdió alguno desde que lo recibió, el token ya no vale
+                // y tiene que volver a iniciar sesión (la app lo toma como sesión vencida). Ganar permisos no corta nada.
+                var delToken = contexto.Principal!.FindAll(ClaimsPermisos.Permiso).Select(c => c.Value);
+                if (delToken.Any(p => !sesion.Permisos.Contains(p)))
+                    contexto.Fail("Los permisos de este usuario cambiaron: hay que volver a iniciar sesión");
             }
         };
     });

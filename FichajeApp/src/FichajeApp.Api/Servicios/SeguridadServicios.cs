@@ -1,3 +1,4 @@
+using FichajeApp.Api.Autorizacion;
 using FichajeApp.Api.Dominio.Seguridad;
 using FichajeApp.Api.Models;
 using FichajeApp.Api.Repositorios;
@@ -95,6 +96,14 @@ public class PermisosService
         return rol is null ? new List<int>() : new List<int> { rol.Id };
     }
 
+    // Los permisos que tiene hoy quien hace un cambio (por el email del token). Vacío si no se lo encuentra.
+    public async Task<HashSet<string>> PermisosDeAsync(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return new HashSet<string>();
+        var persona = await _empleados.BuscarPorEmailAsync(email);
+        return persona is null ? new HashSet<string>() : (await ObtenerAsync(persona)).Permisos.ToHashSet();
+    }
+
     public async Task<(List<string> Roles, List<string> Permisos)> ObtenerAsync(EmpleadoDto empleado)
     {
         var roles = await _roles.ListarRolesAsync();
@@ -173,13 +182,16 @@ public class LoginService
     private readonly PermisosService _permisos;
     private readonly BitacoraService _bitacora;
     private readonly HistorialUsuariosService _historial;
+    private readonly SesionesVigentes? _sesiones;
 
-    public LoginService(IEmpleadosRepositorio empleados, PermisosService permisos, BitacoraService bitacora, HistorialUsuariosService historial)
+    public LoginService(IEmpleadosRepositorio empleados, PermisosService permisos, BitacoraService bitacora, HistorialUsuariosService historial,
+        SesionesVigentes? sesiones = null)
     {
         _empleados = empleados;
         _permisos = permisos;
         _bitacora = bitacora;
         _historial = historial;
+        _sesiones = sesiones;
     }
 
     public async Task<ResultadoLogin> AutenticarAsync(string? email, string? pin)
@@ -230,6 +242,7 @@ public class LoginService
         await _bitacora.RegistrarAsync(empleado.Email, "LOGIN_FALLIDO");
         if (bloquear)
         {
+            _sesiones?.Invalidar(empleado.Id);   // el bloqueo corta las sesiones abiertas enseguida
             await _bitacora.RegistrarAsync(empleado.Email, "USUARIO_BLOQUEADO");
             await _historial.RegistrarAsync(empleado, "BLOQUEO", "sistema");
             return new ResultadoLogin { Resultado = LoginResultado.UsuarioBloqueado };
