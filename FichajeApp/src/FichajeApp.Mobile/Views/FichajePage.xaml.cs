@@ -36,6 +36,12 @@ public partial class FichajePage : ContentPage
         Dispatcher.StartTimer(TimeSpan.FromSeconds(1), () => { ActualizarReloj(); return _visible; });
         _ = RespirarAsync();
         _ = _viewModel.PrepararUbicacionAsync(); // sin esperar: el GPS engancha mientras la persona se prepara (y antes de la consulta al servidor)
+        if (Window is { } ventana)
+        {
+            // La ubicación solo se escucha con la app a la vista: al pasar a segundo plano se apaga y al volver se retoma
+            ventana.Stopped += AlPasarASegundoPlano;
+            ventana.Resumed += AlVolverALaApp;
+        }
         await _viewModel.ActualizarProximoAsync();
         var sesion = SessionManager.Instance;
         MiFoto.Nombre = sesion.NombreCompleto ?? string.Empty;
@@ -60,7 +66,20 @@ public partial class FichajePage : ContentPage
     protected override void OnDisappearing()
     {
         _visible = false;
+        if (Window is { } ventana)
+        {
+            ventana.Stopped -= AlPasarASegundoPlano;
+            ventana.Resumed -= AlVolverALaApp;
+        }
+        _viewModel.DetenerUbicacion();   // fuera de esta pantalla la app no escucha el GPS
         base.OnDisappearing();
+    }
+
+    private void AlPasarASegundoPlano(object? sender, EventArgs e) => _viewModel.DetenerUbicacion();
+
+    private void AlVolverALaApp(object? sender, EventArgs e)
+    {
+        if (_visible) _ = _viewModel.PrepararUbicacionAsync();
     }
 
     private void ActualizarReloj()

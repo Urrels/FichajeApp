@@ -3,28 +3,32 @@ namespace FichajeApp.Mobile.Services;
 public record UbicacionResultado(
     bool Exito, double Lat, double Lon, double? Precision, bool EsFalsa, string? Direccion, string Mensaje);
 
-// Ubicación para fichar. Cómo se consigue una buena posición con un teléfono:
-//  - El GPS necesita unos segundos para "enganchar" satélites y la precisión mejora con el tiempo (la primera lectura suele
-//    ser de ±100 m o peor). Por eso se ESCUCHA de forma continua hasta 30 s y se queda con la mejor, en vez de pedir una
-//    sola lectura corta (cada pedido corto reinicia la búsqueda y casi nunca llega a mejorar).
-//  - Se "precalienta" al abrir la pantalla de fichar: cuando la persona toca el botón, el GPS ya está enganchado.
-//  - Hay una sola búsqueda a la vez; las demás esperan esa misma (dos pedidos simultáneos se pisan en Android).
+// Ubicación para fichar. La idea: que al tocar el botón la posición YA esté.
+//  - Al abrir la pantalla de fichar se pide el permiso (una sola vez, ahí y no al fichar) y se empieza a escuchar a todos los
+//    proveedores del teléfono a la vez: GPS, WiFi y antenas (ver BuscadorDeUbicacion y FuenteDeUbicacionAndroid). La red da una
+//    posición razonable en 1 a 3 s aun adentro de un edificio; el GPS mejora con el tiempo.
+//  - Se escucha mientras la pantalla está abierta y se apaga al salir, al pasar la app a segundo plano o a los 10 minutos:
+//    la app NO rastrea en segundo plano (ni consume batería ni sigue a nadie fuera de su pantalla).
+//  - Al fichar se usa la mejor lectura reciente que cumpla la precisión que acepta el servidor, sin esperar.
+//  - La dirección (calle) se busca de antemano: antes sumaba hasta 1,5 s al momento de fichar.
 public class GeolocationService : IGeolocationService
 {
-    // Con ±20 m ya no se espera más. Si cumple lo que pide el servidor se espera apenas unos segundos más por si mejora.
-    private const double PrecisionDeSobraMetros = 20;
-    private static readonly TimeSpan EsperaMinima = TimeSpan.FromSeconds(2);
-    private static readonly TimeSpan PlazoMaximo = TimeSpan.FromSeconds(30);
-    private static readonly TimeSpan VigenciaDeUnaLectura = TimeSpan.FromSeconds(45);
-    private static readonly TimeSpan EdadMaximaDeLaUltimaConocida = TimeSpan.FromMinutes(2);
-    // Una posición que el teléfono ya tenía de hace segundos y que cumple la precisión pedida se usa al instante, sin esperar al GPS
-    private static readonly TimeSpan EdadParaUsarAlInstante = TimeSpan.FromSeconds(40);
+    private static readonly TimeSpan TiempoMaximoEscuchando = TimeSpan.FromMinutes(10);
+    private const double MetrosParaReusarDireccion = 100;
 
+    private readonly BuscadorDeUbicacion _buscador;
     private readonly object _candado = new();
-    private Task<Location?>? _busqueda;
+    private CancellationTokenSource? _apagado;
+    private (double Lat, double Lon, string? Texto)? _direccion;
+
+    public GeolocationService(IFuenteDeUbicacion fuente) => _buscador = new BuscadorDeUbicacion(fuente);
 
     // Mensajes de avance para mostrar en pantalla ("Buscando señal GPS… ±45 m")
-    public Action<string>? Progreso { get; set; }
+    public Action<string>? Progreso
+    {
+        get => _buscador.Progreso;
+        set => _buscador.Progreso = value;
+    }
 
     // Se pide el permiso antes y por separado, para no superponer su diálogo con otros del sistema.
     public async Task<bool> PedirPermisoAsync()
@@ -35,16 +39,24 @@ public class GeolocationService : IGeolocationService
         return status == PermissionStatus.Granted;
     }
 
-    // Al abrir la pantalla de fichar: empieza a buscar señal sin molestar. Solo si el permiso ya está dado (no abre diálogos)
-    // y solo mientras la pantalla está abierta: la app no rastrea en segundo plano.
+    // Al abrir la pantalla de fichar: permiso (si falta) y a escuchar. No molesta si falla: se vuelve a intentar al fichar.
     public async Task PrecalentarAsync(double precisionRequeridaMetros)
     {
         try
         {
-            if (await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>() != PermissionStatus.Granted) return;
-            _ = Busqueda(precisionRequeridaMetros);
+            if (!await PedirPermisoAsync()) return;
+            _buscador.Iniciar();
+            ProgramarApagado();
+            _ = PrepararDireccionAsync(precisionRequeridaMetros);
         }
         catch { /* es un adelanto: si falla, se busca al fichar */ }
+    }
+
+    // Al salir de la pantalla o pasar la app a segundo plano
+    public void Detener()
+    {
+        lock (_candado) { _apagado?.Cancel(); _apagado = null; }
+        try { _buscador.Detener(); } catch { /* ya estaba detenida */ }
     }
 
     public async Task<UbicacionResultado> ObtenerUbicacionAsync(double precisionRequeridaMetros)
@@ -54,145 +66,80 @@ public class GeolocationService : IGeolocationService
             if (!await PedirPermisoAsync())
                 return Fallo("Permiso de ubicación denegado");
 
-            var location = await Busqueda(precisionRequeridaMetros) ?? await UltimaConocidaAsync();
-            if (location is null)
+            var lectura = await _buscador.EsperarAsync(precisionRequeridaMetros) ?? await LecturaDeRespaldoAsync();
+            if (lectura is null)
                 return Fallo("No se pudo obtener la ubicación. Activá el GPS del teléfono (modo de alta precisión) y probá al aire libre.");
 
-            var direccion = await ObtenerDireccionAsync(location.Latitude, location.Longitude);
-
-            return new UbicacionResultado(true, location.Latitude, location.Longitude,
-                location.Accuracy, location.IsFromMockProvider, direccion, "OK");
+            var direccion = await DireccionAsync(lectura.Lat, lectura.Lon);
+            return new UbicacionResultado(true, lectura.Lat, lectura.Lon, lectura.Precision, lectura.EsFalsa, direccion, "OK");
         }
         catch (InvalidOperationException ex) // mensajes pensados para la persona (GPS apagado, sin permiso)
         {
             return Fallo(ex.Message);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return Fallo(TextosDeError.UbicacionNoDisponible);
         }
     }
 
-    private Task<Location?> Busqueda(double requerida)
+    private void ProgramarApagado()
     {
+        CancellationTokenSource nuevo;
         lock (_candado)
         {
-            // Ya hay una en marcha (por ejemplo la que se precalentó al abrir la pantalla): se espera esa misma
-            if (_busqueda is { IsCompleted: false }) return _busqueda;
-
-            // Una lectura buena de hace poco se reutiliza: volver a fichar enseguida no tiene por qué esperar otra vez
-            if (_busqueda is { IsCompletedSuccessfully: true } hecha && hecha.Result is { } ultima
-                && DateTimeOffset.UtcNow - ultima.Timestamp < VigenciaDeUnaLectura
-                && (ultima.Accuracy ?? double.MaxValue) <= requerida)
-                return _busqueda;
-
-            return _busqueda = BuscarAsync(requerida);
+            _apagado?.Cancel();
+            _apagado = nuevo = new CancellationTokenSource();
         }
+        _ = Task.Delay(TiempoMaximoEscuchando, nuevo.Token).ContinueWith(t =>
+        {
+            if (!t.IsCanceled) try { _buscador.Detener(); } catch { /* ya estaba detenida */ }
+        }, TaskScheduler.Default);
     }
 
-    private async Task<Location?> BuscarAsync(double requerida)
-    {
-        var alInstante = await RecienteYPrecisaAsync(requerida);
-        if (alInstante is not null) return alInstante;
-
-        Location? mejor = null;
-        var inicio = DateTime.UtcNow;
-        var suficiente = new TaskCompletionSource();
-
-        void AlLlegarUnaLectura(object? origen, GeolocationLocationChangedEventArgs e)
-        {
-            var lectura = e.Location;
-            if (lectura is null) return;
-
-            if (mejor is null || (lectura.Accuracy ?? double.MaxValue) < (mejor.Accuracy ?? double.MaxValue))
-                mejor = lectura;
-
-            var precision = mejor.Accuracy ?? double.MaxValue;
-            if (precision < double.MaxValue) Avisar($"Buscando señal GPS… ±{precision:0} m");
-
-            if (precision <= PrecisionDeSobraMetros || (precision <= requerida && DateTime.UtcNow - inicio >= EsperaMinima))
-                suficiente.TrySetResult();
-        }
-
-        bool escuchando = false;
-        Geolocation.Default.LocationChanged += AlLlegarUnaLectura;
-        try
-        {
-            Avisar("Buscando señal GPS…");
-            escuchando = await Geolocation.Default.StartListeningForegroundAsync(
-                new GeolocationListeningRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(1)));
-
-            if (escuchando)
-                await Task.WhenAny(suficiente.Task, Task.Delay(PlazoMaximo));
-        }
-        catch (FeatureNotEnabledException)
-        {
-            throw new InvalidOperationException("El GPS está apagado. Activá la ubicación del teléfono y volvé a intentar.");
-        }
-        catch (PermissionException)
-        {
-            throw new InvalidOperationException("Falta el permiso de ubicación. Habilitalo en Ajustes → Apps → Fichaje → Permisos.");
-        }
-        catch
-        {
-            escuchando = false; // el teléfono no soporta la escucha continua: se usa el pedido único de abajo
-        }
-        finally
-        {
-            Geolocation.Default.LocationChanged -= AlLlegarUnaLectura;
-            if (escuchando)
-            {
-                try { Geolocation.Default.StopListeningForeground(); } catch { /* ya estaba detenida */ }
-            }
-        }
-
-        return mejor ?? await LecturaUnicaAsync();
-    }
-
-    // Respaldo: el pedido único de siempre (más lento y menos preciso, pero funciona en cualquier teléfono)
-    private static async Task<Location?> LecturaUnicaAsync()
+    // Respaldo para teléfonos donde la escucha no entregó nada: el pedido único de MAUI
+    private static async Task<LecturaGps?> LecturaDeRespaldoAsync()
     {
         try
         {
-            using var cancelar = new CancellationTokenSource(TimeSpan.FromSeconds(12));
-            return await Geolocation.Default.GetLocationAsync(
-                new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(10)), cancelar.Token);
+            using var cancelar = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var l = await Geolocation.Default.GetLocationAsync(
+                new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(8)), cancelar.Token);
+            return l is null ? null : new LecturaGps(l.Latitude, l.Longitude, l.Accuracy, l.Timestamp, l.IsFromMockProvider, "maui");
         }
         catch (FeatureNotEnabledException) { throw new InvalidOperationException("El GPS está apagado. Activá la ubicación del teléfono y volvé a intentar."); }
         catch (PermissionException) { throw new InvalidOperationException("Falta el permiso de ubicación. Habilitalo en Ajustes → Apps → Fichaje → Permisos."); }
         catch { return null; }
     }
 
-    // Última posición que el teléfono ya tenía, si es reciente: mejor eso que dejar a la persona sin poder fichar
-    // (el servidor igual verifica la precisión y la guarda en el fichaje)
-    private static async Task<Location?> UltimaConocidaAsync()
+    // ---- Dirección ----
+
+    // En cuanto hay una primera lectura se busca la calle y se guarda: al fichar ya está
+    private async Task PrepararDireccionAsync(double precisionRequerida)
     {
         try
         {
-            var ultima = await Geolocation.Default.GetLastKnownLocationAsync();
-            return ultima is not null && DateTimeOffset.UtcNow - ultima.Timestamp <= EdadMaximaDeLaUltimaConocida ? ultima : null;
+            var lectura = await _buscador.EsperarAsync(precisionRequerida, TimeSpan.FromSeconds(20));
+            if (lectura is not null) await DireccionAsync(lectura.Lat, lectura.Lon);
         }
-        catch { return null; }
+        catch { /* es un adelanto */ }
     }
 
-    private static async Task<Location?> RecienteYPrecisaAsync(double requerida)
+    // Si ya se buscó la dirección de un lugar a menos de 100 m, se reutiliza. La dirección es opcional: si falla o tarda
+    // más de 1,5 s, el fichaje sigue sin ella.
+    private async Task<string?> DireccionAsync(double lat, double lon)
     {
-        try
+        lock (_candado)
         {
-            var ultima = await Geolocation.Default.GetLastKnownLocationAsync();
-            return ultima is not null
-                   && !ultima.IsFromMockProvider
-                   && DateTimeOffset.UtcNow - ultima.Timestamp <= EdadParaUsarAlInstante
-                   && (ultima.Accuracy ?? double.MaxValue) <= requerida
-                ? ultima
-                : null;
+            if (_direccion is { } d && DistanciaEnMetros(lat, lon, d.Lat, d.Lon) <= MetrosParaReusarDireccion)
+                return d.Texto;
         }
-        catch { return null; }
+
+        var texto = await ObtenerDireccionAsync(lat, lon);
+        if (texto is not null) lock (_candado) _direccion = (lat, lon, texto);
+        return texto;
     }
 
-    private void Avisar(string texto) => Progreso?.Invoke(texto);
-
-    // La dirección es opcional: si falla o tarda más de 1,5 s, el fichaje sigue sin ella.
     private static async Task<string?> ObtenerDireccionAsync(double lat, double lon)
     {
         try
@@ -214,6 +161,16 @@ public class GeolocationService : IGeolocationService
         {
             return null;
         }
+    }
+
+    private static double DistanciaEnMetros(double lat1, double lon1, double lat2, double lon2)
+    {
+        const double R = 6371000;
+        double Rad(double g) => g * Math.PI / 180;
+        var dLat = Rad(lat2 - lat1);
+        var dLon = Rad(lon2 - lon1);
+        var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Cos(Rad(lat1)) * Math.Cos(Rad(lat2)) * Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+        return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
     }
 
     private static UbicacionResultado Fallo(string mensaje) =>

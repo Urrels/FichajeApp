@@ -42,6 +42,7 @@ public static class MauiProgram
         builder.Services.AddTransient<ConfigFichajePage>();
         builder.Services.AddTransient<FotoFichajePage>();
         builder.Services.AddSingleton<ApiService>();
+        builder.Services.AddSingleton<IFuenteDeUbicacion, FuenteDeUbicacionAndroid>();
         builder.Services.AddSingleton<IGeolocationService, GeolocationService>();
         builder.Services.AddSingleton<IBiometricService, BiometricService>();
         builder.Services.AddTransient<FichajeViewModel>();
