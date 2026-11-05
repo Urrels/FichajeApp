@@ -1,12 +1,12 @@
 # API de FichajeApp. Se construye desde esta carpeta:  docker build -t fichaje-api .
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY src/FichajeApp.Api/FichajeApp.Api.csproj src/FichajeApp.Api/
 RUN dotnet restore src/FichajeApp.Api/FichajeApp.Api.csproj
 COPY src/FichajeApp.Api/ src/FichajeApp.Api/
 RUN dotnet publish src/FichajeApp.Api/FichajeApp.Api.csproj -c Release -o /app --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app .
 
