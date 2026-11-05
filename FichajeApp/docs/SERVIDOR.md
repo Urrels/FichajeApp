@@ -28,6 +28,35 @@ Para generar una clave al azar (PowerShell):
 -join ((48..57)+(65..90)+(97..122) | Get-Random -Count 40 | ForEach-Object {[char]$_})
 ```
 
+## Dónde se guardan los datos: base SQL (recomendado) o planilla de Google
+
+Si definís la variable `ConnectionStrings__Fichaje`, la API guarda todo en **SQL Server / Azure SQL** y **no usa Google Sheets**.
+Sin esa variable sigue funcionando con la planilla, como antes.
+
+| Variable (solo con base SQL) | Para qué |
+|---|---|
+| `ConnectionStrings__Fichaje` | Cadena de conexión. Azure SQL: `Server=tcp:SERVIDOR.database.windows.net,1433;Database=NOMBRE;User ID=USUARIO;Password=CLAVE;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;` |
+| `Setup__AdminNombre`, `Setup__AdminEmail`, `Setup__AdminPin` | El **primer administrador**. Se crea solo la primera vez, si todavía no hay ningún empleado (PIN de 4 dígitos). Después se pueden sacar. |
+| `Datos__Migrar` | `true` por defecto: al arrancar crea o actualiza las tablas (migraciones de Entity Framework). Con `false` hay que aplicarlas a mano. |
+
+- Al arrancar la API crea las tablas, siembra los permisos y roles y crea el primer administrador. No hay que correr scripts.
+- Azure SQL *serverless* se pausa solo cuando no se usa: la primera consulta después de un rato puede tardar unos segundos.
+  La API reintenta la conexión sola (hasta ~1 minuto), pero el primer fichaje del día puede sentirse lento.
+- Con base SQL ya no existen la clave de activación ni la pantalla "Conectar mi planilla": la app entra directo al login.
+- **Lugares conocidos (tabla `Sitios`)**: todavía no hay pantalla para cargarlos. Se insertan con SQL, por ejemplo:
+  `INSERT INTO Sitios (Nombre, Latitud, Longitud, RadioMetros) VALUES (N'Sede central', -34.6037, -58.3816, 100);`
+  La lista se cachea unos segundos.
+- **Copia de seguridad**: en Azure SQL son automáticas (restauración a un momento dado, 7 días por defecto). Probá restaurar una vez.
+- Las **fotos** (de fichajes y de perfil) y las llaves de seguridad siguen en la carpeta `datos`, no en la base: necesitan disco persistente.
+- Para probar en tu máquina sin instalar nada: LocalDB (viene con Visual Studio):
+  `ConnectionStrings__Fichaje=Server=(localdb)\MSSQLLocalDB;Database=Fichaje;Trusted_Connection=True;TrustServerCertificate=True`
+
+### Azure App Service (Linux, .NET 8)
+
+Configuración → Variables de entorno de la aplicación web: `Jwt__Secret`, `ConnectionStrings__Fichaje`, `Setup__Admin*`,
+`Proxy__Confiar=true`, `TZ=America/Argentina/Buenos_Aires` y `Setup__Carpeta=/home/datos` (`/home` es lo único que persiste entre
+reinicios). Con el plan Gratuito F1 la app se duerme y tiene un tope diario de CPU: para la prueba con testers conviene B1.
+
 ## Opción A: servicio en la nube con HTTPS incluido (la más simple, sin dominio)
 
 Sirven Railway, Render, Fly.io y similares: les das el repositorio de GitHub, detectan el `Dockerfile` y te dan una dirección
