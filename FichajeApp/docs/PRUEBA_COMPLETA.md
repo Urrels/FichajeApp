@@ -131,3 +131,11 @@ Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, mo
 - [ ] Administración → Usuarios → una persona → *Foto de perfil*: el administrador le saca o le quita la foto.
 - [ ] La foto se ve en la lista de Usuarios y en la lista del kiosco; en otro teléfono aparece sin hacer nada (se baja sola).
 - [ ] Cambiar la foto desde un teléfono y abrir la lista en otro: a lo sumo en un minuto se ve la nueva.
+
+## Q. Lugares conocidos (solo con base SQL)
+- [ ] Administración → *Lugares conocidos* → *Agregar lugar* → «Estoy en el lugar ahora»: pide el nombre y el radio y el lugar aparece en la lista con sus coordenadas.
+- [ ] Tocar un lugar: cambiar el nombre, cambiar el radio, mover a mi ubicación actual, ver en el mapa y eliminar (pide confirmación).
+- [ ] Con «Ubicación libre» activada, fichar dentro del radio queda con el nombre del lugar y sin pedir motivo; fichar lejos pide el motivo.
+- [ ] Al eliminar un lugar, fichar ahí vuelve a pedir el motivo enseguida (sin esperar).
+- [ ] Un nombre repetido, un radio fuera de 10 a 5000 m o una ubicación inválida se rechazan con un mensaje claro.
+- [ ] Con la API conectada a SQL no aparecen «Conectar mi planilla de Google» en el login ni «Conexión con Google Sheets» en Administración.

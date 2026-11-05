@@ -26,12 +26,13 @@ public partial class AdminPage : ContentPage
         LiquidacionButton.IsVisible = sesion.TienePermiso(NombresPermisos.LiquidarHoras);
         AparienciaButton.IsVisible = sesion.TienePermiso(NombresPermisos.GestionarApariencia);
         ConfigFichajeButton.IsVisible = sesion.TienePermiso(NombresPermisos.ConfigurarFichaje);
-        ConexionButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarConexion);
+        SitiosButton.IsVisible = ConfigFichajeButton.IsVisible;
+        ConexionButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarConexion) && !ConfiguracionApiService.ServidorUsaSql;
         PinButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarPin);
 
         SeccionPersonas.IsVisible = UsuariosButton.IsVisible || RolesButton.IsVisible || BitacoraButton.IsVisible;
         SeccionAsistencia.IsVisible = FichajesButton.IsVisible || LiquidacionButton.IsVisible;
-        SeccionConfiguracion.IsVisible = ConfigFichajeButton.IsVisible || AparienciaButton.IsVisible || ConexionButton.IsVisible;
+        SeccionConfiguracion.IsVisible = ConfigFichajeButton.IsVisible || SitiosButton.IsVisible || AparienciaButton.IsVisible || ConexionButton.IsVisible;
         SeccionCuenta.IsVisible = PinButton.IsVisible;
     }
 
@@ -42,6 +43,7 @@ public partial class AdminPage : ContentPage
     private async void OnLiquidacion(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(LiquidacionPage));
     private async void OnApariencia(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(AparienciaPage));
     private async void OnConfigFichaje(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(ConfigFichajePage));
+    private async void OnSitios(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(SitiosPage));
     private async void OnConexion(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(ConfiguracionPage));
     private async void OnCambiarPin(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(CambiarPinPage));
 

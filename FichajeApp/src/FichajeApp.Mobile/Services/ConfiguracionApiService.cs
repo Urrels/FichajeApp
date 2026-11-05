@@ -15,7 +15,10 @@ public class ConfiguracionApiService
 
     // null si no se pudo consultar al servidor. CuentaDeServicio es el correo con el que hay que compartir la
     // planilla; viene vacío si el servidor no tiene credencial y hay que cargarla desde la app.
-    public record EstadoConexion(bool Configurada, string? CuentaDeServicio, string? Aviso = null);
+    public record EstadoConexion(bool Configurada, string? CuentaDeServicio, string? Aviso = null, bool UsaSql = false);
+
+    // El servidor guarda los datos en una base SQL: no hay planilla de Google que conectar (se ve en el login y en Administración)
+    public static bool ServidorUsaSql { get; private set; }
 
     public async Task<EstadoConexion?> EstadoAsync()
     {
@@ -26,7 +29,9 @@ public class ConfiguracionApiService
             var cuenta = r.TryGetProperty("cuentaDeServicio", out var c) && c.ValueKind == System.Text.Json.JsonValueKind.String
                 ? c.GetString() : null;
             var aviso = r.TryGetProperty("aviso", out var a) && a.ValueKind == System.Text.Json.JsonValueKind.String ? a.GetString() : null;
-            return new EstadoConexion(r.GetProperty("configurada").GetBoolean(), cuenta, aviso);
+            var usaSql = r.TryGetProperty("almacenamiento", out var al) && al.ValueKind == System.Text.Json.JsonValueKind.String && al.GetString() == "sql";
+            ServidorUsaSql = usaSql;
+            return new EstadoConexion(r.GetProperty("configurada").GetBoolean(), cuenta, aviso, usaSql);
         }
         catch { return null; }
     }

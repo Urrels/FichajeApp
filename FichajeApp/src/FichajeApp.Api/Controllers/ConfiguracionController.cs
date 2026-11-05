@@ -30,10 +30,10 @@ public class ConfiguracionController : ControllerBase
     {
         // "configurada" es true solo si hay una planilla conectada Y todavía existe y está compartida: si se borró,
         // la app lo toma como "sin configurar" y ofrece volver a conectar (con el aviso de por qué)
-        if (_usaSql) return Ok(new { configurada = true, cuentaDeServicio = (string?)null, aviso = (string?)null });
+        if (_usaSql) return Ok(new { configurada = true, cuentaDeServicio = (string?)null, aviso = (string?)null, almacenamiento = "sql" });
 
         var e = await _conexion.EstadoAsync();
-        return Ok(new { configurada = e.Lista, cuentaDeServicio = _conexion.CuentaDeServicio, aviso = e.Aviso });
+        return Ok(new { configurada = e.Lista, cuentaDeServicio = _conexion.CuentaDeServicio, aviso = e.Aviso, almacenamiento = "google" });
     }
 
     [HttpPost("google")]

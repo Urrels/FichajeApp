@@ -55,6 +55,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<AdminApiService>();
         builder.Services.AddSingleton<PerfilFotos>();
         builder.Services.AddTransient<UsuariosViewModel>();
+        builder.Services.AddTransient<SitiosViewModel>();
         builder.Services.AddTransient<RolesViewModel>();
         builder.Services.AddTransient<BitacoraViewModel>();
         builder.Services.AddTransient<FichajesAdminViewModel>();
@@ -62,6 +63,7 @@ public static class MauiProgram
         builder.Services.AddTransient<AparienciaViewModel>();
         builder.Services.AddTransient<AdminPage>();
         builder.Services.AddTransient<UsuariosPage>();
+        builder.Services.AddTransient<SitiosPage>();
         builder.Services.AddTransient<RolesPage>();
         builder.Services.AddTransient<BitacoraPage>();
         builder.Services.AddTransient<FichajesAdminPage>();

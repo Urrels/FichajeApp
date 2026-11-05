@@ -25,6 +25,7 @@
 
             <Label x:Name="SeccionConfiguracion" Text="CONFIGURACIÓN" Style="{StaticResource EncabezadoSeccion}" />
             <ctl:OpcionDeMenu x:Name="ConfigFichajeButton" Icono="{x:Static iconos:MaterialOutlined.Tune}" Titulo="Cómo se ficha" Descripcion="Ubicación, precisión del GPS, foto y modo kiosco" Tocado="OnConfigFichaje" IsVisible="False" />
+            <ctl:OpcionDeMenu x:Name="SitiosButton" Icono="{x:Static iconos:MaterialOutlined.Pin_drop}" Titulo="Lugares conocidos" Descripcion="Dónde se puede fichar sin dar un motivo" Tocado="OnSitios" IsVisible="False" />
             <ctl:OpcionDeMenu x:Name="AparienciaButton" Icono="{x:Static iconos:MaterialOutlined.Palette}" Titulo="Apariencia" Descripcion="Nombre, colores y logo de la app" Tocado="OnApariencia" IsVisible="False" />
             <ctl:OpcionDeMenu x:Name="ConexionButton" Icono="{x:Static iconos:MaterialOutlined.Cloud_sync}" Titulo="Conexión con Google Sheets" Descripcion="La planilla donde se guardan los datos" Tocado="OnConexion" IsVisible="False" />
 

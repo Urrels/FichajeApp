@@ -35,7 +35,9 @@ public partial class LoginPage : ContentPage
         if (_yaOfrecioConfigurar) return;
         _yaOfrecioConfigurar = true;
 
-        if ((await _configuracion.EstadoAsync())?.Configurada == false)
+        var estado = await _configuracion.EstadoAsync();
+        ConectarButton.IsVisible = estado?.UsaSql != true;   // con base SQL no hay planilla que conectar
+        if (estado?.Configurada == false)
             await Shell.Current.GoToAsync(nameof(ConfiguracionPage));
     }
 

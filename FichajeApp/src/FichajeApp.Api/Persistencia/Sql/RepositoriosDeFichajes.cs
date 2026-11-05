@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using FichajeApp.Api.Models;
 using FichajeApp.Api.Repositorios;
+using FichajeApp.Api.Servicios;
 using FichajeApp.Api.Services;
 using FichajeApp.Api.Storage;
 
@@ -136,11 +137,42 @@ public class FichajesSqlRepositorio : BaseSql, IFichajesRepositorio
 }
 
 // Tabla Sitios: los lugares conocidos donde se puede fichar
-public class SitiosSqlRepositorio : BaseSql, ISitiosRepository
+public class SitiosSqlRepositorio : BaseSql, ISitiosRepository, ISitiosAdminRepositorio
 {
     public SitiosSqlRepositorio(IDbContextFactory<FichajeDbContext> fabrica) : base(fabrica) { }
 
     public Task<IReadOnlyList<Sitio>> ObtenerSitiosAsync() => LeerAsync<IReadOnlyList<Sitio>>(async db =>
         (await db.Sitios.OrderBy(s => s.Id).ToListAsync())
             .Select(s => new Sitio(s.Nombre, s.Latitud, s.Longitud, s.RadioMetros)).ToList());
+
+    public Task<List<SitioAdmin>> ListarAsync() => LeerAsync(async db =>
+        (await db.Sitios.OrderBy(s => s.Nombre).ToListAsync())
+            .Select(s => new SitioAdmin(s.Id, s.Nombre, s.Latitud, s.Longitud, s.RadioMetros)).ToList());
+
+    public async Task<int> CrearAsync(Sitio sitio)
+    {
+        await using var db = await Fabrica.CreateDbContextAsync();
+        var fila = new SitioFila { Nombre = sitio.Nombre, Latitud = sitio.Latitud, Longitud = sitio.Longitud, RadioMetros = sitio.RadioMetros };
+        db.Sitios.Add(fila);
+        await db.SaveChangesAsync();
+        return fila.Id;
+    }
+
+    public async Task ActualizarAsync(int id, Sitio sitio)
+    {
+        await using var db = await Fabrica.CreateDbContextAsync();
+        var fila = await db.Sitios.FirstOrDefaultAsync(s => s.Id == id) ?? throw new InvalidOperationException("El lugar no existe.");
+        fila.Nombre = sitio.Nombre;
+        fila.Latitud = sitio.Latitud;
+        fila.Longitud = sitio.Longitud;
+        fila.RadioMetros = sitio.RadioMetros;
+        await db.SaveChangesAsync();
+    }
+
+    public async Task EliminarAsync(int id)
+    {
+        await using var db = await Fabrica.CreateDbContextAsync();
+        var borradas = await db.Sitios.Where(s => s.Id == id).ExecuteDeleteAsync();
+        if (borradas == 0) throw new InvalidOperationException("El lugar no existe.");
+    }
 }
