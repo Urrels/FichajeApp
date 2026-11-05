@@ -46,11 +46,11 @@ Es más trabajo y toca un archivo protegido; por eso no la recomiendo.)
 **Con un archivo APK (lo más cómodo, sin cable ni Visual Studio):**
 
 ```powershell
-dotnet publish src/FichajeApp.Mobile -f net8.0-android -c Release -p:Cliente=dev -p:AndroidPackageFormat=apk -p:AndroidKeyStore=False
+dotnet publish src/FichajeApp.Mobile -f net10.0-android36.0 -c Release -p:Cliente=dev -p:AndroidPackageFormat=apk -p:AndroidKeyStore=False
 ```
 
 Tarda varios minutos. El archivo que hay que instalar queda en
-`src/FichajeApp.Mobile/bin/Release/net8.0-android/publish/io.github.urrels.fichaje.dev-Signed.apk` (unos 38 MB).
+`src/FichajeApp.Mobile/bin/Release/net10.0-android36.0/publish/io.github.urrels.fichaje.dev-Signed.apk` (unos 38 MB).
 Pasalo al teléfono (WhatsApp como documento, Drive, o cable), tocalo, permití "instalar apps de orígenes desconocidos"
 para ese programa y, si Play Protect avisa que la app no está verificada, elegí "Instalar de todos modos".
 Después cambiá la dirección del servidor con el gesto del logo (paso 2).

@@ -12,6 +12,11 @@ public partial class AvatarUsuario : Grid
     public static readonly BindableProperty TamanoProperty = BindableProperty.Create(nameof(Tamano), typeof(double), typeof(AvatarUsuario), 44d,
         propertyChanged: (b, _, nuevo) => ((AvatarUsuario)b).Dimensionar((double)nuevo));
 
+    // Sobre un fondo del color principal (el encabezado de Fichar) el círculo translúcido no se vería: se pinta blanco
+    public static readonly BindableProperty SobreFondoOscuroProperty = BindableProperty.Create(nameof(SobreFondoOscuro), typeof(bool), typeof(AvatarUsuario), false,
+        propertyChanged: (b, _, nuevo) => ((AvatarUsuario)b).PintarCirculo((bool)nuevo));
+    public bool SobreFondoOscuro { get => (bool)GetValue(SobreFondoOscuroProperty); set => SetValue(SobreFondoOscuroProperty, value); }
+
     public string Nombre { get => (string)GetValue(NombreProperty); set => SetValue(NombreProperty, value); }
     public int EmpleadoId { get => (int)GetValue(EmpleadoIdProperty); set => SetValue(EmpleadoIdProperty, value); }
     public double Tamano { get => (double)GetValue(TamanoProperty); set => SetValue(TamanoProperty, value); }
@@ -31,6 +36,12 @@ public partial class AvatarUsuario : Grid
     private PerfilFotos Servicio => _fotos ??= Application.Current?.Handler?.MauiContext?.Services.GetService<PerfilFotos>()!;
 
     private void AlCambiarUnaFoto() => MainThread.BeginInvokeOnMainThread(() => _ = CargarFotoAsync());
+
+    private void PintarCirculo(bool sobreOscuro)
+    {
+        if (sobreOscuro) { Circulo.Fill = Colors.White; Circulo.Opacity = 0.92; }
+        else { Circulo.SetDynamicResource(Microsoft.Maui.Controls.Shapes.Shape.FillProperty, "ColorPrimario"); Circulo.Opacity = 0.14; }
+    }
 
     private void Dimensionar(double lado)
     {

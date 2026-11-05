@@ -7,7 +7,7 @@ Límites de Play: nombre 30 caracteres, descripción corta 80, descripción larg
 
 | Qué | Estado |
 |---|---|
-| Apuntar a Android 16 (API 36) | **Pendiente**: requiere pasar a .NET 10 (ver `PLAY_STORE.md`, sección 7 bis) |
+| Apuntar a Android 16 (API 36) | **Hecho**: migrado a .NET 10 (ver `PLAY_STORE.md`, sección 7 bis). Falta probarlo en Android 15/16 |
 | Cliente real en `Clientes/<cliente>/` con `apiBaseUrl` HTTPS | Hay `clientea` y `clienteb` de ejemplo (`https://api-clientea.example.com/api`) |
 | `ApplicationId` definitivo | Hoy `io.github.urrels.fichaje.<cliente>`; no se puede cambiar después de la primera subida |
 | Keystore del cliente y copia de resguardo | **Lo genera quien publica** (`PLAY_STORE.md`, sección 4); no está en el repositorio |

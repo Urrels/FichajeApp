@@ -211,7 +211,7 @@ Las propiedades del `.csproj` y los comandos de build están en
 `FichajeApp.Mobile.Clientes.csproj.snippet.txt`:
 
 ```bash
-dotnet publish -f net8.0-android -c Release -p:Cliente=clientea
+dotnet publish -f net10.0-android36.0 -c Release -p:Cliente=clientea
 ```
 
 Para sumar un cliente: copiar una carpeta de `Clientes/`, editar su `cliente.json` y

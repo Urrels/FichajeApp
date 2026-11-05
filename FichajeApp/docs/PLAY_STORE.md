@@ -70,10 +70,10 @@ keytool -genkeypair -v -keystore keystores/clientea.keystore -alias clientea -ke
 Subir siempre `ApplicationVersion` (entero, +1 en cada subida) y `ApplicationDisplayVersion` (lo que ve el usuario) en el `.csproj`.
 
 ```bash
-dotnet publish src/FichajeApp.Mobile -f net8.0-android -c Release -p:Cliente=clientea -p:AndroidSigningKeyPass=CLAVE -p:AndroidSigningStorePass=CLAVE
+dotnet publish src/FichajeApp.Mobile -f net10.0-android36.0 -c Release -p:Cliente=clientea -p:AndroidSigningKeyPass=CLAVE -p:AndroidSigningStorePass=CLAVE
 ```
 
-El `.aab` queda en `src/FichajeApp.Mobile/bin/Release/net8.0-android/publish/`. Probalo antes con un `.apk`
+El `.aab` queda en `src/FichajeApp.Mobile/bin/Release/net10.0-android36.0/publish/`. Probalo antes con un `.apk`
 (`-p:AndroidPackageFormat=apk`) instalado en un teléfono real: fichar, mapa, huella y logo.
 
 ## 6. Cuenta de Play Console
@@ -98,26 +98,30 @@ El `.aab` queda en `src/FichajeApp.Mobile/bin/Release/net8.0-android/publish/`. 
 - **Público objetivo**: adultos (no es para niños). **Anuncios**: no. **Acceso a la app**: dar un usuario y PIN de prueba
   para que el revisor de Google pueda entrar (y que la API esté activa).
 - **API objetivo**: desde el 31/08/2026 Play exige apuntar a **Android 16 (API 36)** tanto para apps nuevas como para
-  actualizaciones ([requisito oficial](https://support.google.com/googleplay/android-developer/answer/11926878)). Este proyecto está
-  en **.NET 8 / MAUI 8** (API 34): **no se puede publicar así**. Ver la sección *Migración a .NET 10* más abajo.
-- **Páginas de memoria de 16 KB**: las apps que apuntan a Android 15 o más tienen que soportarlas. MAUI 9 en adelante lo trae,
-  pero las librerías con código nativo (SkiaSharp, Mapsui, cámara) tienen que ser versiones nuevas. Play lo verifica al subir el `.aab`.
+  actualizaciones ([requisito oficial](https://support.google.com/googleplay/android-developer/answer/11926878)). El proyecto ya
+  está migrado a **.NET 10 / MAUI 10** y apunta a la API 36 (ver *Migración a .NET 10* más abajo).
+- **Páginas de memoria de 16 KB**: las apps que apuntan a Android 15 o más tienen que soportarlas. `zipalign -c -P 16` pasa sobre
+  el APK de Release; Play igual lo verifica al subir el `.aab`.
 - **Textos listos para pegar** (ficha, seguridad de los datos, clasificación, instrucciones para el revisor): `docs/PLAY_STORE_FICHA.md`.
 
-## 7 bis. Migración a .NET 10 (pendiente: bloquea la publicación)
+## 7 bis. Migración a .NET 10 (hecha: qué se cambió y cómo repetirla en otra máquina)
 
-Con .NET 9 el techo es API 35; la API 36 solo existe en **.NET 10 + MAUI 10** (`net10.0-android36.0`). Pasos:
+Con .NET 9 el techo es API 35; la API 36 solo existe en **.NET 10 + MAUI 10** (`net10.0-android36.0`).
 
-1. Instalar el SDK de .NET 10, la carga de trabajo (`dotnet workload install maui-android`) y la plataforma **Android SDK 36**
-   (error XA5207 si falta). Visual Studio 2022 17.14 no compila .NET 10: hace falta Visual Studio 2026 o compilar por consola.
-2. En `FichajeApp.Mobile.csproj`: `TargetFrameworks` → `net10.0-android36.0` (se puede dejar solo Android); actualizar
-   `CommunityToolkit.Maui`, `CommunityToolkit.Maui.Camera`, `UraniumUI.*`, `Mapsui.Maui` (la 5.x pide .NET 9 o más) y
-   `Plugin.Fingerprint` a las versiones compatibles con MAUI 10.
-3. Quitar cualquier `<uses-sdk android:targetSdkVersion=...>` del manifiesto (hoy no hay).
-4. Revisar lo que cambia al apuntar a 36: pantalla de borde a borde (márgenes seguros en cada página), botón Atrás predictivo
-   (`OnBackButtonPressed`, usado en `SelfiePage`) y tablets (se ignora la orientación fija).
-5. Compilar en Release y comprobar `obj/Release/net10.0-android/AndroidManifest.xml` (`targetSdkVersion="36"`), volver a pasar
-   `docs/PRUEBA_COMPLETA.md` y subir el `.aab` a una prueba interna para ver la verificación de 16 KB.
+1. SDK de .NET 10, `dotnet workload install maui-android` y la plataforma Android 36:
+   `dotnet build src/FichajeApp.Mobile -t:InstallAndroidDependencies -f net10.0-android36.0 -p:AndroidSdkDirectory=<carpeta del SDK> -p:AcceptAndroidSDKLicenses=True`.
+   La carpeta del SDK tiene que ser escribible (`%LOCALAPPDATA%\Android\Sdk` sí; `C:\Program Files (x86)\Android` pide administrador).
+   Al compilar hay que pasar la misma carpeta con `-p:AndroidSdkDirectory=...`. Visual Studio 2022 17.14 no compila .NET 10:
+   hace falta Visual Studio 2026 o compilar por consola.
+2. `FichajeApp.Mobile.csproj`: solo `net10.0-android36.0`; `SupportedOSPlatformVersion` de Android 24; paquetes nuevos
+   (CommunityToolkit.Maui 15, Camera 6.1, UraniumUI 3.0, Mapsui.Maui 5.1) y SkiaSharp/HarfBuzzSharp fijados a 3.119.2 / 8.3.1.3
+   (si no, el generador de imágenes de MAUI 10 falla). Las ilustraciones de ayuda de `Resources/Ayuda` son PNG ya dibujados: el
+   generador de MAUI 10 falla con SVG que tienen texto (los `.svg` quedaron como fuente).
+3. El manifiesto no fija `targetSdkVersion`: sale de la versión de Android del TFM (comprobado: `targetSdkVersion="36"`).
+4. Pendiente de probar en un Android 15 o 16 real o con imagen de sistema: pantalla de borde a borde (márgenes seguros en
+   cada página; `Window.SetStatusBarColor` está en desuso desde la API 35 y el color de la barra superior puede dejar de verse),
+   botón Atrás predictivo (`OnBackButtonPressed` en `SelfiePage`) y tablets (se ignora la orientación fija).
+5. Probado en emulador Android 14: login, Supervisor con mapa, Fichar, cámara frontal, foto de perfil y `.aab` de Release.
 
 ## 8. Subir y publicar
 
