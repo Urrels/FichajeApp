@@ -97,8 +97,27 @@ El `.aab` queda en `src/FichajeApp.Mobile/bin/Release/net8.0-android/publish/`. 
 - **Clasificación de contenido**: cuestionario (la app no tiene contenido sensible → apta para todos).
 - **Público objetivo**: adultos (no es para niños). **Anuncios**: no. **Acceso a la app**: dar un usuario y PIN de prueba
   para que el revisor de Google pueda entrar (y que la API esté activa).
-- **API objetivo**: Play exige apuntar a un nivel reciente (hoy Android 15 / API 35 para apps nuevas). Si el build avisa, subí
-  `TargetFramework` a `net9.0-android` o el SDK correspondiente.
+- **API objetivo**: desde el 31/08/2026 Play exige apuntar a **Android 16 (API 36)** tanto para apps nuevas como para
+  actualizaciones ([requisito oficial](https://support.google.com/googleplay/android-developer/answer/11926878)). Este proyecto está
+  en **.NET 8 / MAUI 8** (API 34): **no se puede publicar así**. Ver la sección *Migración a .NET 10* más abajo.
+- **Páginas de memoria de 16 KB**: las apps que apuntan a Android 15 o más tienen que soportarlas. MAUI 9 en adelante lo trae,
+  pero las librerías con código nativo (SkiaSharp, Mapsui, cámara) tienen que ser versiones nuevas. Play lo verifica al subir el `.aab`.
+- **Textos listos para pegar** (ficha, seguridad de los datos, clasificación, instrucciones para el revisor): `docs/PLAY_STORE_FICHA.md`.
+
+## 7 bis. Migración a .NET 10 (pendiente: bloquea la publicación)
+
+Con .NET 9 el techo es API 35; la API 36 solo existe en **.NET 10 + MAUI 10** (`net10.0-android36.0`). Pasos:
+
+1. Instalar el SDK de .NET 10, la carga de trabajo (`dotnet workload install maui-android`) y la plataforma **Android SDK 36**
+   (error XA5207 si falta). Visual Studio 2022 17.14 no compila .NET 10: hace falta Visual Studio 2026 o compilar por consola.
+2. En `FichajeApp.Mobile.csproj`: `TargetFrameworks` → `net10.0-android36.0` (se puede dejar solo Android); actualizar
+   `CommunityToolkit.Maui`, `CommunityToolkit.Maui.Camera`, `UraniumUI.*`, `Mapsui.Maui` (la 5.x pide .NET 9 o más) y
+   `Plugin.Fingerprint` a las versiones compatibles con MAUI 10.
+3. Quitar cualquier `<uses-sdk android:targetSdkVersion=...>` del manifiesto (hoy no hay).
+4. Revisar lo que cambia al apuntar a 36: pantalla de borde a borde (márgenes seguros en cada página), botón Atrás predictivo
+   (`OnBackButtonPressed`, usado en `SelfiePage`) y tablets (se ignora la orientación fija).
+5. Compilar en Release y comprobar `obj/Release/net10.0-android/AndroidManifest.xml` (`targetSdkVersion="36"`), volver a pasar
+   `docs/PRUEBA_COMPLETA.md` y subir el `.aab` a una prueba interna para ver la verificación de 16 KB.
 
 ## 8. Subir y publicar
 
