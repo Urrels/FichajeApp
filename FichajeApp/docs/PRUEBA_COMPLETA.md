@@ -139,3 +139,10 @@ Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, mo
 - [ ] Al eliminar un lugar, fichar ahí vuelve a pedir el motivo enseguida (sin esperar).
 - [ ] Un nombre repetido, un radio fuera de 10 a 5000 m o una ubicación inválida se rechazan con un mensaje claro.
 - [ ] Con la API conectada a SQL no aparecen «Conectar mi planilla de Google» en el login ni «Conexión con Google Sheets» en Administración.
+
+## R. Seguridad de roles y sesiones
+- [ ] Un usuario con un rol que solo tenga «Administrar usuarios» no puede asignarse el rol Administrador, ni crear un usuario Administrador: aparece «No podés dar ni quitar el rol…».
+- [ ] Ese mismo usuario sí puede crear usuarios y asignar roles que tengan solo permisos que él tiene (por ejemplo Empleado).
+- [ ] En Administración → Roles, quien edita un rol no puede sumarle permisos que él no tiene (sí puede quitar).
+- [ ] Si el administrador le cambia el rol a alguien (o le quita un permiso a su rol), la sesión abierta de esa persona se cierra en su próximo pedido y tiene que volver a entrar.
+- [ ] Dar de baja o bloquear a alguien le corta la sesión enseguida (sin esperar un minuto).

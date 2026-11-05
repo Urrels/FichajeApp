@@ -1,3 +1,4 @@
+using FichajeApp.Api.Autorizacion;
 using FichajeApp.Api.Models;
 using FichajeApp.Api.Repositorios;
 
@@ -52,10 +53,12 @@ public class UsuariosAdminService
     private readonly IHistorialUsuariosRepositorio _historialRepositorio;
     private readonly GuardaAdministracion _guarda;
     private readonly BitacoraService _bitacora;
+    private readonly PermisosService _permisos;
+    private readonly SesionesVigentes? _sesiones;
 
     public UsuariosAdminService(IEmpleadosRepositorio empleados, IRolesRepositorio roles, IFichajesRepositorio fichajes,
         HistorialUsuariosService historial, IHistorialUsuariosRepositorio historialRepositorio,
-        GuardaAdministracion guarda, BitacoraService bitacora)
+        GuardaAdministracion guarda, BitacoraService bitacora, PermisosService permisos, SesionesVigentes? sesiones = null)
     {
         _empleados = empleados;
         _roles = roles;
@@ -64,6 +67,8 @@ public class UsuariosAdminService
         _historialRepositorio = historialRepositorio;
         _guarda = guarda;
         _bitacora = bitacora;
+        _permisos = permisos;
+        _sesiones = sesiones;
     }
 
     public async Task<PaginaResultado<UsuarioAdminDto>> ListarAsync(string? busqueda, int pagina, int tamanio)
@@ -120,6 +125,7 @@ public class UsuariosAdminService
             throw new InvalidOperationException("Ya existe un empleado con ese email.");
 
         await ValidarRolesAsync(rolIds);
+        await ExigirQuePuedeDarRolesAsync(actor, rolIds);
 
         var nuevo = await _empleados.CrearAsync(new EmpleadoDto
         {
@@ -174,6 +180,7 @@ public class UsuariosAdminService
         await _historial.RegistrarAsync(e, "BAJA", actor);
         e.Activo = false;
         await _empleados.ActualizarAsync(e);
+        _sesiones?.Invalidar(id);
         await _bitacora.RegistrarAsync(actor, "USUARIO_BAJA:" + e.NombreCompleto);
     }
 
@@ -182,6 +189,7 @@ public class UsuariosAdminService
         var e = await ObtenerAsync(id);
         e.Activo = true;
         await _empleados.ActualizarAsync(e);
+        _sesiones?.Invalidar(id);
         await _historial.RegistrarAsync(e, "ALTA", actor);
         await _bitacora.RegistrarAsync(actor, "USUARIO_REACTIVADO:" + e.NombreCompleto);
     }
@@ -192,6 +200,7 @@ public class UsuariosAdminService
         e.Bloqueado = false;
         e.IntentosFallidos = 0;
         await _empleados.ActualizarAsync(e);
+        _sesiones?.Invalidar(id);
         await _bitacora.RegistrarAsync(actor, "DESBLOQUEO_USUARIO:" + e.NombreCompleto);
         await _historial.RegistrarAsync(e, "DESBLOQUEO", actor);
     }
@@ -207,6 +216,7 @@ public class UsuariosAdminService
         e.Bloqueado = false;
         e.IntentosFallidos = 0;
         await _empleados.ActualizarAsync(e);
+        _sesiones?.Invalidar(id);
         await _historial.RegistrarAsync(e, "CAMBIO_PIN", actor);
         await _bitacora.RegistrarAsync(actor, "PIN_RESTABLECIDO:" + e.NombreCompleto);
     }
@@ -231,9 +241,11 @@ public class UsuariosAdminService
     {
         var e = await ObtenerAsync(id);
         await ValidarRolesAsync(rolIds);
+        await ExigirQuePuedeDarRolesAsync(actor, await RolesQueCambianAsync(e, rolIds));
         await _guarda.ValidarAsync(usuarioId: id, nuevosRolIds: rolIds);
 
         await _roles.ReemplazarAsignacionesAsync(id, rolIds);
+        _sesiones?.Invalidar(id);
         await _historial.RegistrarAsync(e, "ASIGNACION_ROL", actor);
         await _bitacora.RegistrarAsync(actor, "ROLES_ASIGNADOS:" + e.NombreCompleto);
     }
@@ -256,6 +268,9 @@ public class UsuariosAdminService
 
         var rolesDestino = foto.Activo && !foto.Bloqueado ? foto.RolIds : new List<int>();
         await _guarda.ValidarAsync(usuarioId: e.Id, nuevosRolIds: rolesDestino);
+        // Restaurar una versión vieja también cambia roles: valen las mismas reglas que al asignarlos a mano
+        if (foto.RolIds.Count > 0)
+            await ExigirQuePuedeDarRolesAsync(actor, await RolesQueCambianAsync(e, foto.RolIds));
 
         e.Email = foto.Email;
         e.Activo = foto.Activo;
@@ -264,6 +279,7 @@ public class UsuariosAdminService
         await _empleados.ActualizarAsync(e);
         if (foto.RolIds.Count > 0)
             await _roles.ReemplazarAsignacionesAsync(e.Id, foto.RolIds);
+        _sesiones?.Invalidar(e.Id);
 
         await _historial.RegistrarAsync(e, "ROLLBACK", actor, versionOrigen: foto.Id);
         await _bitacora.RegistrarAsync(actor, "ROLLBACK_USUARIO:" + e.NombreCompleto);
@@ -273,6 +289,32 @@ public class UsuariosAdminService
 
     private async Task<EmpleadoDto> ObtenerAsync(int id) =>
         await _empleados.ObtenerPorIdAsync(id) ?? throw new InvalidOperationException("El usuario no existe.");
+
+    // Los roles que se agregan o se quitan: lo que queda igual no cuenta, así editar a alguien que ya tiene un rol alto no se bloquea
+    private async Task<List<int>> RolesQueCambianAsync(EmpleadoDto persona, List<int> nuevos)
+    {
+        var roles = await _roles.ListarRolesAsync();
+        var actuales = PermisosService.RolesEfectivos(persona, await _roles.ListarAsignacionesAsync(), roles);
+        return actuales.Except(nuevos).Concat(nuevos.Except(actuales)).Distinct().ToList();
+    }
+
+    // Nadie puede dar ni quitar un rol que tenga permisos que él mismo no tiene: si no, quien solo administra usuarios
+    // podría nombrarse Administrador (o desarmar a uno).
+    private async Task ExigirQuePuedeDarRolesAsync(string actor, IReadOnlyCollection<int> rolIds)
+    {
+        if (rolIds.Count == 0) return;
+
+        var propios = await _permisos.PermisosDeAsync(actor);
+        var permisosPorRol = await _permisos.PermisosPorRolAsync();
+        var nombres = (await _roles.ListarRolesAsync()).ToDictionary(r => r.Id, r => r.Nombre);
+
+        foreach (var rolId in rolIds)
+        {
+            if (permisosPorRol.TryGetValue(rolId, out var delRol) && delRol.Any(p => !propios.Contains(p)))
+                throw new InvalidOperationException(
+                    $"No podés dar ni quitar el rol «{nombres.GetValueOrDefault(rolId, "?")}»: tiene permisos que vos no tenés.");
+        }
+    }
 
     private async Task ValidarRolesAsync(List<int> rolIds)
     {

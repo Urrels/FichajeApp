@@ -225,7 +225,7 @@ public class RolesServiceTests
         var e = new Entorno();
         int padre = await e.RolesServicio.AgregarAsync("a", "Gerencia", null);
         int hijo = await e.RolesServicio.AgregarAsync("a", "Sucursal", padre);
-        await e.Usuarios.AsignarRolesAsync("a", 2, new List<int> { hijo });
+        await e.Usuarios.AsignarRolesAsync("admin@test.com", 2, new List<int> { hijo });
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => e.RolesServicio.EliminarAsync("a", hijo));
         await Assert.ThrowsAsync<InvalidOperationException>(() => e.RolesServicio.EliminarAsync("a", padre));
@@ -237,7 +237,7 @@ public class RolesServiceTests
         var e = new Entorno();
         int padre = await e.RolesServicio.AgregarAsync("a", "Gerencia", null);
         int hijo = await e.RolesServicio.AgregarAsync("a", "Sucursal", padre);
-        await e.RolesServicio.ActualizarPermisosAsync("a", hijo, new List<int> { e.Roles.Permisos[0].Id });
+        await e.RolesServicio.ActualizarPermisosAsync("admin@test.com", hijo, new List<int> { e.Roles.Permisos[0].Id });
 
         await e.RolesServicio.EliminarAsync("a", padre);
 
@@ -291,7 +291,7 @@ public class RolesServiceTests
     {
         var e = new Entorno();
         int hijo = await e.RolesServicio.AgregarAsync("x", "Hijo de admin", e.IdRol("Administrador"));
-        await e.Usuarios.AsignarRolesAsync("x", 2, new List<int> { hijo });
+        await e.Usuarios.AsignarRolesAsync("admin@test.com", 2, new List<int> { hijo });
 
         var r = await e.Login.AutenticarAsync("ana@test.com", Entorno.PinAna);
 

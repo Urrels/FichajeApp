@@ -1,3 +1,4 @@
+using FichajeApp.Api.Autorizacion;
 using FichajeApp.Api.Dominio.Seguridad;
 using FichajeApp.Api.Repositorios;
 
@@ -29,12 +30,17 @@ public class RolesService
     private readonly IRolesRepositorio _roles;
     private readonly GuardaAdministracion _guarda;
     private readonly BitacoraService _bitacora;
+    private readonly PermisosService _permisos;
+    private readonly SesionesVigentes? _sesiones;
 
-    public RolesService(IRolesRepositorio roles, GuardaAdministracion guarda, BitacoraService bitacora)
+    public RolesService(IRolesRepositorio roles, GuardaAdministracion guarda, BitacoraService bitacora,
+        PermisosService permisos, SesionesVigentes? sesiones = null)
     {
         _roles = roles;
         _guarda = guarda;
         _bitacora = bitacora;
+        _permisos = permisos;
+        _sesiones = sesiones;
     }
 
     public async Task<List<NodoPermiso>> ObtenerArbolAsync()
@@ -142,6 +148,7 @@ public class RolesService
                 throw new InvalidOperationException("No se puede eliminar un rol que tiene usuarios asignados. Reasignálos primero.");
 
             await _roles.EliminarRolesAsync(subarbol);
+            _sesiones?.InvalidarTodas();
             await _bitacora.RegistrarAsync(actor, "ROL_ELIMINADO:" + rol.Nombre);
         }
         finally { _cambios.Release(); }
@@ -162,7 +169,19 @@ public class RolesService
             permisoIds = permisoIds?.Distinct().ToList() ?? new List<int>();
             await _guarda.ValidarAsync(rolId: rolId, nuevosPermisoIds: permisoIds);
 
+            // Nadie le suma a un rol permisos que él mismo no tiene (si no, se los daría a sí mismo con solo editar su rol)
+            var actuales = (await _roles.ListarRolPermisosAsync()).Where(rp => rp.RolId == rolId).Select(rp => rp.PermisoId).ToHashSet();
+            var agregados = permisoIds.Where(p => !actuales.Contains(p)).ToHashSet();
+            if (agregados.Count > 0)
+            {
+                var propios = await _permisos.PermisosDeAsync(actor);
+                var sinPermiso = (await _roles.ListarPermisosAsync()).Where(p => agregados.Contains(p.Id) && !propios.Contains(p.Nombre)).Select(p => p.Nombre).ToList();
+                if (sinPermiso.Count > 0)
+                    throw new InvalidOperationException($"No podés darle a un rol permisos que vos no tenés: {string.Join(", ", sinPermiso)}.");
+            }
+
             await _roles.GuardarPermisosDeRolAsync(rolId, permisoIds);
+            _sesiones?.InvalidarTodas();   // lo que permite el rol cambió para todos los que lo tienen
             await _bitacora.RegistrarAsync(actor, "ROL_PERMISOS_MODIFICADOS:" + rol.Nombre);
         }
         finally { _cambios.Release(); }

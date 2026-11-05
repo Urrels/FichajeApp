@@ -379,8 +379,8 @@ public class Entorno
         Guarda = new GuardaAdministracion(Roles, Permisos);
         Historial = new HistorialUsuariosService(HistorialRepo, Roles, Reloj);
         Login = new LoginService(Empleados, Permisos, Bitacora, Historial);
-        Usuarios = new UsuariosAdminService(Empleados, Roles, Fichajes, Historial, HistorialRepo, Guarda, Bitacora);
-        RolesServicio = new RolesService(Roles, Guarda, Bitacora);
+        Usuarios = new UsuariosAdminService(Empleados, Roles, Fichajes, Historial, HistorialRepo, Guarda, Bitacora, Permisos);
+        RolesServicio = new RolesService(Roles, Guarda, Bitacora, Permisos);
         Jornadas = new JornadasService(Fichajes, Empleados);
         FichajesAdmin = new FichajesAdminService(Jornadas, Fichajes, Empleados, LiquidacionRepo, Bitacora, Reloj);
         Liquidacion = new LiquidacionService(Jornadas, LiquidacionRepo, Empleados, Bitacora, Reloj);
