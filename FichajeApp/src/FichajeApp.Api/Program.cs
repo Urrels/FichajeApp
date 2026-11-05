@@ -4,7 +4,10 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using FichajeApp.Api.Persistencia;
+using FichajeApp.Api.Persistencia.Sql;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
 using FichajeApp.Api.Autorizacion;
@@ -38,28 +41,65 @@ builder.Services.AddSingleton<GoogleSheetsClient>();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<BloqueoPorClave>();
 
-// Servicios de datos (Google Sheets). Decorator: la lista de empleados se cachea unos segundos
-// (se invalida sola al escribir), porque cada pedido autenticado y cada fichaje la consultan.
-builder.Services.AddSingleton<GoogleSheetsEmpleadosService>();
-builder.Services.AddSingleton<IEmpleadosRepositorio>(sp => new CachedEmpleadosRepositorio(
-    sp.GetRequiredService<GoogleSheetsEmpleadosService>(),
-    sp.GetRequiredService<IMemoryCache>()));
-builder.Services.AddSingleton<GoogleSheetsSitiosService>();
-builder.Services.AddSingleton<ISitiosRepository>(sp => new CachedSitiosRepository(
-    sp.GetRequiredService<GoogleSheetsSitiosService>(),
-    sp.GetRequiredService<IMemoryCache>(),
-    sp.GetRequiredService<IOptions<FichajeOptions>>()));
+// Dónde viven los datos: con ConnectionStrings:Fichaje se usa la base SQL (SQL Server / Azure SQL);
+// sin ella, la planilla de Google Sheets de siempre.
+var cadenaSql = builder.Configuration.GetConnectionString("Fichaje");
+var usaSql = !string.IsNullOrWhiteSpace(cadenaSql);
+
+if (usaSql)
+{
+    // Azure SQL serverless se pausa solo: la primera conexión después de un rato puede fallar, por eso se reintenta
+    builder.Services.AddDbContextFactory<FichajeDbContext>(o =>
+        o.UseSqlServer(cadenaSql, sql => sql.EnableRetryOnFailure(maxRetryCount: 6, maxRetryDelay: TimeSpan.FromSeconds(20), errorNumbersToAdd: null)));
+
+    // Decorator: la lista de empleados se cachea unos segundos (se invalida sola al escribir),
+    // porque cada pedido autenticado y cada fichaje la consultan.
+    builder.Services.AddSingleton<EmpleadosSqlRepositorio>();
+    builder.Services.AddSingleton<IEmpleadosRepositorio>(sp => new CachedEmpleadosRepositorio(
+        sp.GetRequiredService<EmpleadosSqlRepositorio>(),
+        sp.GetRequiredService<IMemoryCache>()));
+    builder.Services.AddSingleton<SitiosSqlRepositorio>();
+    builder.Services.AddSingleton<ISitiosRepository>(sp => new CachedSitiosRepository(
+        sp.GetRequiredService<SitiosSqlRepositorio>(),
+        sp.GetRequiredService<IMemoryCache>(),
+        sp.GetRequiredService<IOptions<FichajeOptions>>()));
+    builder.Services.AddSingleton<IRolesRepositorio, RolesSqlRepositorio>();
+    builder.Services.AddSingleton<IBitacoraRepositorio, BitacoraSqlRepositorio>();
+    builder.Services.AddSingleton<IHistorialUsuariosRepositorio, HistorialUsuariosSqlRepositorio>();
+    builder.Services.AddSingleton<IFichajesRepositorio, FichajesSqlRepositorio>();
+    builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSqlRepositorio>();
+    builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSqlRepositorio>();
+    builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSqlRepositorio>();
+    // Migra la base y siembra permisos, roles y el primer administrador antes de que arranque el resto
+    builder.Services.AddHostedService<InicializadorSql>();
+    // ConexionService (la pantalla de conectar la planilla) sigue registrado pero no hace nada con SQL
+    builder.Services.AddSingleton<FichajeApp.Api.Infrastructure.IInicializadorPlanilla, InicializadorNulo>();
+}
+else
+{
+    // Servicios de datos (Google Sheets). Decorator: la lista de empleados se cachea unos segundos
+    // (se invalida sola al escribir), porque cada pedido autenticado y cada fichaje la consultan.
+    builder.Services.AddSingleton<GoogleSheetsEmpleadosService>();
+    builder.Services.AddSingleton<IEmpleadosRepositorio>(sp => new CachedEmpleadosRepositorio(
+        sp.GetRequiredService<GoogleSheetsEmpleadosService>(),
+        sp.GetRequiredService<IMemoryCache>()));
+    builder.Services.AddSingleton<GoogleSheetsSitiosService>();
+    builder.Services.AddSingleton<ISitiosRepository>(sp => new CachedSitiosRepository(
+        sp.GetRequiredService<GoogleSheetsSitiosService>(),
+        sp.GetRequiredService<IMemoryCache>(),
+        sp.GetRequiredService<IOptions<FichajeOptions>>()));
+
+    // Repositorios de la administración
+    builder.Services.AddSingleton<IRolesRepositorio, RolesSheetsRepositorio>();
+    builder.Services.AddSingleton<IBitacoraRepositorio, BitacoraSheetsRepositorio>();
+    builder.Services.AddSingleton<IHistorialUsuariosRepositorio, HistorialUsuariosSheetsRepositorio>();
+    builder.Services.AddSingleton<IFichajesRepositorio, FichajesSheetsRepositorio>();
+    builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSheetsRepositorio>();
+    builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSheetsRepositorio>();
+    builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSheetsRepositorio>();
+}
 builder.Services.AddSingleton<ISitiosService, SitiosService>();
 builder.Services.AddSingleton<JwtService>();
-
-// Repositorios de la administración (detrás de interfaces: hoy Sheets, mañana una base de datos)
-builder.Services.AddSingleton<IRolesRepositorio, RolesSheetsRepositorio>();
-builder.Services.AddSingleton<IBitacoraRepositorio, BitacoraSheetsRepositorio>();
-builder.Services.AddSingleton<IHistorialUsuariosRepositorio, HistorialUsuariosSheetsRepositorio>();
-builder.Services.AddSingleton<IFichajesRepositorio, FichajesSheetsRepositorio>();
-builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSheetsRepositorio>();
-builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSheetsRepositorio>();
-builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSheetsRepositorio>();
 builder.Services.AddSingleton<IAlmacenFotos, AlmacenFotosEnDisco>();
 builder.Services.AddSingleton<IAlmacenPerfiles, AlmacenPerfilesEnDisco>();
 builder.Services.AddSingleton<LimpiezaFotos>();
@@ -90,16 +130,26 @@ builder.Services.AddSingleton<FeriadosService>();
 if (builder.Configuration.GetValue("Feriados:SincronizacionAutomatica", true))
     builder.Services.AddHostedService<FeriadosHostedService>();
 
-// Crea las pestañas y los datos iniciales de la administración al arrancar
-builder.Services.AddSingleton<InicializadorPlanilla>();
-builder.Services.AddSingleton<IInicializadorPlanilla>(sp => sp.GetRequiredService<InicializadorPlanilla>());
-builder.Services.AddHostedService(sp => sp.GetRequiredService<InicializadorPlanilla>());
+// Strategy: dónde se guardan los fichajes (SQL o Google Sheets). Con caché del "último tipo del día".
+if (usaSql)
+{
+    builder.Services.AddSingleton<FichajesSqlStorage>();
+    builder.Services.AddSingleton<IFichajeStorageStrategy>(sp => new CachedFichajeStorage(
+        sp.GetRequiredService<FichajesSqlStorage>(),
+        sp.GetRequiredService<IMemoryCache>()));
+}
+else
+{
+    // Crea las pestañas y los datos iniciales de la administración al arrancar
+    builder.Services.AddSingleton<InicializadorPlanilla>();
+    builder.Services.AddSingleton<IInicializadorPlanilla>(sp => sp.GetRequiredService<InicializadorPlanilla>());
+    builder.Services.AddHostedService(sp => sp.GetRequiredService<InicializadorPlanilla>());
 
-// Strategy: hoy Google Sheets. Para sumar otra, se registra otra implementación acá.
-builder.Services.AddSingleton<GoogleSheetsStorageStrategy>();
-builder.Services.AddSingleton<IFichajeStorageStrategy>(sp => new CachedFichajeStorage(
-    sp.GetRequiredService<GoogleSheetsStorageStrategy>(),
-    sp.GetRequiredService<IMemoryCache>()));
+    builder.Services.AddSingleton<GoogleSheetsStorageStrategy>();
+    builder.Services.AddSingleton<IFichajeStorageStrategy>(sp => new CachedFichajeStorage(
+        sp.GetRequiredService<GoogleSheetsStorageStrategy>(),
+        sp.GetRequiredService<IMemoryCache>()));
+}
 
 // Observer: se pueden registrar varios observers; todos se inyectan como IEnumerable<IFichajeObserver>
 builder.Services.AddSingleton<IFichajeObserver, LogFichajeObserver>();
@@ -216,7 +266,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-if (!app.Environment.IsEnvironment("Testing") && !app.Services.GetRequiredService<GoogleSheetsClient>().Configurado)
+// El código de activación es solo para conectar una planilla de Google: con base SQL no hay nada que conectar
+if (!usaSql && !app.Environment.IsEnvironment("Testing") && !app.Services.GetRequiredService<GoogleSheetsClient>().Configurado)
     app.Services.GetRequiredService<ConexionService>().AnunciarClave();
 
 app.Run();

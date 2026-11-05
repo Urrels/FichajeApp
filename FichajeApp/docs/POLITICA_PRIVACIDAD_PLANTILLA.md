@@ -30,11 +30,11 @@ Registrar la asistencia, verificar quién fichó, y calcular las horas trabajada
 Los supervisores y administradores de [EMPRESA DEL CLIENTE]. Las **fotos** las ve únicamente un supervisor.
 
 ### Dónde se guardan y por cuánto tiempo
-- Fichajes, datos de empleados y liquidaciones: en una **planilla de Google Sheets** de la empresa y en el servidor de la aplicación.
+- Fichajes, datos de empleados y liquidaciones: en una **base de datos SQL** del servidor de la aplicación (alojada en [PROVEEDOR Y REGIÓN, ej. Microsoft Azure]) con copias de seguridad automáticas. Si el cliente usa una planilla de Google Sheets, ahí.
 - Fotos de los fichajes: en el servidor de la aplicación, y **se borran automáticamente a los [90] días**.
 - Foto de perfil: en el servidor de la aplicación, **hasta que la persona o un administrador la quite**.
 - Los datos se transmiten cifrados (HTTPS).
-- Los datos de la planilla se conservan mientras dure la relación laboral y el plazo que exija la ley.
+- Los datos se conservan mientras dure la relación laboral y el plazo que exija la ley.
 
 ### Derechos
 Podés pedir a [EMPRESA DEL CLIENTE], a [EMAIL], acceder a tus datos, corregirlos o que se supriman cuando corresponda.
