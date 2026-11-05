@@ -336,6 +336,7 @@ public class Entorno
     public ConfiguracionFichajeFalso ConfigFichajeRepo { get; } = new();
     public AlmacenFotosFalso Fotos { get; } = new();
     public AlmacenPerfilesFalso Perfiles { get; } = new();
+    public SitiosAdminFalso SitiosAdmin { get; } = new();
     public StorageEnMemoria StorageFichajes { get; } = new();
     public RelojFalso Reloj { get; } = new();
     public ProveedorFeriadosFalso ProveedorFeriados { get; } = new();

@@ -59,6 +59,7 @@ if (usaSql)
         sp.GetRequiredService<EmpleadosSqlRepositorio>(),
         sp.GetRequiredService<IMemoryCache>()));
     builder.Services.AddSingleton<SitiosSqlRepositorio>();
+    builder.Services.AddSingleton<ISitiosAdminRepositorio>(sp => sp.GetRequiredService<SitiosSqlRepositorio>());
     builder.Services.AddSingleton<ISitiosRepository>(sp => new CachedSitiosRepository(
         sp.GetRequiredService<SitiosSqlRepositorio>(),
         sp.GetRequiredService<IMemoryCache>(),
@@ -89,6 +90,8 @@ else
         sp.GetRequiredService<IMemoryCache>(),
         sp.GetRequiredService<IOptions<FichajeOptions>>()));
 
+    builder.Services.AddSingleton<ISitiosAdminRepositorio, SitiosAdminNoDisponible>();
+
     // Repositorios de la administración
     builder.Services.AddSingleton<IRolesRepositorio, RolesSheetsRepositorio>();
     builder.Services.AddSingleton<IBitacoraRepositorio, BitacoraSheetsRepositorio>();
@@ -99,6 +102,7 @@ else
     builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSheetsRepositorio>();
 }
 builder.Services.AddSingleton<ISitiosService, SitiosService>();
+builder.Services.AddSingleton<SitiosAdminService>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddSingleton<IAlmacenFotos, AlmacenFotosEnDisco>();
 builder.Services.AddSingleton<IAlmacenPerfiles, AlmacenPerfilesEnDisco>();

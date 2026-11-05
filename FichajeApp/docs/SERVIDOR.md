@@ -43,9 +43,9 @@ Sin esa variable sigue funcionando con la planilla, como antes.
 - Azure SQL *serverless* se pausa solo cuando no se usa: la primera consulta después de un rato puede tardar unos segundos.
   La API reintenta la conexión sola (hasta ~1 minuto), pero el primer fichaje del día puede sentirse lento.
 - Con base SQL ya no existen la clave de activación ni la pantalla "Conectar mi planilla": la app entra directo al login.
-- **Lugares conocidos (tabla `Sitios`)**: todavía no hay pantalla para cargarlos. Se insertan con SQL, por ejemplo:
-  `INSERT INTO Sitios (Nombre, Latitud, Longitud, RadioMetros) VALUES (N'Sede central', -34.6037, -58.3816, 100);`
-  La lista se cachea unos segundos.
+- **Lugares conocidos (tabla `Sitios`)**: se cargan desde la app, en Administración → Lugares conocidos (hace falta el permiso
+  «Configurar fichaje»). Lo más cómodo es agregar cada lugar estando ahí: la app toma la ubicación. Un cambio se ve en el
+  próximo fichaje. Con la planilla de Google se siguen cargando en la pestaña «Sitios».
 - **Copia de seguridad**: en Azure SQL son automáticas (restauración a un momento dado, 7 días por defecto). Probá restaurar una vez.
 - Las **fotos** (de fichajes y de perfil) y las llaves de seguridad siguen en la carpeta `datos`, no en la base: necesitan disco persistente.
 - Para probar en tu máquina sin instalar nada: LocalDB (viene con Visual Studio):

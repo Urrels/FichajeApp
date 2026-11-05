@@ -68,3 +68,35 @@ public class ConfiguracionFichajeAdminController : AdminControllerBase
         return Ok(new { mensaje = "Configuración de fichaje guardada" });
     }
 }
+// Los lugares conocidos donde se puede fichar con "Ubicación libre" (nombre, punto en el mapa y radio en metros)
+[Route("api/admin/sitios")]
+[RequierePermiso(CatalogoPermisos.ConfigurarFichaje)]
+public class SitiosAdminController : AdminControllerBase
+{
+    private readonly SitiosAdminService _sitios;
+    public SitiosAdminController(SitiosAdminService sitios) => _sitios = sitios;
+
+    [HttpGet]
+    public async Task<IActionResult> Listar() => Ok(await _sitios.ListarAsync());
+
+    [HttpPost]
+    public async Task<IActionResult> Crear([FromBody] GuardarSitioRequest request)
+    {
+        var id = await _sitios.CrearAsync(Actor, request);
+        return Ok(new { id, mensaje = "Lugar guardado" });
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Actualizar(int id, [FromBody] GuardarSitioRequest request)
+    {
+        await _sitios.ActualizarAsync(Actor, id, request);
+        return Ok(new { mensaje = "Lugar guardado" });
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Eliminar(int id)
+    {
+        await _sitios.EliminarAsync(Actor, id);
+        return Ok(new { mensaje = "Lugar eliminado" });
+    }
+}

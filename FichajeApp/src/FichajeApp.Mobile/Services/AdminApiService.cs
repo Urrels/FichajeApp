@@ -175,6 +175,18 @@ public class FeriadoItem
     public string Texto => $"{Fecha:yyyy-MM-dd} · {Descripcion}{(EsOpcional ? " (opcional)" : "")}";
 }
 
+// Un lugar conocido donde se puede fichar con "Ubicación libre"
+public class SitioAdminItem
+{
+    public int Id { get; set; }
+    public string Nombre { get; set; } = string.Empty;
+    public double Latitud { get; set; }
+    public double Longitud { get; set; }
+    public double RadioMetros { get; set; }
+
+    public string Detalle => string.Create(CultureInfo.InvariantCulture, $"Radio {RadioMetros:0} m · {Latitud:0.00000}, {Longitud:0.00000}");
+}
+
 public static class Formato
 {
     private static readonly CultureInfo Ar = new("es-AR");
@@ -210,6 +222,14 @@ public class AdminApiService
         Pedir<ConfiguracionFichaje>(HttpMethod.Get, "admin/configuracion-fichaje");
     public Task<ResultadoConsulta<Respuesta>> GuardarConfiguracionFichaje(string ubicacion, string foto, string modo, int precisionMaxMetros) =>
         Pedir<Respuesta>(HttpMethod.Put, "admin/configuracion-fichaje", new { ubicacion, foto, modo, precisionMaxMetros });
+    // ---- Lugares conocidos ----
+    public Task<ResultadoConsulta<List<SitioAdminItem>>> ListarSitios() => Pedir<List<SitioAdminItem>>(HttpMethod.Get, "admin/sitios");
+    public Task<ResultadoConsulta<Respuesta>> CrearSitio(string nombre, double latitud, double longitud, double radioMetros) =>
+        Pedir<Respuesta>(HttpMethod.Post, "admin/sitios", new { nombre, latitud, longitud, radioMetros });
+    public Task<ResultadoConsulta<Respuesta>> ActualizarSitio(int id, string nombre, double latitud, double longitud, double radioMetros) =>
+        Pedir<Respuesta>(HttpMethod.Put, $"admin/sitios/{id}", new { nombre, latitud, longitud, radioMetros });
+    public Task<ResultadoConsulta<Respuesta>> EliminarSitio(int id) => Pedir<Respuesta>(HttpMethod.Delete, $"admin/sitios/{id}");
+
     public Task<ResultadoConsulta<List<RolResumen>>> ListarRolesParaAsignar() => Pedir<List<RolResumen>>(HttpMethod.Get, "admin/usuarios/roles");
     public Task<ResultadoConsulta<Respuesta>> CrearUsuario(string nombre, string email, string pin, List<int> rolIds) =>
         Pedir<Respuesta>(HttpMethod.Post, "admin/usuarios", new { nombreCompleto = nombre, email, pin, rolIds });

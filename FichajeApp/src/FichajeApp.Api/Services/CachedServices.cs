@@ -66,6 +66,10 @@ public class CachedEmpleadosRepositorio : IEmpleadosRepositorio
 public class CachedSitiosRepository : ISitiosRepository
 {
     private const string Clave = "sitios";
+
+    // Lo llama la administración al cambiar un lugar: el próximo fichaje ya lo ve
+    public static void Invalidar(IMemoryCache cache) => cache.Remove(Clave);
+
     private readonly ISitiosRepository _inner;
     private readonly IMemoryCache _cache;
     private readonly TimeSpan _ttl;
