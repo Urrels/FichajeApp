@@ -146,3 +146,11 @@ Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, mo
 - [ ] En Administración → Roles, quien edita un rol no puede sumarle permisos que él no tiene (sí puede quitar).
 - [ ] Si el administrador le cambia el rol a alguien (o le quita un permiso a su rol), la sesión abierta de esa persona se cierra en su próximo pedido y tiene que volver a entrar.
 - [ ] Dar de baja o bloquear a alguien le corta la sesión enseguida (sin esperar un minuto).
+
+## S. Ubicación siempre lista
+- [ ] Al abrir **Fichar** por primera vez, el teléfono pide el permiso de ubicación enseguida (no recién al tocar el botón). Elegir «Mientras la app está en uso».
+- [ ] Con la pantalla de Fichar abierta unos segundos, tocar el botón: la ubicación no hace esperar (con buena señal, instantáneo; adentro de un edificio, un par de segundos).
+- [ ] Mientras Fichar está a la vista aparece el ícono de ubicación arriba; al ir a otra pantalla o a la pantalla de inicio del teléfono, desaparece (la app no rastrea en segundo plano).
+- [ ] Volver a la app desde segundo plano retoma la ubicación sola.
+- [ ] Dejar la pantalla de Fichar abierta más de 10 minutos y tocar el botón igual ficha (con una espera corta si hace falta).
+- [ ] Con el GPS del teléfono apagado, fichar muestra «El GPS está apagado…».
