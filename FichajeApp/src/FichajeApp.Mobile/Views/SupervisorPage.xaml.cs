@@ -13,7 +13,7 @@ public partial class SupervisorPage : ContentPage
     private static readonly TimeSpan IntervaloActualizacion = TimeSpan.FromSeconds(30);
 
     // Entrada en verde y salida en ámbar (los mismos tonos que las etiquetas del kiosco)
-    private static readonly Color ColorEntrada = Color.FromArgb("#2E7D32");
+    private static readonly Color ColorEntrada = Color.FromArgb("#4E7A2F");
     private static readonly Color ColorSalida = Color.FromArgb("#B26A00");
 
     private readonly SupervisorViewModel _viewModel;
@@ -123,7 +123,7 @@ public partial class SupervisorPage : ContentPage
 
         if (_viewModel.HayRecorrido)
         {
-            var linea = new Polyline { StrokeColor = Colors.Blue, StrokeWidth = 4 };
+            var linea = new Polyline { StrokeColor = Color.FromArgb("#B5542B"), StrokeWidth = 4 };
             foreach (var f in items)
                 linea.Positions.Add(new Position(f.Latitud, f.Longitud));
             Mapa.Drawables.Add(linea);

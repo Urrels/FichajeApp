@@ -6,11 +6,24 @@
         x:Name="Raiz"
         Style="{StaticResource Tarjeta}"
         Margin="0,4"
-        Padding="14,12">
+        Padding="16,12">
+
+    <!-- Al tocar una fila, Android la pintaba de naranja fuerte: queda el color de la tarjeta con un borde de la marca -->
+    <VisualStateManager.VisualStateGroups>
+        <VisualStateGroup x:Name="CommonStates">
+            <VisualState x:Name="Normal" />
+            <VisualState x:Name="Selected">
+                <VisualState.Setters>
+                    <Setter Property="BackgroundColor" Value="{DynamicResource ColorSuperficie}" />
+                    <Setter Property="Stroke" Value="{DynamicResource ColorPrimario}" />
+                </VisualState.Setters>
+            </VisualState>
+        </VisualStateGroup>
+    </VisualStateManager.VisualStateGroups>
 
     <!-- Una fila de lista: avatar con iniciales (opcional), título, detalle y un texto a la derecha (importe, estado) -->
     <Grid ColumnDefinitions="Auto,*,Auto">
-        <ctl:AvatarUsuario Tamano="44" VerticalOptions="Center" Margin="0,0,14,0"
+        <ctl:AvatarUsuario Tamano="44" VerticalOptions="Center" Margin="0,0,16,0"
                              Nombre="{Binding Titulo, Source={x:Reference Raiz}}" EmpleadoId="{Binding EmpleadoId, Source={x:Reference Raiz}}"
                              IsVisible="{Binding ConAvatar, Source={x:Reference Raiz}}" />
         <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
@@ -20,7 +33,7 @@
                    IsVisible="{Binding TieneDetalle, Source={x:Reference Raiz}}" />
         </VerticalStackLayout>
         <Label Grid.Column="2" Text="{Binding Lateral, Source={x:Reference Raiz}}" FontSize="15" FontAttributes="Bold"
-               VerticalOptions="Center" TextColor="{DynamicResource ColorPrimario}" Margin="14,0,0,0"
+               VerticalOptions="Center" TextColor="{DynamicResource ColorPrimario}" Margin="16,0,0,0"
                IsVisible="{Binding TieneLateral, Source={x:Reference Raiz}}" />
     </Grid>
 </Border>

@@ -7,7 +7,7 @@
              Title="Supervisor"
              BackgroundColor="{DynamicResource ColorFondo}">
 
-    <Grid RowDefinitions="Auto,Auto,2*,Auto,3*" RowSpacing="8" Padding="12">
+    <Grid RowDefinitions="Auto,Auto,2*,Auto,3*" RowSpacing="8" Padding="16">
 
         <!-- Modo de consulta: el activo se ve relleno, los otros con borde -->
         <Grid Grid.Row="0" ColumnDefinitions="*,*,*" ColumnSpacing="8">
@@ -39,13 +39,13 @@
 
         <!-- Filtros: solo en Historial -->
         <VerticalStackLayout Grid.Row="1" Spacing="4" IsVisible="{Binding EsHistorial}">
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
-                <DatePicker Grid.Column="0" Date="{Binding Desde}" />
-                <DatePicker Grid.Column="1" Date="{Binding Hasta}" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Border Grid.Column="0" Style="{StaticResource Campo}"><DatePicker Date="{Binding Desde}" /></Border>
+                <Border Grid.Column="1" Style="{StaticResource Campo}"><DatePicker Date="{Binding Hasta}" /></Border>
             </Grid>
-            <Picker Title="Empleado"
+            <Border Style="{StaticResource Campo}"><Picker Title="Empleado"
                     ItemsSource="{Binding Empleados}"
-                    SelectedItem="{Binding EmpleadoSeleccionado}" />
+                    SelectedItem="{Binding EmpleadoSeleccionado}" /></Border>
             <HorizontalStackLayout Spacing="8">
                 <Switch IsToggled="{Binding UnirRecorrido}" />
                 <Label Text="Unir con línea (recorrido de una persona)" VerticalOptions="Center" />

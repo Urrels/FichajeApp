@@ -6,9 +6,11 @@
 
     <!-- Aviso que se queda fijo dentro de la pantalla: un problema recuperable, no una pantalla de error entera.
          El texto va centrado en el cartel: el ícono ocupa la columna izquierda y una columna vacía del mismo ancho
-         a la derecha mantiene el equilibrio. -->
-    <Grid ColumnDefinitions="26,*,26" ColumnSpacing="6">
+         a la derecha mantiene el equilibrio. Si el problema tiene una salida (abrir ajustes, reintentar) el botón va abajo. -->
+    <Grid ColumnDefinitions="26,*,26" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
         <Label x:Name="Icono" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" />
         <Label x:Name="Contenido" Grid.Column="1" FontSize="13" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Center" />
+        <Button x:Name="BotonAccion" Grid.Row="1" Grid.ColumnSpan="3" IsVisible="False" HorizontalOptions="Center"
+                FontSize="13" Padding="16,0" MinimumHeightRequest="40" Clicked="OnAccionClicked" />
     </Grid>
 </Border>

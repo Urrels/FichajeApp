@@ -2,8 +2,8 @@
   "nombre": "Cliente A",
   "apiBaseUrl": "https://fichaje-api-giselau-hpcue8fmf9czaqee.brazilsouth-01.azurewebsites.net/api",
   "colores": {
-    "primario": "#1B5E9B",
+    "primario": "#B5542B",
     "primarioTexto": "#FFFFFF",
-    "acento": "#F5A623"
+    "acento": "#E8A33D"
   }
 }

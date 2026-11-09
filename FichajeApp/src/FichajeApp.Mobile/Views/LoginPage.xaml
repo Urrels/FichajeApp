@@ -10,12 +10,14 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="{DynamicResource ColorFondo}">
 
+    <!-- Con pantalla chica o letra grande el formulario no entra: se puede deslizar para llegar al botón -->
+    <ScrollView>
     <Grid RowDefinitions="Auto,*">
 
         <!-- Cabecera con la identidad del cliente -->
         <VerticalStackLayout Grid.Row="0"
                              BackgroundColor="{DynamicResource ColorPrimario}"
-                             Padding="24,72,24,56"
+                             Padding="24,64,24,56"
                              Spacing="12">
             <!-- El logo se muestra redondo (círculo), también el que sube el administrador desde Apariencia.
                  Ajuste oculto: 5 toques seguidos permiten cambiar la dirección del servidor (ver OnLogoTapped) -->
@@ -91,4 +93,5 @@
             </VerticalStackLayout>
         </Border>
     </Grid>
+    </ScrollView>
 </ContentPage>

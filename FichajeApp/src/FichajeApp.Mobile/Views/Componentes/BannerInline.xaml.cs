@@ -9,8 +9,26 @@ public partial class BannerInline : Border
     public static readonly BindableProperty TextoProperty = BindableProperty.Create(nameof(Texto), typeof(string), typeof(BannerInline), string.Empty,
         propertyChanged: (b, _, nuevo) => ((BannerInline)b).Contenido.Text = nuevo as string);
 
+    // Botón opcional dentro del cartel (por ejemplo "Abrir ajustes" o "Reintentar"): solo se ve si tiene texto
+    public static readonly BindableProperty TextoAccionProperty = BindableProperty.Create(nameof(TextoAccion), typeof(string), typeof(BannerInline), null,
+        propertyChanged: (b, _, nuevo) => ((BannerInline)b).PintarAccion(nuevo as string));
+    public static readonly BindableProperty AccionCommandProperty = BindableProperty.Create(nameof(AccionCommand), typeof(System.Windows.Input.ICommand), typeof(BannerInline), null);
+
     public Severidad Severidad { get => (Severidad)GetValue(SeveridadProperty); set => SetValue(SeveridadProperty, value); }
     public string Texto { get => (string)GetValue(TextoProperty); set => SetValue(TextoProperty, value); }
+    public string? TextoAccion { get => (string?)GetValue(TextoAccionProperty); set => SetValue(TextoAccionProperty, value); }
+    public System.Windows.Input.ICommand? AccionCommand { get => (System.Windows.Input.ICommand?)GetValue(AccionCommandProperty); set => SetValue(AccionCommandProperty, value); }
+
+    private void OnAccionClicked(object? sender, EventArgs e)
+    {
+        if (AccionCommand?.CanExecute(null) == true) AccionCommand.Execute(null);
+    }
+
+    private void PintarAccion(string? texto)
+    {
+        BotonAccion.Text = texto;
+        BotonAccion.IsVisible = !string.IsNullOrWhiteSpace(texto);
+    }
 
     public BannerInline()
     {
@@ -23,10 +41,10 @@ public partial class BannerInline : Border
     {
         var (icono, fondo, borde, texto) = Severidad switch
         {
-            Severidad.Exito => ("✔", "#E8F5E9", "#2E7D32", "#1B5E20"),
-            Severidad.Aviso => ("⚠", "#FFF4E0", "#B26A00", "#7A4A00"),
-            Severidad.Error => ("✖", "#FDECEA", "#C62828", "#8E1B14"),
-            _ => ("ℹ", "#E8F0FE", "#1B5E9B", "#144670")
+            Severidad.Exito => ("✔", "#EEF3E2", "#4E7A2F", "#33501C"),
+            Severidad.Aviso => ("⚠", "#FFF1DC", "#B26A00", "#7A4A00"),
+            Severidad.Error => ("✖", "#FBE9E4", "#A8322D", "#6E1F1A"),
+            _ => ("ℹ", "#F6ECE0", "#8A5A2B", "#5C3A18")
         };
 
         Icono.Text = icono;
@@ -34,5 +52,8 @@ public partial class BannerInline : Border
         Contenido.TextColor = Color.FromArgb(texto);
         BackgroundColor = Color.FromArgb(fondo);
         Stroke = Color.FromArgb(borde);
+        // El botón lleva el tono del cartel: texto blanco sobre el color de la severidad
+        BotonAccion.BackgroundColor = Color.FromArgb(borde);
+        BotonAccion.TextColor = Colors.White;
     }
 }

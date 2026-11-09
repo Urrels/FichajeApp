@@ -9,11 +9,13 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="{DynamicResource ColorFondo}">
 
+    <!-- Con pantalla chica o letra grande no entra todo junto: se desliza en vez de pisarse -->
+    <ScrollView>
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- Cabecera: cliente, empleado y hora -->
         <Border x:Name="Cabecera" Grid.Row="0" StrokeThickness="0" BackgroundColor="{DynamicResource ColorPrimario}"
-                StrokeShape="RoundRectangle 0,0,32,32" Padding="24,56,24,28">
+                StrokeShape="RoundRectangle 0,0,32,32" Padding="24,40,24,24">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <VerticalStackLayout Spacing="2">
                 <Label Text="{DynamicResource NombreCliente}"
@@ -59,10 +61,10 @@
                             <Setter Property="Opacity" Value="0.55" />
                         </DataTrigger>
                     </Border.Triggers>
-                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="6" InputTransparent="True">
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8" InputTransparent="True">
                         <Label Text="{x:Static iconos:MaterialOutlined.Fingerprint}" FontFamily="MaterialOutlined" FontSize="60"
                                HorizontalOptions="Center" TextColor="{DynamicResource ColorPrimarioTexto}" />
-                        <Label x:Name="TextoBoton" Text="{Binding TextoBoton}" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center" LineBreakMode="WordWrap" MaximumWidthRequest="160"
+                        <Label x:Name="TextoBoton" Text="{Binding TextoBoton}" FontSize="20" FontAutoScalingEnabled="False" FontAttributes="Bold" HorizontalOptions="Center" LineBreakMode="WordWrap" MaximumWidthRequest="160"
                                HorizontalTextAlignment="Center" TextColor="{DynamicResource ColorPrimarioTexto}" />
                     </VerticalStackLayout>
                 </Border>
@@ -89,20 +91,21 @@
                    TextColor="{DynamicResource ColorTextoSuave}" />
         </VerticalStackLayout>
 
-        <VerticalStackLayout x:Name="Pie" Grid.Row="2" Margin="24,0,24,24" Spacing="10">
+        <VerticalStackLayout x:Name="Pie" Grid.Row="2" Margin="24,0,24,24" Spacing="12">
 
             <!-- Confirmación grande del fichaje registrado -->
             <Border IsVisible="{Binding ConfirmacionVisible}" Padding="20,18"
-                    BackgroundColor="#E8F5E9" Stroke="#2E7D32" StrokeShape="RoundRectangle 14">
+                    BackgroundColor="#EEF3E2" Stroke="#4E7A2F" StrokeShape="RoundRectangle 14">
                 <VerticalStackLayout Spacing="4">
-                    <Label Text="✓" FontSize="36" FontAttributes="Bold" TextColor="#2E7D32" HorizontalOptions="Center" />
+                    <Label Text="✓" FontSize="36" FontAttributes="Bold" TextColor="#4E7A2F" HorizontalOptions="Center" />
                     <Label Text="{Binding ConfirmacionTexto}" FontSize="18" FontAttributes="Bold"
-                           HorizontalTextAlignment="Center" TextColor="#1B5E20" />
+                           HorizontalTextAlignment="Center" TextColor="#33501C" />
                 </VerticalStackLayout>
             </Border>
 
             <!-- Error del último intento -->
-            <ctl:BannerInline Severidad="Error" Texto="{Binding Estado}" IsVisible="{Binding HayError}" />
+            <ctl:BannerInline Severidad="Error" Texto="{Binding Estado}" IsVisible="{Binding HayError}"
+                              TextoAccion="{Binding AccionTexto}" AccionCommand="{Binding AccionCommand}" />
 
             <!-- Avance ("Obteniendo ubicación…") -->
             <Border IsVisible="{Binding HayEstado}" Padding="16,12"
@@ -122,10 +125,11 @@
             <!-- Esta pantalla no tiene barra superior: el supervisor/administrador vuelve a su panel desde acá -->
             <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" x:Name="PanelButton" Text="Volver a mi panel" Clicked="OnVolverAlPanel" IsVisible="False" />
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                 <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" x:Name="PinButton" Text="Cambiar PIN" Clicked="OnCambiarPin" IsVisible="False" />
                 <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" Grid.Column="1" Text="Cerrar sesión" Clicked="OnCerrarSesion" />
             </Grid>
         </VerticalStackLayout>
     </Grid>
+    </ScrollView>
 </ContentPage>

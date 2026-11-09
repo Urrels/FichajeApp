@@ -22,8 +22,7 @@ public partial class ItemDeLista : Border
     public bool TieneLateral => !string.IsNullOrWhiteSpace(Lateral);
 
     // Las dos primeras letras de las dos primeras palabras
-    public string Iniciales => string.Concat((Titulo ?? string.Empty)
-        .Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    public string Iniciales => FichajeApp.Mobile.Services.Iniciales.De(Titulo);
 
     public ItemDeLista() => InitializeComponent();
 }

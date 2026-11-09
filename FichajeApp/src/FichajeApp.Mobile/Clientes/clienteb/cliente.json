@@ -2,8 +2,8 @@
   "nombre": "Cliente B",
   "apiBaseUrl": "https://api-clienteb.example.com/api",
   "colores": {
-    "primario": "#2E7D32",
+    "primario": "#8A6A2B",
     "primarioTexto": "#FFFFFF",
-    "acento": "#FF7043"
+    "acento": "#E8A33D"
   }
 }

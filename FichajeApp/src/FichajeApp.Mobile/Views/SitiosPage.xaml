@@ -6,7 +6,7 @@
              Title="Lugares conocidos"
              BackgroundColor="{DynamicResource ColorFondo}">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Padding="12" RowSpacing="8">
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Padding="16" RowSpacing="8">
 
         <Label Text="Los lugares donde se puede fichar sin dar explicaciones. Fuera de ellos, la persona tiene que escribir un motivo."
                Style="{StaticResource TextoAclaracion}" />

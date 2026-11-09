@@ -30,9 +30,9 @@ public class Feedback : IFeedback
     private static readonly TimeSpan Largo = TimeSpan.FromSeconds(6);
 
     // Colores de estado fijos (no cambian con la marca del cliente): el verde siempre es éxito y el rojo siempre es error
-    private static readonly Color Verde = Color.FromArgb("#2E7D32");
+    private static readonly Color Verde = Color.FromArgb("#4E7A2F");
     private static readonly Color Ambar = Color.FromArgb("#9A5B00");
-    private static readonly Color Rojo = Color.FromArgb("#C62828");
+    private static readonly Color Rojo = Color.FromArgb("#A8322D");
 
     public Task ExitoAsync(string texto) => MostrarAsync(texto, Verde, Corto);
     public Task AvisoAsync(string texto) => MostrarAsync(texto, Ambar, Largo);

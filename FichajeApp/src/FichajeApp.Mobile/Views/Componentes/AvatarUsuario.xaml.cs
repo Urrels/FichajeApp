@@ -50,8 +50,7 @@ public partial class AvatarUsuario : Grid
     }
 
     private void PintarIniciales() =>
-        IniciallesLabel.Text = string.Concat((Nombre ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            .Take(2).Select(p => char.ToUpperInvariant(p[0])));
+        IniciallesLabel.Text = FichajeApp.Mobile.Services.Iniciales.De(Nombre);
 
     private async Task CargarFotoAsync()
     {

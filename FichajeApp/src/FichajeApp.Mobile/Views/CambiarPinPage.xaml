@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
              x:Class="FichajeApp.Mobile.Views.CambiarPinPage"
-             Title="Cambiar PIN">
+             Title="Cambiar PIN"
+             BackgroundColor="{DynamicResource ColorFondo}">
 
-    <VerticalStackLayout Padding="30" Spacing="16" VerticalOptions="Center">
+    <VerticalStackLayout Padding="24" Spacing="16" VerticalOptions="Center">
 
-        <Label Text="Cambiar mi PIN" FontSize="22" HorizontalOptions="Center" />
+        <Label Text="Cambiar mi PIN" Style="{StaticResource TextoTitulo}" HorizontalOptions="Center" />
 
-        <Entry x:Name="ActualEntry" Placeholder="PIN actual" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
-        <Entry x:Name="NuevoEntry" Placeholder="PIN nuevo (4 dígitos)" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
-        <Entry x:Name="RepetirEntry" Placeholder="Repetí el PIN nuevo" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
+        <material:TextField x:Name="ActualEntry" Title="PIN actual" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
+        <material:TextField x:Name="NuevoEntry" Title="PIN nuevo (4 dígitos)" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
+        <material:TextField x:Name="RepetirEntry" Title="Repetí el PIN nuevo" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
 
         <Button x:Name="GuardarButton" Text="Guardar" Clicked="OnGuardar" />
         <ActivityIndicator x:Name="Espera" IsRunning="False" IsVisible="False" />
-        <Label x:Name="EstadoLabel" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+        <ctl:BannerInline x:Name="Aviso" Severidad="Error" IsVisible="False" />
     </VerticalStackLayout>
 </ContentPage>
