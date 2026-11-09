@@ -104,7 +104,8 @@
             </Border>
 
             <!-- Error del último intento -->
-            <ctl:BannerInline Severidad="Error" Texto="{Binding Estado}" IsVisible="{Binding HayError}" />
+            <ctl:BannerInline Severidad="Error" Texto="{Binding Estado}" IsVisible="{Binding HayError}"
+                              TextoAccion="{Binding AccionTexto}" AccionCommand="{Binding AccionCommand}" />
 
             <!-- Avance ("Obteniendo ubicación…") -->
             <Border IsVisible="{Binding HayEstado}" Padding="16,12"

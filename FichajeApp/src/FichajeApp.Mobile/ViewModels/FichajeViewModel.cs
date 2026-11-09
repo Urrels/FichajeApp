@@ -116,7 +116,16 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         catch { Estado = "No se pudo abrir Google Maps"; }
     }
 
+    // Cualquier cosa inesperada (el teléfono sin red a mitad de camino, un diálogo que se cierra solo) termina en un aviso
+    // claro con la salida que corresponda, y el botón nunca queda trabado en "procesando".
     public async Task FicharAsync()
+    {
+        try { await FicharPasosAsync(); }
+        catch (Exception ex) { Fallar(TextosDeError.DeExcepcion(ex)); }
+        finally { Procesando = false; }
+    }
+
+    private async Task FicharPasosAsync()
     {
         Procesando = true;
         MostrarMapa = false;
@@ -230,14 +239,44 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
     {
         HayError = false;
         ConfirmacionVisible = false;
+        AccionError = AccionDeError.Ninguna;
     }
 
-    // Un error se ve distinto a un mensaje de avance (banner rojo, no el mismo texto gris)
+    // Un error se ve distinto a un mensaje de avance (banner rojo, no el mismo texto gris) y, si tiene salida, trae el botón
     private void Fallar(string texto)
     {
         Estado = texto;
+        AccionError = AccionDeErrorExtensiones.Para(texto);
         HayError = true;
     }
+
+    private AccionDeError _accionError;
+
+    private AccionDeError AccionError
+    {
+        get => _accionError;
+        set
+        {
+            _accionError = value;
+            OnPropertyChanged(nameof(AccionTexto));
+        }
+    }
+
+    // Texto del botón del cartel de error ("Abrir ajustes", "Reintentar") o vacío si no hay nada que ofrecer
+    public string? AccionTexto => AccionError.Etiqueta();
+
+    public System.Windows.Input.ICommand AccionCommand => new Command(async () =>
+    {
+        switch (AccionError)
+        {
+            case AccionDeError.AbrirAjustes:
+                try { AppInfo.Current.ShowSettingsUI(); } catch { /* sin pantalla de ajustes: el texto ya explica el camino */ }
+                break;
+            case AccionDeError.Reintentar:
+                if (!Procesando) await FicharAsync();
+                break;
+        }
+    });
 
     // El fichaje es el momento clave de la app: una confirmación clara con el tipo y la hora, y una vibración corta
     private async Task MostrarConfirmacionAsync(string tipo)
