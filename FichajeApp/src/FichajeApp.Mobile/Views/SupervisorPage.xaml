@@ -7,7 +7,7 @@
              Title="Supervisor"
              BackgroundColor="{DynamicResource ColorFondo}">
 
-    <Grid RowDefinitions="Auto,Auto,2*,Auto,3*" RowSpacing="8" Padding="12">
+    <Grid RowDefinitions="Auto,Auto,2*,Auto,3*" RowSpacing="8" Padding="16">
 
         <!-- Modo de consulta: el activo se ve relleno, los otros con borde -->
         <Grid Grid.Row="0" ColumnDefinitions="*,*,*" ColumnSpacing="8">

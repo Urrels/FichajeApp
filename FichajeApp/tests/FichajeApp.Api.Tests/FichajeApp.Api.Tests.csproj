@@ -36,6 +36,7 @@
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\ColorHsv.cs" Link="Mobile\ColorHsv.cs" />
 
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\BuscadorDeUbicacion.cs" Link="Mobile\BuscadorDeUbicacion.cs" />
+    <Compile Include="..\..\src\FichajeApp.Mobile\Services\Iniciales.cs" Link="Mobile\Iniciales.cs" />
   </ItemGroup>
 
 </Project>

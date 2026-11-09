@@ -5,7 +5,30 @@
        x:Class="FichajeApp.Mobile.AppShell"
        Shell.BackgroundColor="{DynamicResource ColorPrimario}"
        Shell.ForegroundColor="{DynamicResource ColorPrimarioTexto}"
-       Shell.TitleColor="{DynamicResource ColorPrimarioTexto}">
+       Shell.TitleColor="{DynamicResource ColorPrimarioTexto}"
+       FlyoutBackgroundColor="{DynamicResource ColorSuperficie}">
+
+    <!-- Menú lateral en tonos cálidos: el ítem actual se marca con arena en vez del gris de la plantilla -->
+    <Shell.Resources>
+        <Style TargetType="Grid" Class="FlyoutItemLayoutStyle">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="Transparent" />
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState x:Name="Selected">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor" Value="#F3E3D2" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </Shell.Resources>
 
     <!-- El login no es una opción del menú -->
     <ShellContent Title="Iniciar sesión"
