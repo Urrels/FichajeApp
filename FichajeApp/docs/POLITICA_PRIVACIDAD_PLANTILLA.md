@@ -17,7 +17,7 @@
 ### Qué datos se recopilan
 - **Datos de la persona empleada:** nombre y apellido, email y un PIN (se guarda cifrado, nunca en texto).
 - **Fichajes:** fecha y hora de cada entrada y salida.
-- **Ubicación precisa** (GPS) al momento de fichar, si la empresa lo activó. Solo cuando la persona toca "Fichar"; la app no
+- **Ubicación precisa** (GPS) al momento de fichar, si la empresa lo activó. Se escucha solo mientras la pantalla de fichar está abierta y se guarda al registrar el fichaje; la app no
   sigue la ubicación en segundo plano.
 - **Foto de la cara** al fichar, si la empresa lo activó.
 - **Foto de perfil** (opcional): la carga la persona o un administrador para reconocerla en las listas de la app.
