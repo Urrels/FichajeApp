@@ -14,8 +14,16 @@ public static class ValidadorPin
     {
         if (string.IsNullOrWhiteSpace(pin) || pin.Length != Largo || !pin.All(char.IsDigit))
             return $"El PIN debe tener exactamente {Largo} dígitos.";
+        if (EsObvio(pin))
+            return "Ese PIN es demasiado fácil de adivinar (por ejemplo 1234 o 1111). Elegí otro.";
         return null;
     }
+
+    // Con solo 4 dígitos, los primeros que prueba cualquiera son los repetidos y las escaleras
+    private static bool EsObvio(string pin) =>
+        pin.Distinct().Count() == 1
+        || "0123456789".Contains(pin) || "9876543210".Contains(pin)
+        || pin is "1212" or "2580" or "1004" or "2000";
 }
 
 // Bitácora de acciones de seguridad y administración
@@ -172,26 +180,43 @@ public class GuardaAdministracion
     }
 }
 
-// Inicio de sesión con bloqueo por intentos fallidos (3), como en ingenieria_software.
+// Inicio de sesión con bloqueo TEMPORAL por intentos fallidos: tras 3 PIN incorrectos la cuenta espera 15 minutos y se
+// libera sola. Antes el bloqueo era permanente: cualquiera que supiera un mail podía dejar afuera a un administrador.
 // Se mantiene BCrypt para el PIN (el original usaba SHA-256 sin sal, más débil).
 public class LoginService
 {
     public const int MaxIntentos = 3;
+    public static readonly TimeSpan DuracionBloqueo = TimeSpan.FromMinutes(15);
+
+    // Hash de un PIN cualquiera: se verifica contra él cuando la cuenta no existe o está frenada, para que responder
+    // tarde lo mismo y no delate qué mails existen
+    private static readonly string HashDeRelleno = BCrypt.Net.BCrypt.HashPassword("relleno-no-usar", 11);
 
     private readonly IEmpleadosRepositorio _empleados;
     private readonly PermisosService _permisos;
     private readonly BitacoraService _bitacora;
     private readonly HistorialUsuariosService _historial;
     private readonly SesionesVigentes? _sesiones;
+    private readonly TimeProvider _tiempo;
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<int, (int Fallos, DateTimeOffset Desde, DateTimeOffset? BloqueadoHasta)> _intentos = new();
 
     public LoginService(IEmpleadosRepositorio empleados, PermisosService permisos, BitacoraService bitacora, HistorialUsuariosService historial,
-        SesionesVigentes? sesiones = null)
+        SesionesVigentes? sesiones = null, TimeProvider? tiempo = null)
     {
         _empleados = empleados;
         _permisos = permisos;
         _bitacora = bitacora;
         _historial = historial;
         _sesiones = sesiones;
+        _tiempo = tiempo ?? TimeProvider.System;
+    }
+
+    // Cuánto falta para que la cuenta vuelva a aceptar intentos (null si no está frenada)
+    public TimeSpan? EsperaRestante(int empleadoId)
+    {
+        if (!_intentos.TryGetValue(empleadoId, out var e) || e.BloqueadoHasta is not { } hasta) return null;
+        var falta = hasta - _tiempo.GetUtcNow();
+        return falta > TimeSpan.Zero ? falta : null;
     }
 
     public async Task<ResultadoLogin> AutenticarAsync(string? email, string? pin)
@@ -216,13 +241,21 @@ public class LoginService
     {
         // No se distingue "no existe" de "dado de baja": mismo mensaje y sin contar intentos
         if (empleado is null || !empleado.Activo)
+        {
+            BCrypt.Net.BCrypt.Verify(pin, HashDeRelleno);   // mismo tiempo de respuesta que con una cuenta real
             return new ResultadoLogin { Resultado = LoginResultado.CredencialesInvalidas };
+        }
 
-        if (empleado.Bloqueado)
+        // Frenada por intentos (temporal) o bloqueada a mano por un administrador: ni se mira el PIN
+        if (empleado.Bloqueado || EsperaRestante(empleado.Id) is not null)
+        {
+            BCrypt.Net.BCrypt.Verify(pin, HashDeRelleno);
             return new ResultadoLogin { Resultado = LoginResultado.UsuarioBloqueado };
+        }
 
         if (BCrypt.Net.BCrypt.Verify(pin, empleado.PinHash))
         {
+            _intentos.TryRemove(empleado.Id, out _);
             if (empleado.IntentosFallidos > 0)
             {
                 empleado.IntentosFallidos = 0;
@@ -234,20 +267,24 @@ public class LoginService
             return new ResultadoLogin { Resultado = LoginResultado.Exito, Empleado = empleado, Roles = roles, Permisos = permisos };
         }
 
-        empleado.IntentosFallidos++;
-        bool bloquear = empleado.IntentosFallidos >= MaxIntentos;
-        if (bloquear) empleado.Bloqueado = true;
-        await _empleados.ActualizarAsync(empleado);
+        var ahora = _tiempo.GetUtcNow();
+        var estado = _intentos.AddOrUpdate(empleado.Id,
+            _ => (1, ahora, null),
+            // los fallos viejos (de más de 15 minutos) no se acumulan
+            (_, previo) => ahora - previo.Desde > DuracionBloqueo ? (1, ahora, null) : (previo.Fallos + 1, previo.Desde, null));
+        bool bloquear = estado.Fallos >= MaxIntentos;
+        if (bloquear) _intentos[empleado.Id] = estado with { BloqueadoHasta = ahora + DuracionBloqueo };
 
         await _bitacora.RegistrarAsync(empleado.Email, "LOGIN_FALLIDO");
         if (bloquear)
         {
-            _sesiones?.Invalidar(empleado.Id);   // el bloqueo corta las sesiones abiertas enseguida
             await _bitacora.RegistrarAsync(empleado.Email, "USUARIO_BLOQUEADO");
-            await _historial.RegistrarAsync(empleado, "BLOQUEO", "sistema");
             return new ResultadoLogin { Resultado = LoginResultado.UsuarioBloqueado };
         }
 
         return new ResultadoLogin { Resultado = LoginResultado.CredencialesInvalidas };
     }
+
+    // El administrador desbloquea: también se libera la espera temporal
+    public void Liberar(int empleadoId) => _intentos.TryRemove(empleadoId, out _);
 }

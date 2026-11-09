@@ -41,10 +41,10 @@ public class EscaladaDeRolesTests
         var (e, _) = await ConGestorDeUsuarios();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            e.Usuarios.CrearAsync(Gestor, "Intruso", "intruso@test.com", "1234", new List<int> { e.IdRol("Administrador") }));
+            e.Usuarios.CrearAsync(Gestor, "Intruso", "intruso@test.com", "5827", new List<int> { e.IdRol("Administrador") }));
         Assert.DoesNotContain(e.Empleados.Datos, p => p.Email == "intruso@test.com");
 
-        var id = await e.Usuarios.CrearAsync(Gestor, "Nuevo", "nuevo@test.com", "1234", new List<int> { e.IdRol("Empleado") });
+        var id = await e.Usuarios.CrearAsync(Gestor, "Nuevo", "nuevo@test.com", "5827", new List<int> { e.IdRol("Empleado") });
         Assert.Equal(new[] { e.IdRol("Empleado") }, e.Roles.Asignaciones[id]);
     }
 
@@ -52,7 +52,7 @@ public class EscaladaDeRolesTests
     public async Task Tampoco_puede_quitarle_el_rol_Administrador_a_otro()
     {
         var (e, _) = await ConGestorDeUsuarios();
-        int otroAdmin = await e.Usuarios.CrearAsync(Admin, "Otro admin", "otro@test.com", "1234", new List<int> { e.IdRol("Administrador") });
+        int otroAdmin = await e.Usuarios.CrearAsync(Admin, "Otro admin", "otro@test.com", "5827", new List<int> { e.IdRol("Administrador") });
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             e.Usuarios.AsignarRolesAsync(Gestor, otroAdmin, new List<int> { e.IdRol("Empleado") }));

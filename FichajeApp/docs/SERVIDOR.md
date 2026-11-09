@@ -98,3 +98,11 @@ El volumen `datos` queda en Docker: respaldalo con `docker run --rm -v fichajeap
 
 > Ojo: `dotnet publish` copia `credentials/service-account.json` a la carpeta de salida. No subas esa carpeta a ningún lado.
 > La imagen de Docker **no** la incluye (`.dockerignore`).
+
+## Seguridad del inicio de sesión
+
+- 3 PIN incorrectos frenan la cuenta **15 minutos** (se libera sola; no queda marcada en la base). Un administrador puede seguir bloqueando una cuenta a mano.
+- El mensaje de error es el mismo exista o no el mail, y el servidor tarda lo mismo en responder.
+- Los PIN obvios (0000, 1234, 4321, 2580...) se rechazan al crear o cambiar un PIN.
+- La sesión de la cuenta de sucursal (kiosco) dura 14 días. Si se pierde el teléfono, dar de baja la cuenta corta la sesión enseguida.
+- Los pedidos tienen un tope de 1 MB y todas las respuestas llevan cabeceras de seguridad (HSTS fuera de desarrollo).

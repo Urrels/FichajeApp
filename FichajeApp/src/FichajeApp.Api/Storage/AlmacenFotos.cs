@@ -28,6 +28,10 @@ public static class ReglasFotos
         var coma = base64.IndexOf(',');
         if (base64.StartsWith("data:", StringComparison.OrdinalIgnoreCase) && coma >= 0) base64 = base64[(coma + 1)..];
 
+        // Antes de decodificar: base64 usa 4 caracteres por cada 3 bytes, así que un texto más largo ya no entra
+        if (base64.Length > TamanioMaximoBytes / 3 * 4 + 16)
+            throw new FormatException($"La foto es demasiado pesada (máximo {TamanioMaximoBytes / 1024} KB).");
+
         byte[] bytes;
         try { bytes = Convert.FromBase64String(base64.Trim()); }
         catch (FormatException) { throw new FormatException("La foto no es válida."); }

@@ -117,7 +117,7 @@ public class KioscoApiTests : IClassFixture<ApiFactory>
     }
 
     [Fact]
-    public async Task SoloLaCuentaDeLaSucursalUsaElKiosco_YSuSesionDuraUnMes()
+    public async Task SoloLaCuentaDeLaSucursalUsaElKiosco_YSuSesionDuraDosSemanas()
     {
         var (centro, tokenCentro) = await ClienteDe("centro@test.com", Entorno.PinKiosco);
         var (ana, tokenAna) = await ClienteDe("ana@test.com", Entorno.PinAna);
@@ -129,7 +129,7 @@ public class KioscoApiTests : IClassFixture<ApiFactory>
         Assert.Equal(HttpStatusCode.Forbidden, (await centro.GetAsync("/api/fichaje/estado")).StatusCode);
 
         var manejador = new JwtSecurityTokenHandler();
-        Assert.True(manejador.ReadJwtToken(tokenCentro).ValidTo > DateTime.UtcNow.AddDays(29));
+        Assert.True(manejador.ReadJwtToken(tokenCentro).ValidTo > DateTime.UtcNow.AddDays(13));
         Assert.True(manejador.ReadJwtToken(tokenAna).ValidTo < DateTime.UtcNow.AddHours(13));
     }
 

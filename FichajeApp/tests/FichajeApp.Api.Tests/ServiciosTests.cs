@@ -34,7 +34,7 @@ public class LoginTests
     }
 
     [Fact]
-    public async Task TresPinIncorrectos_BloqueanAlUsuario_AunConElPinCorrecto()
+    public async Task TresPinIncorrectos_FrenanAlUsuario_AunConElPinCorrecto()
     {
         var e = new Entorno();
 
@@ -43,10 +43,57 @@ public class LoginTests
         Assert.Equal(LoginResultado.UsuarioBloqueado, (await e.Login.AutenticarAsync("ana@test.com", "0000")).Resultado);
 
         Assert.Equal(LoginResultado.UsuarioBloqueado, (await e.Login.AutenticarAsync("ana@test.com", Entorno.PinAna)).Resultado);
-        Assert.True(e.Empleados.Datos.Single(x => x.Id == 2).Bloqueado);
         Assert.Contains(e.BitacoraRepo.Datos, b => b.Accion == "USUARIO_BLOQUEADO");
-        Assert.Contains(e.HistorialRepo.Datos, h => h.Tipo == "BLOQUEO" && h.EmpleadoId == 2);
     }
+
+    [Fact]
+    public async Task ElFrenoSeLevantaSoloALos15Minutos_YNoDejaAlUsuarioBloqueadoParaSiempre()
+    {
+        var e = new Entorno();
+        for (int i = 0; i < 3; i++) await e.Login.AutenticarAsync("ana@test.com", "0000");
+
+        e.Reloj.Ahora = e.Reloj.Ahora.AddMinutes(14);
+        Assert.Equal(LoginResultado.UsuarioBloqueado, (await e.Login.AutenticarAsync("ana@test.com", Entorno.PinAna)).Resultado);
+
+        e.Reloj.Ahora = e.Reloj.Ahora.AddMinutes(2);
+        Assert.Equal(LoginResultado.Exito, (await e.Login.AutenticarAsync("ana@test.com", Entorno.PinAna)).Resultado);
+        Assert.False(e.Empleados.Datos.Single(x => x.Id == 2).Bloqueado);   // nada quedó marcado en la base
+    }
+
+    [Fact]
+    public async Task LosFallosViejosNoSeAcumulan()
+    {
+        var e = new Entorno();
+        await e.Login.AutenticarAsync("ana@test.com", "0000");
+        await e.Login.AutenticarAsync("ana@test.com", "0000");
+
+        e.Reloj.Ahora = e.Reloj.Ahora.AddMinutes(20);
+        Assert.Equal(LoginResultado.CredencialesInvalidas, (await e.Login.AutenticarAsync("ana@test.com", "0000")).Resultado);
+        Assert.Equal(LoginResultado.Exito, (await e.Login.AutenticarAsync("ana@test.com", Entorno.PinAna)).Resultado);
+    }
+
+    [Fact]
+    public async Task FrenarAUnaCuentaNoAfectaALasDemas()
+    {
+        var e = new Entorno();
+        for (int i = 0; i < 3; i++) await e.Login.AutenticarAsync("ana@test.com", "0000");
+
+        Assert.Equal(LoginResultado.Exito, (await e.Login.AutenticarAsync("beto@test.com", Entorno.PinBeto)).Resultado);
+    }
+
+    [Theory]
+    [InlineData("0000")]
+    [InlineData("7777")]
+    [InlineData("1234")]
+    [InlineData("4321")]
+    [InlineData("2580")]
+    public void LosPinObviosSeRechazan(string pin) => Assert.NotNull(ValidadorPin.ObtenerError(pin));
+
+    [Theory]
+    [InlineData("5827")]
+    [InlineData("1357")]
+    [InlineData("9041")]
+    public void LosPinNoObviosSeAceptan(string pin) => Assert.Null(ValidadorPin.ObtenerError(pin));
 
     [Fact]
     public async Task UnLoginCorrecto_ReiniciaLosIntentos()
@@ -81,11 +128,12 @@ public class LoginTests
     }
 
     [Fact]
-    public async Task ElAdministradorDesbloquea_YElUsuarioVuelveAEntrar()
+    public async Task ElAdministradorDesbloqueaUnaCuentaBloqueadaAMano_YElUsuarioVuelveAEntrar()
     {
         var e = new Entorno();
-        for (int i = 0; i < 3; i++) await e.Login.AutenticarAsync("ana@test.com", "0000");
+        e.Empleados.Datos.Single(x => x.Id == 2).Bloqueado = true;
 
+        Assert.Equal(LoginResultado.UsuarioBloqueado, (await e.Login.AutenticarAsync("ana@test.com", Entorno.PinAna)).Resultado);
         await e.Usuarios.DesbloquearAsync("admin@test.com", 2);
 
         Assert.Equal(LoginResultado.Exito, (await e.Login.AutenticarAsync("ana@test.com", Entorno.PinAna)).Resultado);
@@ -145,9 +193,9 @@ public class UsuariosAdminTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => e.Usuarios.CrearAsync("a", "Nuevo", "nuevo@test.com", "12", roles));
         await Assert.ThrowsAsync<InvalidOperationException>(() => e.Usuarios.CrearAsync("a", "Nuevo", "nuevo@test.com", "abcd", roles));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => e.Usuarios.CrearAsync("a", "ana empleada", "otro@test.com", "1234", roles));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => e.Usuarios.CrearAsync("a", "Nuevo", "ANA@test.com", "1234", roles));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => e.Usuarios.CrearAsync("a", "Nuevo", "nuevo@test.com", "1234", new List<int>()));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => e.Usuarios.CrearAsync("a", "ana empleada", "otro@test.com", "5827", roles));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => e.Usuarios.CrearAsync("a", "Nuevo", "ANA@test.com", "5827", roles));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => e.Usuarios.CrearAsync("a", "Nuevo", "nuevo@test.com", "5827", new List<int>()));
     }
 
     [Fact]
@@ -155,12 +203,12 @@ public class UsuariosAdminTests
     {
         var e = new Entorno();
 
-        int id = await e.Usuarios.CrearAsync("admin@test.com", "Carla Nueva", "carla@test.com", "4321", new List<int> { e.IdRol("Empleado") });
+        int id = await e.Usuarios.CrearAsync("admin@test.com", "Carla Nueva", "carla@test.com", "5827", new List<int> { e.IdRol("Empleado") });
 
         var creado = e.Empleados.Datos.Single(x => x.Id == id);
-        Assert.NotEqual("4321", creado.PinHash);
-        Assert.True(BCrypt.Net.BCrypt.Verify("4321", creado.PinHash));
-        Assert.Equal(LoginResultado.Exito, (await e.Login.AutenticarAsync("carla@test.com", "4321")).Resultado);
+        Assert.NotEqual("5827", creado.PinHash);
+        Assert.True(BCrypt.Net.BCrypt.Verify("5827", creado.PinHash));
+        Assert.Equal(LoginResultado.Exito, (await e.Login.AutenticarAsync("carla@test.com", "5827")).Resultado);
         Assert.Contains(e.HistorialRepo.Datos, h => h.Tipo == "ALTA" && h.EmpleadoId == id);
         Assert.Contains(e.BitacoraRepo.Datos, b => b.Accion == "USUARIO_CREADO:Carla Nueva");
     }
@@ -184,10 +232,10 @@ public class UsuariosAdminTests
     {
         var e = new Entorno();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => e.Usuarios.CambiarPinPropioAsync(2, "9999", "5555"));
-        await e.Usuarios.CambiarPinPropioAsync(2, Entorno.PinAna, "5555");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => e.Usuarios.CambiarPinPropioAsync(2, "9999", "6139"));
+        await e.Usuarios.CambiarPinPropioAsync(2, Entorno.PinAna, "6139");
 
-        Assert.Equal(LoginResultado.Exito, (await e.Login.AutenticarAsync("ana@test.com", "5555")).Resultado);
+        Assert.Equal(LoginResultado.Exito, (await e.Login.AutenticarAsync("ana@test.com", "6139")).Resultado);
     }
 
     [Fact]

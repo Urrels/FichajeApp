@@ -11,6 +11,8 @@ namespace FichajeApp.Api.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
+    private const string MensajeCredenciales = "Email o PIN incorrecto. Después de 3 intentos fallidos hay que esperar 15 minutos.";
+
     private readonly LoginService _loginService;
     private readonly JwtService _jwtService;
 
@@ -29,16 +31,18 @@ public class AuthController : ControllerBase
 
         switch (resultado.Resultado)
         {
+            // Mismo mensaje que un PIN incorrecto: si dijera "bloqueado" delataría que ese mail existe
             case LoginResultado.UsuarioBloqueado:
-                return Unauthorized(new { mensaje = "Usuario bloqueado por intentos fallidos. Pedile a un administrador que lo desbloquee." });
+                return Unauthorized(new { mensaje = MensajeCredenciales });
 
             case LoginResultado.Exito:
                 var empleado = resultado.Empleado!;
                 return Ok(new LoginResponseDto
                 {
-                    // El teléfono de una sucursal queda abierto: su sesión dura un mes (la baja o el bloqueo la cortan igual)
+                    // El teléfono de una sucursal queda abierto: su sesión dura dos semanas (antes, un mes). Si se pierde el
+                    // teléfono, dar de baja la cuenta de la sucursal corta la sesión enseguida.
                     Token = _jwtService.GenerarToken(empleado, resultado.Roles, resultado.Permisos,
-                        CatalogoPermisos.EsSoloKiosco(resultado.Permisos) ? TimeSpan.FromDays(30) : null),
+                        CatalogoPermisos.EsSoloKiosco(resultado.Permisos) ? TimeSpan.FromDays(14) : null),
                     NombreCompleto = empleado.NombreCompleto,
                     EmpleadoId = empleado.Id,
                     Rol = resultado.Roles.FirstOrDefault() ?? "Empleado",
@@ -47,7 +51,7 @@ public class AuthController : ControllerBase
                 });
 
             default:
-                return Unauthorized(new { mensaje = "Email o PIN incorrecto" });
+                return Unauthorized(new { mensaje = MensajeCredenciales });
         }
     }
 }
