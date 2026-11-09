@@ -44,7 +44,7 @@ Las fotos de la prueba anterior quedan en `datos/fotos`; si querés borrarlas, b
 ## B. Usuarios y roles
 - [ ] Administración → Usuarios: crear dos empleados y un supervisor; el empleado entra y ve solo "Fichar".
 - [ ] El supervisor ve el panel de supervisor; el empleado no ve Administración.
-- [ ] 3 PIN incorrectos bloquean al usuario; el administrador lo desbloquea.
+- [ ] 3 PIN incorrectos frenan la cuenta 15 minutos (ni el PIN correcto entra) y el mensaje es el mismo que con un mail inexistente; pasado ese tiempo vuelve a entrar sola.
 - [ ] Cambiar mi PIN funciona y el viejo deja de servir.
 
 ## C. Fichaje personal
@@ -76,7 +76,7 @@ Las fotos de la prueba anterior quedan en `datos/fotos`; si querés borrarlas, b
 - [ ] Crear "Sucursal Centro" con el rol **Kiosco**; entrar con esa cuenta abre la pantalla de kiosco.
 - [ ] La lista muestra a los empleados con **Entrada** o **Salida**; la cuenta de la sucursal **no** aparece.
 - [ ] Tocar un nombre, PIN correcto (+ foto si corresponde): registra y cambia a Salida.
-- [ ] PIN incorrecto: avisa y **no** cierra la sesión del teléfono; 3 errores bloquean a ese empleado.
+- [ ] PIN incorrecto: avisa y **no** cierra la sesión del teléfono; 3 errores frenan a ese empleado 15 minutos.
 - [ ] Cerrar y abrir la app: sigue en el kiosco sin pedir login.
 - [ ] El fichaje queda en la planilla a nombre del empleado y con "Sucursal Centro" como lugar.
 

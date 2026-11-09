@@ -192,26 +192,50 @@ public class ApiIntegracionTests : IClassFixture<ApiFactory>
     }
 
     [Fact]
-    public async Task TresPinMalos_Bloquean_YElAdministradorDesbloquea()
+    public async Task TresPinMalos_FrenanLaCuenta15Minutos_SinDelatarQueExiste()
     {
         var fabrica = new ApiFactory();
         var cliente = fabrica.CreateClient();
 
-        for (int i = 0; i < 2; i++)
-            Assert.Equal(HttpStatusCode.Unauthorized,
-                (await cliente.PostAsJsonAsync("/api/auth/login", new { email = "ana@test.com", pin = "0000" })).StatusCode);
+        string? mensajeDeUnaCuentaReal = null;
+        for (int i = 0; i < 3; i++)
+        {
+            var r = await cliente.PostAsJsonAsync("/api/auth/login", new { email = "ana@test.com", pin = "0000" });
+            Assert.Equal(HttpStatusCode.Unauthorized, r.StatusCode);
+            mensajeDeUnaCuentaReal = await Mensaje(r);
+        }
 
-        var tercero = await cliente.PostAsJsonAsync("/api/auth/login", new { email = "ana@test.com", pin = "0000" });
-        Assert.Contains("bloqueado", await Mensaje(tercero));
+        // Frenada: ni el PIN correcto entra, y el mensaje es el mismo que para un mail que no existe
+        var correcto = await cliente.PostAsJsonAsync("/api/auth/login", new { email = "ana@test.com", pin = Entorno.PinAna });
+        Assert.Equal(HttpStatusCode.Unauthorized, correcto.StatusCode);
+        var inexistente = await cliente.PostAsJsonAsync("/api/auth/login", new { email = "nadie@test.com", pin = "0000" });
+        var mensajeFrenada = await Mensaje(correcto);
+        Assert.Equal(await Mensaje(inexistente), mensajeFrenada);
+        Assert.Equal(mensajeDeUnaCuentaReal, mensajeFrenada);
 
-        var admin = fabrica.CreateClient();
-        var login = await admin.PostAsJsonAsync("/api/auth/login", new { email = "admin@test.com", pin = Entorno.PinAdmin });
-        admin.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer",
-            (await login.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("token").GetString());
-        Assert.Equal(HttpStatusCode.OK, (await admin.PostAsync("/api/admin/usuarios/2/desbloquear", null)).StatusCode);
-
+        fabrica.Datos.Reloj.Ahora = fabrica.Datos.Reloj.Ahora.AddMinutes(16);
         Assert.Equal(HttpStatusCode.OK,
             (await cliente.PostAsJsonAsync("/api/auth/login", new { email = "ana@test.com", pin = Entorno.PinAna })).StatusCode);
+    }
+
+    [Fact]
+    public async Task TodasLasRespuestasLlevanCabecerasDeSeguridad()
+    {
+        var cliente = new ApiFactory().CreateClient();
+
+        var r = await cliente.GetAsync("/api/apariencia");
+
+        Assert.Equal("nosniff", r.Headers.GetValues("X-Content-Type-Options").Single());
+        Assert.Equal("DENY", r.Headers.GetValues("X-Frame-Options").Single());
+        Assert.Equal("no-referrer", r.Headers.GetValues("Referrer-Policy").Single());
+        Assert.Contains("frame-ancestors 'none'", r.Headers.GetValues("Content-Security-Policy").Single());
+    }
+
+    [Fact]
+    public void UnaFotoDemasiadoLargaSeRechazaAntesDeDecodificar()
+    {
+        var ex = Assert.Throws<FormatException>(() => FichajeApp.Api.Storage.ReglasFotos.Decodificar(new string('A', 2 * 1024 * 1024)));
+        Assert.Contains("pesada", ex.Message);
     }
 
     [Fact]

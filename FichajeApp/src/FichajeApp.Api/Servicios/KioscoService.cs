@@ -58,7 +58,7 @@ public class KioscoService
         switch (auth.Resultado)
         {
             case LoginResultado.UsuarioBloqueado:
-                return new ResultadoKiosco(false, "Usuario bloqueado por intentos fallidos. Pedile a un administrador que lo desbloquee.", "BLOQUEADO");
+                return new ResultadoKiosco(false, "Demasiados intentos con el PIN. Esperá 15 minutos o pedile a un administrador que revise tu usuario.", "BLOQUEADO");
             case LoginResultado.Exito:
                 break;
             default:

@@ -58,6 +58,7 @@ public class KioscoController : ControllerBase
 
     // No devuelve 401 ante un PIN incorrecto: la app lo tomaría como sesión vencida
     [HttpPost("fichaje")]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("kiosco")]
     public async Task<IActionResult> Fichar([FromBody] KioscoFichajeRequest request)
     {
         if (await SiNoEstaActivado() is { } desactivado) return desactivado;

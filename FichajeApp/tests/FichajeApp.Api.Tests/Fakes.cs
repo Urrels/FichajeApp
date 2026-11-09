@@ -378,7 +378,7 @@ public class Entorno
         Permisos = new PermisosService(Roles, Empleados);
         Guarda = new GuardaAdministracion(Roles, Permisos);
         Historial = new HistorialUsuariosService(HistorialRepo, Roles, Reloj);
-        Login = new LoginService(Empleados, Permisos, Bitacora, Historial);
+        Login = new LoginService(Empleados, Permisos, Bitacora, Historial, tiempo: Reloj);
         Usuarios = new UsuariosAdminService(Empleados, Roles, Fichajes, Historial, HistorialRepo, Guarda, Bitacora, Permisos);
         RolesServicio = new RolesService(Roles, Guarda, Bitacora, Permisos);
         Jornadas = new JornadasService(Fichajes, Empleados);

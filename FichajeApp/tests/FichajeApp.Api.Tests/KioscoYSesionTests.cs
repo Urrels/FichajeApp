@@ -69,7 +69,7 @@ public class SesionDelAdministradorPorHttpTests : IClassFixture<ApiFactory>
     {
         var (_, token) = await Login("centro@test.com", Entorno.PinKiosco);
 
-        Assert.True(token.ValidTo > DateTime.UtcNow.AddDays(29));
+        Assert.True(token.ValidTo > DateTime.UtcNow.AddDays(13));
     }
 }
 

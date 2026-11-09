@@ -473,7 +473,7 @@ public class InicializadorSqlTests
     public async Task En_una_base_vacia_siembra_permisos_roles_parametros_y_el_primer_administrador()
     {
         using var bd = new BaseSqlite();
-        var (inicializador, roles, empleados) = Armar(bd, Config(("Setup:AdminNombre", "Gisela"), ("Setup:AdminEmail", "gisela@x.com"), ("Setup:AdminPin", "1234")));
+        var (inicializador, roles, empleados) = Armar(bd, Config(("Setup:AdminNombre", "Gisela"), ("Setup:AdminEmail", "gisela@x.com"), ("Setup:AdminPin", "5827")));
 
         await inicializador.InicializarAsync();
 
@@ -481,7 +481,7 @@ public class InicializadorSqlTests
         Assert.Equal(CatalogoPermisos.RolesIniciales.Count(), (await roles.ListarRolesAsync()).Count);
 
         var admin = (await empleados.BuscarPorEmailAsync("gisela@x.com"))!;
-        Assert.True(BCrypt.Net.BCrypt.Verify("1234", admin.PinHash));
+        Assert.True(BCrypt.Net.BCrypt.Verify("5827", admin.PinHash));
 
         var rolAdmin = (await roles.ListarRolesAsync()).Single(r => r.Nombre == CatalogoPermisos.RolAdministrador);
         Assert.True(rolAdmin.Protegido);
@@ -498,7 +498,7 @@ public class InicializadorSqlTests
     public async Task Es_idempotente_y_no_crea_otro_administrador_si_ya_hay_empleados()
     {
         using var bd = new BaseSqlite();
-        var (inicializador, roles, empleados) = Armar(bd, Config(("Setup:AdminNombre", "Gisela"), ("Setup:AdminEmail", "gisela@x.com"), ("Setup:AdminPin", "1234")));
+        var (inicializador, roles, empleados) = Armar(bd, Config(("Setup:AdminNombre", "Gisela"), ("Setup:AdminEmail", "gisela@x.com"), ("Setup:AdminPin", "5827")));
 
         await inicializador.InicializarAsync();
         var permisos = (await roles.ListarPermisosAsync()).Count;

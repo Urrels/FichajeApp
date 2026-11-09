@@ -24,6 +24,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 ConfiguracionSegura.ExigirSecretoJwt(builder.Configuration, builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Testing"));
 
+// Ningún pedido de esta API necesita más de esto (la foto más grande son 400 KB y viaja en base64): un tope evita
+// que alguien con sesión mande cuerpos enormes para llenar la memoria
+builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestBodySize = 1024 * 1024);
+
 builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.Configure<FichajeOptions>(builder.Configuration.GetSection(FichajeOptions.Seccion));
@@ -50,7 +54,7 @@ if (usaSql)
 {
     // Azure SQL serverless se pausa solo: la primera conexión después de un rato puede fallar, por eso se reintenta
     builder.Services.AddDbContextFactory<FichajeDbContext>(o =>
-        o.UseSqlServer(cadenaSql, sql => sql.EnableRetryOnFailure(maxRetryCount: 6, maxRetryDelay: TimeSpan.FromSeconds(20), errorNumbersToAdd: null)));
+        o.UseSqlServer(cadenaSql, sql => sql.EnableRetryOnFailure(maxRetryCount: 10, maxRetryDelay: TimeSpan.FromSeconds(15), errorNumbersToAdd: null)));
 
     // Decorator: la lista de empleados se cachea unos segundos (se invalida sola al escribir),
     // porque cada pedido autenticado y cada fichaje la consultan.
@@ -233,6 +237,15 @@ builder.Services.AddRateLimiter(opciones =>
             Window = TimeSpan.FromMinutes(1),
             QueueLimit = 0
         }));
+    // El kiosco ficha a nombre de otras personas con su PIN: se limita por cuenta de sucursal e IP
+    opciones.AddPolicy("kiosco", contexto => RateLimitPartition.GetFixedWindowLimiter(
+        (contexto.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "-") + "|" + (contexto.Connection.RemoteIpAddress?.ToString() ?? "desconocida"),
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        }));
     opciones.OnRejected = async (contexto, token) =>
     {
         contexto.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
@@ -275,9 +288,23 @@ app.Use(async (contexto, siguiente) =>
     }
 });
 
+if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
+    app.UseHsts();
+
+// Cabeceras de seguridad en todas las respuestas (la API solo devuelve JSON e imágenes)
+app.Use(async (contexto, siguiente) =>
+{
+    var h = contexto.Response.Headers;
+    h["X-Content-Type-Options"] = "nosniff";
+    h["X-Frame-Options"] = "DENY";
+    h["Referrer-Policy"] = "no-referrer";
+    h["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'";
+    await siguiente();
+});
+
 app.UseHttpsRedirection();
-app.UseRateLimiter();
 app.UseAuthentication();
+app.UseRateLimiter();   // después de autenticar: el límite del kiosco cuenta por cuenta de sucursal
 app.UseAuthorization();
 app.MapControllers();
 
