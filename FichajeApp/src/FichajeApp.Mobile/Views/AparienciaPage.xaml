@@ -2,8 +2,10 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              x:Class="FichajeApp.Mobile.Views.AparienciaPage"
-             Title="Apariencia">
+             Title="Apariencia"
+             BackgroundColor="{DynamicResource ColorFondo}">
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="12">
@@ -12,7 +14,7 @@
                    FontSize="12" />
 
             <Label Text="Nombre que se muestra" FontAttributes="Bold" />
-            <Entry Text="{Binding Nombre}" MaxLength="40" Placeholder="Nombre de la empresa" />
+            <material:TextField Text="{Binding Nombre}" MaxLength="40" Title="Nombre de la empresa" />
 
             <Label Text="Colores" FontAttributes="Bold" Margin="0,6,0,0" />
             <Label Text="Tocá el color que querés cambiar y arrastrá. Toda la app cambia mientras elegís." FontSize="12" />

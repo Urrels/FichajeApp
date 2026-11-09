@@ -28,6 +28,14 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
+#if ANDROID
+        // Las fechas y listas nativas de Android traen una línea inferior: dentro del campo con borde (estilo "Campo") sobra
+        Microsoft.Maui.Handlers.DatePickerHandler.Mapper.AppendToMapping("SinLinea", (handler, _) =>
+            handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
+        Microsoft.Maui.Handlers.PickerHandler.Mapper.AppendToMapping("SinLinea", (handler, _) =>
+            handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
+#endif
+
         // NOTA: SessionManager NO se registra acá — es un Singleton clásico (GoF),
         // se accede vía SessionManager.Instance, no necesita el contenedor de DI.
         builder.Services.AddSingleton<IClienteService, ClienteService>();

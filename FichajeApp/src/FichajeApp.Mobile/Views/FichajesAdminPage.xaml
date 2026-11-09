@@ -10,8 +10,8 @@
 
         <VerticalStackLayout Spacing="8">
             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                <DatePicker Date="{Binding Desde}" />
-                <DatePicker Grid.Column="1" Date="{Binding Hasta}" />
+                <Border Style="{StaticResource Campo}"><DatePicker Date="{Binding Desde}" /></Border>
+                <Border Grid.Column="1" Style="{StaticResource Campo}"><DatePicker Date="{Binding Hasta}" /></Border>
             </Grid>
             <HorizontalStackLayout Spacing="8">
                 <Switch IsToggled="{Binding SoloVencidos}" />

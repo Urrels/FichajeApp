@@ -13,19 +13,26 @@ public partial class CambiarPinPage : ContentPage
         _api = api;
     }
 
+    private void Mostrar(string mensaje)
+    {
+        Aviso.Texto = mensaje;
+        Aviso.IsVisible = true;
+    }
+
     private async void OnGuardar(object sender, EventArgs e)
     {
         if (string.IsNullOrEmpty(ActualEntry.Text) || string.IsNullOrEmpty(NuevoEntry.Text))
         {
-            EstadoLabel.Text = "Completá el PIN actual y el nuevo.";
+            Mostrar("Completá el PIN actual y el nuevo.");
             return;
         }
         if (NuevoEntry.Text != RepetirEntry.Text)
         {
-            EstadoLabel.Text = "El PIN nuevo y su repetición no coinciden.";
+            Mostrar("El PIN nuevo y su repetición no coinciden.");
             return;
         }
 
+        Aviso.IsVisible = false;
         GuardarButton.IsEnabled = false;
         Espera.IsVisible = Espera.IsRunning = true;
         var r = await _api.CambiarMiPin(ActualEntry.Text, NuevoEntry.Text);
@@ -34,7 +41,7 @@ public partial class CambiarPinPage : ContentPage
 
         if (!r.Exito)
         {
-            EstadoLabel.Text = r.Mensaje;
+            Mostrar(r.Mensaje);
             return;
         }
 

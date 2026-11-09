@@ -111,6 +111,16 @@
         <Setter Property="Padding" Value="16" />
     </Style>
 
+    <!-- Campo con borde para los controles nativos de Android (fecha, lista desplegable): así quedan alineados con el resto -->
+    <Style x:Key="Campo" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{DynamicResource ColorSuperficie}" />
+        <Setter Property="Stroke" Value="{DynamicResource ColorBorde}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
     <!-- Botones: el principal es el de la marca (estilo implícito); estos son para lo secundario y lo destructivo -->
     <Style x:Key="BotonSecundario" TargetType="Button">
         <Setter Property="BackgroundColor" Value="Transparent" />
