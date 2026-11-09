@@ -1,6 +1,6 @@
 {
   "nombre": "Cliente A",
-  "apiBaseUrl": "https://api-clientea.example.com/api",
+  "apiBaseUrl": "https://fichaje-api-giselau-hpcue8fmf9czaqee.brazilsouth-01.azurewebsites.net/api",
   "colores": {
     "primario": "#1B5E9B",
     "primarioTexto": "#FFFFFF",
