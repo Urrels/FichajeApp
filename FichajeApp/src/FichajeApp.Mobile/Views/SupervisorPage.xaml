@@ -39,7 +39,7 @@
 
         <!-- Filtros: solo en Historial -->
         <VerticalStackLayout Grid.Row="1" Spacing="4" IsVisible="{Binding EsHistorial}">
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                 <DatePicker Grid.Column="0" Date="{Binding Desde}" />
                 <DatePicker Grid.Column="1" Date="{Binding Hasta}" />
             </Grid>

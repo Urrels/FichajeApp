@@ -21,6 +21,7 @@ public static class ColoresApp
 
     public static readonly IReadOnlyDictionary<string, string> Paleta = new Dictionary<string, string>
     {
+        ["Terracota"] = "#B5542B", ["Ladrillo"] = "#9C3D2A", ["Ocre"] = "#C9892B", ["Arena"] = "#D9B38C",
         ["Azul"] = "#1B5E9B", ["Azul oscuro"] = "#0D47A1", ["Celeste"] = "#0288D1",
         ["Verde"] = "#2E7D32", ["Verde azulado"] = "#00796B", ["Violeta"] = "#6A1B9A",
         ["Bordó"] = "#AD1457", ["Rojo"] = "#C62828", ["Naranja"] = "#E65100",
@@ -107,7 +108,7 @@ public class AparienciaViewModel : VmBase
     };
 
     // El borde marca cuál de los tres se está editando
-    private static readonly Color Marcado = Color.FromArgb("#212121"), NoMarcado = Color.FromArgb("#D6D6D6");
+    private static readonly Color Marcado = Color.FromArgb("#3B2A20"), NoMarcado = Color.FromArgb("#DCCFC2");
     public Color BordePrincipal => _editando == 0 ? Marcado : NoMarcado;
     public Color BordeTexto => _editando == 1 ? Marcado : NoMarcado;
     public Color BordeAcento => _editando == 2 ? Marcado : NoMarcado;

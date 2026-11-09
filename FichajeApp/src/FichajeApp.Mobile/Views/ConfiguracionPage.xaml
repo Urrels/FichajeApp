@@ -7,7 +7,7 @@
              BackgroundColor="{DynamicResource ColorFondo}">
 
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="10">
+        <VerticalStackLayout Padding="16" Spacing="12">
 
             <Label Text="Conectá tu planilla de Google" FontSize="20" FontAttributes="Bold" />
 
@@ -27,7 +27,7 @@
             </Border>
 
             <!-- Crear: solo hace falta tu cuenta de Google -->
-            <VerticalStackLayout IsVisible="{Binding CrearPlanilla}" Spacing="6">
+            <VerticalStackLayout IsVisible="{Binding CrearPlanilla}" Spacing="8">
                 <Label Text="Tu cuenta de Google" FontAttributes="Bold" Margin="0,6,0,0" />
                 <Label FontSize="11" Text="Ahí se te comparte la planilla (la vas a ver en Google Drive, en «Compartidos conmigo», y te llega un mail)." />
                 <Entry Text="{Binding EmailPropietario}" Placeholder="tuemail@gmail.com" Keyboard="Email" />
@@ -60,7 +60,7 @@
                 <Label Text="✔ Credencial cargada" IsVisible="{Binding CredencialesCargadas}" />
             </VerticalStackLayout>
 
-            <VerticalStackLayout IsVisible="{Binding PideLink}" Spacing="6">
+            <VerticalStackLayout IsVisible="{Binding PideLink}" Spacing="8">
                 <Label Text="Planilla" FontAttributes="Bold" Margin="0,8,0,0" />
                 <Entry Text="{Binding Planilla}" Placeholder="Link de tu planilla" Keyboard="Url" />
             </VerticalStackLayout>
@@ -71,7 +71,7 @@
             <Entry Text="{Binding EmailAdmin}" Placeholder="Email (si lo dejás vacío, usa tu cuenta de Google)" Keyboard="Email" />
             <Entry Text="{Binding PinAdmin}" Placeholder="PIN (4 dígitos)" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
 
-            <VerticalStackLayout IsVisible="{Binding PideClave}" Spacing="6">
+            <VerticalStackLayout IsVisible="{Binding PideClave}" Spacing="8">
                 <Label Text="Código de activación" FontAttributes="Bold" Margin="0,8,0,0" />
                 <Label Text="Te lo envía la empresa que te dio la app." FontSize="11" />
                 <Entry Text="{Binding Clave}" IsPassword="True" Placeholder="Código de activación" />

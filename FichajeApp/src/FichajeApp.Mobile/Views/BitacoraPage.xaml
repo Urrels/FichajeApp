@@ -10,7 +10,7 @@
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="12" RowSpacing="8">
 
-        <VerticalStackLayout Spacing="6">
+        <VerticalStackLayout Spacing="8">
             <material:TextField Title="Usuario (email)" Text="{Binding Usuario}" Keyboard="Email">
                 <material:TextField.Icon>
                     <FontImageSource FontFamily="MaterialOutlined" Glyph="{x:Static iconos:MaterialOutlined.Person}"
@@ -39,7 +39,7 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <VerticalStackLayout Grid.Row="3" Spacing="6">
+        <VerticalStackLayout Grid.Row="3" Spacing="8">
             <Button Text="Cargar más" Clicked="OnMas" IsVisible="{Binding HayMas}" />
             <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
         </VerticalStackLayout>

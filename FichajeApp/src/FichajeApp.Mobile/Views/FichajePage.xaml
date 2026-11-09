@@ -59,7 +59,7 @@
                             <Setter Property="Opacity" Value="0.55" />
                         </DataTrigger>
                     </Border.Triggers>
-                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="6" InputTransparent="True">
+                    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8" InputTransparent="True">
                         <Label Text="{x:Static iconos:MaterialOutlined.Fingerprint}" FontFamily="MaterialOutlined" FontSize="60"
                                HorizontalOptions="Center" TextColor="{DynamicResource ColorPrimarioTexto}" />
                         <Label x:Name="TextoBoton" Text="{Binding TextoBoton}" FontSize="22" FontAttributes="Bold" HorizontalOptions="Center" LineBreakMode="WordWrap" MaximumWidthRequest="160"
@@ -89,15 +89,15 @@
                    TextColor="{DynamicResource ColorTextoSuave}" />
         </VerticalStackLayout>
 
-        <VerticalStackLayout x:Name="Pie" Grid.Row="2" Margin="24,0,24,24" Spacing="10">
+        <VerticalStackLayout x:Name="Pie" Grid.Row="2" Margin="24,0,24,24" Spacing="12">
 
             <!-- Confirmación grande del fichaje registrado -->
             <Border IsVisible="{Binding ConfirmacionVisible}" Padding="20,18"
-                    BackgroundColor="#E8F5E9" Stroke="#2E7D32" StrokeShape="RoundRectangle 14">
+                    BackgroundColor="#EEF3E2" Stroke="#4E7A2F" StrokeShape="RoundRectangle 14">
                 <VerticalStackLayout Spacing="4">
-                    <Label Text="✓" FontSize="36" FontAttributes="Bold" TextColor="#2E7D32" HorizontalOptions="Center" />
+                    <Label Text="✓" FontSize="36" FontAttributes="Bold" TextColor="#4E7A2F" HorizontalOptions="Center" />
                     <Label Text="{Binding ConfirmacionTexto}" FontSize="18" FontAttributes="Bold"
-                           HorizontalTextAlignment="Center" TextColor="#1B5E20" />
+                           HorizontalTextAlignment="Center" TextColor="#33501C" />
                 </VerticalStackLayout>
             </Border>
 
@@ -122,7 +122,7 @@
             <!-- Esta pantalla no tiene barra superior: el supervisor/administrador vuelve a su panel desde acá -->
             <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" x:Name="PanelButton" Text="Volver a mi panel" Clicked="OnVolverAlPanel" IsVisible="False" />
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                 <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" x:Name="PinButton" Text="Cambiar PIN" Clicked="OnCambiarPin" IsVisible="False" />
                 <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" Grid.Column="1" Text="Cerrar sesión" Clicked="OnCerrarSesion" />
             </Grid>

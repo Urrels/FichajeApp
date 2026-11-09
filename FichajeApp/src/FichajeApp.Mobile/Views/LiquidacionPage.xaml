@@ -8,7 +8,7 @@
 
     <Grid RowDefinitions="Auto,Auto,*,Auto,Auto" Padding="12" RowSpacing="8">
 
-        <VerticalStackLayout Spacing="6">
+        <VerticalStackLayout Spacing="8">
             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                 <DatePicker Date="{Binding Desde}" />
                 <DatePicker Grid.Column="1" Date="{Binding Hasta}" />
@@ -31,7 +31,7 @@
 
         <Label Grid.Row="3" Text="{Binding Total}" FontSize="16" FontAttributes="Bold" HorizontalOptions="End" />
 
-        <VerticalStackLayout Grid.Row="4" Spacing="6">
+        <VerticalStackLayout Grid.Row="4" Spacing="8">
             <Button Text="Cerrar período" Clicked="OnCerrar" />
             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                 <Button Text="Cerradas" Clicked="OnCerradas" Style="{StaticResource BotonSecundario}" />

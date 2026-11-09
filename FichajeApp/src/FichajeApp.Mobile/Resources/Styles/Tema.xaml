@@ -17,17 +17,17 @@
     </Style>
 
     <!-- del cliente -->
-    <Color x:Key="ColorPrimario">#1B5E9B</Color>
+    <Color x:Key="ColorPrimario">#B5542B</Color>
     <Color x:Key="ColorPrimarioTexto">#FFFFFF</Color>
-    <Color x:Key="ColorAcento">#F5A623</Color>
-    <Color x:Key="ColorPrimarioOscuro">#144670</Color>
+    <Color x:Key="ColorAcento">#E8A33D</Color>
+    <Color x:Key="ColorPrimarioOscuro">#8A3E1F</Color>
 
     <!-- fijos -->
-    <Color x:Key="ColorFondo">#F4F6F8</Color>
-    <Color x:Key="ColorSuperficie">#FFFFFF</Color>
-    <Color x:Key="ColorTexto">#1C2530</Color>
-    <Color x:Key="ColorTextoSuave">#6B7785</Color>
-    <Color x:Key="ColorBorde">#DDE3EA</Color>
+    <Color x:Key="ColorFondo">#FAF5EE</Color>
+    <Color x:Key="ColorSuperficie">#FFFDF9</Color>
+    <Color x:Key="ColorTexto">#3B2A20</Color>
+    <Color x:Key="ColorTextoSuave">#7A6455</Color>
+    <Color x:Key="ColorBorde">#E6D9CA</Color>
 
     <!-- Estilos que reemplazan a los de la plantilla (Styles.xaml): usan el color del cliente y cambian en vivo.
          Se declaran acá, después de Styles.xaml, para que ganen. Los colores del estado "deshabilitado" van fijos
@@ -50,8 +50,8 @@
                     <VisualState x:Name="Normal" />
                     <VisualState x:Name="Disabled">
                         <VisualState.Setters>
-                            <Setter Property="TextColor" Value="#6E6E6E" />
-                            <Setter Property="BackgroundColor" Value="#C8C8C8" />
+                            <Setter Property="TextColor" Value="#7A6455" />
+                            <Setter Property="BackgroundColor" Value="#E0D3C4" />
                         </VisualState.Setters>
                     </VisualState>
                     <VisualState x:Name="PointerOver" />
@@ -122,7 +122,7 @@
     </Style>
 
     <Style x:Key="BotonPeligro" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="#C62828" />
+        <Setter Property="BackgroundColor" Value="#A8322D" />
         <Setter Property="TextColor" Value="White" />
         <Setter Property="CornerRadius" Value="12" />
         <Setter Property="MinimumHeightRequest" Value="44" />

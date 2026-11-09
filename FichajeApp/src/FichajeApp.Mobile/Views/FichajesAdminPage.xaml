@@ -8,7 +8,7 @@
 
     <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="12" RowSpacing="8">
 
-        <VerticalStackLayout Spacing="6">
+        <VerticalStackLayout Spacing="8">
             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                 <DatePicker Date="{Binding Desde}" />
                 <DatePicker Grid.Column="1" Date="{Binding Hasta}" />
@@ -33,7 +33,7 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <VerticalStackLayout Grid.Row="3" Spacing="6">
+        <VerticalStackLayout Grid.Row="3" Spacing="8">
             <Button Text="Cargar un fichaje que faltó" Clicked="OnManual" />
             <ActivityIndicator IsRunning="{Binding Procesando}" IsVisible="{Binding Procesando}" />
         </VerticalStackLayout>

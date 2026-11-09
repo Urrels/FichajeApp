@@ -23,10 +23,10 @@ public partial class BannerInline : Border
     {
         var (icono, fondo, borde, texto) = Severidad switch
         {
-            Severidad.Exito => ("✔", "#E8F5E9", "#2E7D32", "#1B5E20"),
-            Severidad.Aviso => ("⚠", "#FFF4E0", "#B26A00", "#7A4A00"),
-            Severidad.Error => ("✖", "#FDECEA", "#C62828", "#8E1B14"),
-            _ => ("ℹ", "#E8F0FE", "#1B5E9B", "#144670")
+            Severidad.Exito => ("✔", "#EEF3E2", "#4E7A2F", "#33501C"),
+            Severidad.Aviso => ("⚠", "#FFF1DC", "#B26A00", "#7A4A00"),
+            Severidad.Error => ("✖", "#FBE9E4", "#A8322D", "#6E1F1A"),
+            _ => ("ℹ", "#F6ECE0", "#8A5A2B", "#5C3A18")
         };
 
         Icono.Text = icono;

@@ -18,8 +18,8 @@
                     <Label FontSize="13" Text="Te lo envía la empresa que te dio la app (por WhatsApp, mail o mensaje), junto con el aviso de que tu servidor está listo." />
                     <Label FontSize="13" Text="Si todavía no lo recibiste, pedíselo y escribilo tal cual: distingue mayúsculas de minúsculas." />
                     <Label FontSize="12" Text="Ejemplo de mensaje que podés mandar:" />
-                    <Border Padding="10" StrokeShape="RoundRectangle 8" BackgroundColor="#EEEEEE" Stroke="Transparent">
-                        <Label FontSize="12" TextColor="#212121" Text="Hola, ya instalé la app. ¿Me pasás el código de activación para conectar mi planilla de Google?" />
+                    <Border Padding="12" StrokeShape="RoundRectangle 8" BackgroundColor="#F1E8DC" Stroke="Transparent">
+                        <Label FontSize="12" TextColor="#3B2A20" Text="Hola, ya instalé la app. ¿Me pasás el código de activación para conectar mi planilla de Google?" />
                     </Border>
                 </VerticalStackLayout>
             </Border>
