@@ -61,4 +61,7 @@
                   FlyoutItemIsVisible="False"
                   ContentTemplate="{DataTemplate views:AdminPage}" />
 
+    <!-- Centro de notificaciones: solo con sesion iniciada (ver AppShell.xaml.cs) -->
+    <MenuItem x:Name="NotifItem" Text="Notificaciones" Clicked="OnNotificaciones" Shell.FlyoutItemIsVisible="False" />
+
 </Shell>

@@ -75,6 +75,28 @@ public class AuthService
         }
     }
 
+    // "Olvide mi PIN": pide el codigo por mail y despues lo canjea por un PIN nuevo (no hace falta sesion)
+    public Task<(bool exito, string mensaje)> SolicitarCodigoAsync(string email) =>
+        PostSinSesionAsync("auth/olvide-pin", new { email });
+
+    public Task<(bool exito, string mensaje)> RestablecerPinAsync(string email, string codigo, string pinNuevo) =>
+        PostSinSesionAsync("auth/restablecer-pin", new { email, codigo, pinNuevo });
+
+    private async Task<(bool exito, string mensaje)> PostSinSesionAsync(string ruta, object cuerpo)
+    {
+        try
+        {
+            using var respuesta = await _httpClient.PostAsJsonAsync($"{_clientes.BaseUrl}/{ruta}", cuerpo);
+            Dictionary<string, string>? datos = null;
+            try { datos = await respuesta.Content.ReadFromJsonAsync<Dictionary<string, string>>(); } catch { }
+            var mensaje = datos?.GetValueOrDefault("mensaje");
+            if (respuesta.IsSuccessStatusCode) return (true, mensaje ?? "Listo");
+            if ((int)respuesta.StatusCode == 429) return (false, "Demasiados intentos. Esper" + (char)0xE1 + " un minuto y volv" + (char)0xE9 + " a probar.");
+            return (false, mensaje ?? TextosDeError.TiempoAgotado);
+        }
+        catch (Exception ex) { return (false, TextosDeError.DeExcepcion(ex)); }
+    }
+
     public async Task<bool> RestaurarSesionAsync()
     {
         var token = await SecureStorage.Default.GetAsync(TokenKey);

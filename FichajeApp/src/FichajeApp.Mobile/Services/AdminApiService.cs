@@ -310,6 +310,12 @@ public class AdminApiService
     public Task<ResultadoConsulta<List<ValorHoraItem>>> ValoresHora() => Pedir<List<ValorHoraItem>>(HttpMethod.Get, "admin/liquidacion/valor-hora");
     public Task<ResultadoConsulta<Respuesta>> GuardarValorHora(int empleadoId, decimal valor, DateTime vigenteDesde) =>
         Pedir<Respuesta>(HttpMethod.Put, "admin/liquidacion/valor-hora", new { empleadoId, valor, vigenteDesde });
+    public Task<ResultadoConsulta<NotificacionesRespuesta>> Notificaciones() =>
+        Pedir<NotificacionesRespuesta>(HttpMethod.Get, "notificaciones");
+    public Task<ResultadoConsulta<NotificacionesRespuesta>> CantidadDeNotificaciones() =>
+        Pedir<NotificacionesRespuesta>(HttpMethod.Get, "notificaciones/cantidad");
+    public Task<ResultadoConsulta<Respuesta>> LeerNotificaciones() =>
+        Pedir<Respuesta>(HttpMethod.Post, "notificaciones/leer-todas");
     public Task<ResultadoConsulta<List<HorarioDia>>> HorarioDe(int empleadoId) =>
         Pedir<List<HorarioDia>>(HttpMethod.Get, $"admin/liquidacion/horario/{empleadoId}");
     public Task<ResultadoConsulta<Respuesta>> GuardarHorario(int empleadoId, List<HorarioDia> dias) =>
@@ -448,4 +454,22 @@ public class HorarioDia
     public int Dia { get; set; }
     public string Entrada { get; set; } = "08:00";
     public string Salida { get; set; } = "16:00";
+}
+
+public class NotificacionItem
+{
+    public int Id { get; set; }
+    public string Titulo { get; set; } = string.Empty;
+    public string Mensaje { get; set; } = string.Empty;
+    public DateTime Fecha { get; set; }
+    public bool Leida { get; set; }
+    public string FechaTexto => Fecha.ToString("dd/MM HH:mm");
+    // Las no leídas se ven en negrita
+    public FontAttributes Peso => Leida ? FontAttributes.None : FontAttributes.Bold;
+}
+
+public class NotificacionesRespuesta
+{
+    public int NoLeidas { get; set; }
+    public List<NotificacionItem> Items { get; set; } = new();
 }

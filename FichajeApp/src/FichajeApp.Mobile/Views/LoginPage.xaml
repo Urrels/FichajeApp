@@ -89,6 +89,11 @@
                         Clicked="OnHuellaClicked"
                         IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
 
+                <Button Text="Olvidé mi PIN" Clicked="OnOlvidePinClicked"
+                        BackgroundColor="Transparent"
+                        TextColor="{DynamicResource ColorTextoSuave}"
+                        FontSize="13" />
+
                 <ActivityIndicator IsRunning="{Binding Procesando}"
                                    IsVisible="{Binding Procesando}"
                                    Color="{DynamicResource ColorPrimario}" />

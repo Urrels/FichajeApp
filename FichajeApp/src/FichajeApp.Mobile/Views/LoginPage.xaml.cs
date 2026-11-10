@@ -108,6 +108,8 @@ public partial class LoginPage : ContentPage
     // Tocar "Listo" en el teclado entra, igual que el botón
     private async void OnPinCompleted(object sender, EventArgs e) => await _viewModel.LoginAsync();
 
+    private async void OnOlvidePinClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(OlvidePinPage));
+
     private async void OnHuellaClicked(object sender, EventArgs e) => await _viewModel.LoginConHuellaAsync();
 
     private async void OnLoginClicked(object sender, EventArgs e)

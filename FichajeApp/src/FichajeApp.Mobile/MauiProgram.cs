@@ -74,6 +74,8 @@ public static class MauiProgram
         builder.Services.AddTransient<UsuariosPage>();
         builder.Services.AddTransient<UsuarioNuevoPage>();
         builder.Services.AddTransient<HorarioPage>();
+        builder.Services.AddTransient<NotificacionesPage>();
+        builder.Services.AddTransient<OlvidePinPage>();
         builder.Services.AddTransient<SitiosPage>();
         builder.Services.AddTransient<RolesPage>();
         builder.Services.AddTransient<BitacoraPage>();
