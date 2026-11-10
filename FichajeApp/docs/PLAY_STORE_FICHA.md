@@ -20,7 +20,7 @@ Límites de Play: nombre 30 caracteres, descripción corta 80, descripción larg
 
 ## Datos básicos
 
-- **Nombre** (30): `[Nombre del cliente] Fichaje`
+- **Nombre** (30): `HoraTrack`
 - **Tipo**: App · **Gratis** · Categoría: *Productividad* (o *Negocios*)
 - **Correo de contacto**: `[EMAIL]`
 - **Política de privacidad**: `[URL pública]`
