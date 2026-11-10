@@ -72,6 +72,7 @@ public static class MauiProgram
         builder.Services.AddTransient<AparienciaViewModel>();
         builder.Services.AddTransient<AdminPage>();
         builder.Services.AddTransient<UsuariosPage>();
+        builder.Services.AddTransient<UsuarioNuevoPage>();
         builder.Services.AddTransient<SitiosPage>();
         builder.Services.AddTransient<RolesPage>();
         builder.Services.AddTransient<BitacoraPage>();

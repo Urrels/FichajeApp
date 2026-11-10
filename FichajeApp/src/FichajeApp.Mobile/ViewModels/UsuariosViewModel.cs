@@ -35,23 +35,8 @@ public class UsuariosViewModel : VmBase
         Estado = r.Datos.Total == 0 ? "No hay usuarios" : $"{r.Datos.Total} usuario(s)";
     });
 
-    public async Task NuevoAsync()
-    {
-        var nombre = await Dialogos.Texto("Nuevo usuario", "Nombre completo (es único: los fichajes se identifican por nombre)", maximo: 80);
-        if (string.IsNullOrEmpty(nombre)) return;
-        var email = await Dialogos.Texto("Nuevo usuario", "Email", maximo: 100, teclado: Keyboard.Email);
-        if (string.IsNullOrEmpty(email)) return;
-        var pin = await Dialogos.Texto("Nuevo usuario", "PIN de 4 dígitos", maximo: 4, teclado: Keyboard.Numeric);
-        if (string.IsNullOrEmpty(pin)) return;
-
-        var roles = await ObtenerRolesAsync();
-        if (roles is null) return;
-        var porDefecto = roles.Where(r => r.Nombre == "Empleado").Select(r => r.Id);
-        var elegidos = await Dialogos.ElegirVarios("Roles", roles.Select(r => (r.Id, r.Nombre)).ToList(), porDefecto);
-        if (elegidos is null) return;
-
-        await Ejecutar(() => _api.CrearUsuario(nombre, email, pin, elegidos), "Usuario creado");
-    }
+    // Pantalla propia con vista previa; al volver, UsuariosPage.OnAppearing recarga la lista
+    public Task NuevoAsync() => Shell.Current.GoToAsync(nameof(Views.UsuarioNuevoPage));
 
     public async Task AccionesAsync(UsuarioAdmin usuario)
     {
