@@ -110,6 +110,35 @@ namespace FichajeApp.Api.Persistencia.Migraciones
                     b.ToTable("ConfigFichaje", (string)null);
                 });
 
+            modelBuilder.Entity("FichajeApp.Api.Persistencia.DispositivoPushFila", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Actualizado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmpleadoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpleadoId");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("DispositivosPush", (string)null);
+                });
+
             modelBuilder.Entity("FichajeApp.Api.Persistencia.EmpleadoFila", b =>
                 {
                     b.Property<int>("Id")

@@ -104,6 +104,12 @@
 	  <None Remove="Platforms\Android\Resources\xml\network_security_config.xml" />
 	</ItemGroup>
 
+	<!-- Notificaciones push: el archivo google-services.json se baja de la consola de Firebase (Configuración del proyecto → tu app Android)
+	     y se deja en esta carpeta. No va al repositorio (ver .gitignore). Sin él la app compila y funciona, solo que sin push. -->
+	<ItemGroup Condition="Exists('google-services.json')">
+		<GoogleServicesJson Include="google-services.json" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="15.0.1" />
 		<PackageReference Include="CommunityToolkit.Maui.Camera" Version="6.1.0" />
@@ -112,6 +118,7 @@
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 			<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
 		<PackageReference Include="Plugin.Fingerprint" Version="2.1.5" />
+		<PackageReference Include="Xamarin.Firebase.Messaging" Version="125.1.3" />
 		<!-- Detección de caras en el teléfono (ML Kit, modelo incluido en la app: funciona sin internet) para validar la foto de perfil -->
 		<PackageReference Include="Xamarin.Google.MLKit.FaceDetection" Version="116.1.7.9" />
 		<!-- ML Kit arrastra versiones viejas de estas dos; con la 1.9 de Fragment que ya usa MAUI aparecen clases duplicadas -->

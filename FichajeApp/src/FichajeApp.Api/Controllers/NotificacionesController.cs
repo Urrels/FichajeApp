@@ -13,8 +13,31 @@ namespace FichajeApp.Api.Controllers;
 public class NotificacionesController : ControllerBase
 {
     private readonly NotificacionesService _notificaciones;
+    private readonly PushService _push;
 
-    public NotificacionesController(NotificacionesService notificaciones) => _notificaciones = notificaciones;
+    public NotificacionesController(NotificacionesService notificaciones, PushService push)
+    {
+        _notificaciones = notificaciones;
+        _push = push;
+    }
+
+    public record DispositivoRequest(string? Token);
+
+    // El telefono avisa su token de Firebase al iniciar sesion; asi el servidor sabe a donde mandar los push
+    [HttpPost("dispositivo")]
+    public async Task<IActionResult> RegistrarDispositivo([FromBody] DispositivoRequest r)
+    {
+        await _push.RegistrarAsync(MiId, r.Token);
+        return Ok(new { mensaje = "Listo", pushActivo = _push.Configurado });
+    }
+
+    // Al cerrar sesion: ese telefono deja de recibir los avisos de esta cuenta
+    [HttpPost("dispositivo/quitar")]
+    public async Task<IActionResult> QuitarDispositivo([FromBody] DispositivoRequest r)
+    {
+        await _push.QuitarAsync(r.Token);
+        return Ok(new { mensaje = "Listo" });
+    }
 
     private int MiId => int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 

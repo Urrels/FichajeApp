@@ -136,3 +136,18 @@ hay que pedir uno nuevo. Cada código vale 15 minutos, se puede pedir uno por mi
 
 El menú lateral tiene **Notificaciones** (con el número de avisos sin leer). Hoy se generan al darte de alta, cuando cambia tu PIN y cuando
 cambia tu horario. Necesitan la base SQL (con la planilla de Google no se guardan). No son notificaciones "push": se ven al abrir la app.
+
+## Notificaciones push (Firebase)
+
+Cada aviso del centro de notificaciones (bienvenida, cambio de PIN, cambio de horario) también llega como **push** al teléfono, aunque la app esté cerrada.
+Además, si la empresa activó el recorrido y el registro se cortó con la jornada abierta (por ejemplo, se reinició el teléfono), se le manda un push
+«Retomá el registro de tu recorrido». Usa **Firebase Cloud Messaging** (gratis). Sin configurarlo, la app funciona igual pero sin push.
+
+1. En `console.firebase.google.com` crear un proyecto (se puede desactivar Google Analytics).
+2. Dentro del proyecto: **Agregar app → Android**, con el nombre de paquete **`io.github.urrels.fichaje`**. Descargar **`google-services.json`** y dejarlo en
+   `src/FichajeApp.Mobile/` (no va al repositorio). Hay que armar el AAB **después** de dejarlo ahí.
+3. En **Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada**: baja un archivo JSON. **Es una clave secreta**: no se sube a GitHub ni se pega en chats.
+4. En Azure (App Service → Variables de entorno) crear `Push__CredencialesJson` y pegar como valor **todo el contenido** de ese JSON. Reiniciar el App Service.
+5. Probar: iniciar sesión en la app (acepta el permiso de notificaciones), y desde Administración cambiar el horario de esa persona: debería llegar el push.
+
+Cada teléfono registra su token al iniciar sesión y lo quita al cerrarla. Los tokens que Firebase informa como inválidos (app desinstalada) se borran solos.
