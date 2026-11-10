@@ -43,7 +43,7 @@ Si falla, el mensaje dice qué falta: planilla no compartida, API de Sheets sin 
 - `FichajeApp.Mobile.csproj`: `ApplicationId` y `ApplicationTitle` de cada cliente. **El `ApplicationId` no necesita un dominio tuyo**:
   es solo un nombre único para tu app en todo Play Store (la costumbre es un dominio al revés, pero nadie lo verifica). Ya está
   puesto como `io.github.urrels.fichaje.<cliente>` (usa tu usuario de GitHub). Podés cambiarlo por otro, por ejemplo
-  `ar.tunombre.fichaje.clientea`, **hasta la primera vez que subas la app a Play: después no se puede cambiar**. Reglas: solo
+  `ar.tunombre.fichaje`, **hasta la primera vez que subas la app a Play: después no se puede cambiar**. Reglas: solo
   letras minúsculas, números y guion bajo; dos o más partes separadas por puntos; cada parte empieza con una letra.
 
 ### El mapa del supervisor

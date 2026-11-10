@@ -56,8 +56,10 @@
 		<ApplicationTitle>Fichaje (dev)</ApplicationTitle>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Cliente)' == 'clientea'">
-		<ApplicationId>io.github.urrels.fichaje.clientea</ApplicationId>
-		<ApplicationTitle>Fichaje Cliente A</ApplicationTitle>
+		<!-- Identificador que va a Play Store: PERMANENTE desde la primera subida. El Cliente sigue llamándose "clientea" para el
+		     keystore y la carpeta, pero eso no se ve en la tienda. -->
+		<ApplicationId>io.github.urrels.fichaje</ApplicationId>
+		<ApplicationTitle>Fichaje</ApplicationTitle>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Cliente)' == 'clienteb'">
 		<ApplicationId>io.github.urrels.fichaje.clienteb</ApplicationId>
