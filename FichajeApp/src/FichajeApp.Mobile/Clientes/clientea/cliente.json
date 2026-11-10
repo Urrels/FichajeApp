@@ -1,5 +1,5 @@
 {
-  "nombre": "Fichaje",
+  "nombre": "HoraTrack",
   "apiBaseUrl": "https://fichaje-api-giselau-hpcue8fmf9czaqee.brazilsouth-01.azurewebsites.net/api",
   "colores": {
     "primario": "#B5542B",
