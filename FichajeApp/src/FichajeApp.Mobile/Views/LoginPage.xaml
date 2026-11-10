@@ -66,12 +66,27 @@
                     </material:TextField.Icon>
                 </material:TextField>
 
+                <!-- Solo con huella, rostro o bloqueo de pantalla en el teléfono -->
+                <HorizontalStackLayout Spacing="8" IsVisible="{Binding HuellaDisponible}">
+                    <CheckBox IsChecked="{Binding Recordar}" VerticalOptions="Center" />
+                    <Label Text="Recordar mis datos y entrar con huella" VerticalOptions="Center"
+                           TextColor="{DynamicResource ColorTexto}" FontSize="13" />
+                </HorizontalStackLayout>
+
                 <Button Text="Ingresar"
                         HeightRequest="50"
                         FontAttributes="Bold"
                         BackgroundColor="{DynamicResource ColorPrimario}"
                         TextColor="{DynamicResource ColorPrimarioTexto}"
                         Clicked="OnLoginClicked"
+                        IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
+
+                <Button Text="Entrar con huella"
+                        IsVisible="{Binding PuedeUsarHuella}"
+                        BackgroundColor="Transparent"
+                        BorderColor="{DynamicResource ColorPrimario}" BorderWidth="1"
+                        TextColor="{DynamicResource ColorPrimario}"
+                        Clicked="OnHuellaClicked"
                         IsEnabled="{Binding Procesando, Converter={StaticResource InvertedBoolConverter}}" />
 
                 <ActivityIndicator IsRunning="{Binding Procesando}"

@@ -5,15 +5,15 @@ namespace FichajeApp.Mobile.Services;
 
 public class BiometricService : IBiometricService
 {
-    public async Task<(bool exito, string mensaje)> AutenticarAsync()
+    public async Task<(bool exito, string mensaje)> AutenticarAsync(string? titulo = null, string? motivo = null)
     {
         var disponible = await CrossFingerprint.Current.IsAvailableAsync();
         if (!disponible)
             return (false, "Biometría no disponible en este dispositivo");
 
         var request = new AuthenticationRequestConfiguration(
-            "Confirmar fichaje",
-            "Verificá tu identidad para registrar el fichaje")
+            titulo ?? "Confirmar fichaje",
+            motivo ?? "Verificá tu identidad para registrar el fichaje")
         {
             CancelTitle = "Cancelar",
             FallbackTitle = "Usar PIN"

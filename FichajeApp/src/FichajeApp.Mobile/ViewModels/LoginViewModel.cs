@@ -13,9 +13,82 @@ public class LoginViewModel : INotifyPropertyChanged
     private string _estado = string.Empty;
     private bool _procesando;
 
-    public LoginViewModel(AuthService authService)
+    private readonly IBiometricService? _biometria;
+    private bool _recordar;
+    private bool _puedeUsarHuella;
+    private bool _huellaDisponible;
+
+    public LoginViewModel(AuthService authService, IBiometricService? biometria = null)
     {
         _authService = authService;
+        _biometria = biometria;
+    }
+
+    // "Recordar mis datos": guarda email y PIN cifrados para entrar después con la huella
+    public bool Recordar
+    {
+        get => _recordar;
+        set { _recordar = value; OnPropertyChanged(); }
+    }
+
+    // Se muestra la opción de recordar solo si el teléfono tiene huella, rostro o bloqueo de pantalla
+    public bool HuellaDisponible
+    {
+        get => _huellaDisponible;
+        private set { _huellaDisponible = value; OnPropertyChanged(); }
+    }
+
+    // Hay datos recordados: se muestra el botón "Entrar con huella"
+    public bool PuedeUsarHuella
+    {
+        get => _puedeUsarHuella;
+        private set { _puedeUsarHuella = value; OnPropertyChanged(); }
+    }
+
+    public async Task ActualizarHuellaAsync()
+    {
+        var recordado = await CredencialesRecordadas.ExisteAsync();
+        PuedeUsarHuella = recordado;
+        Recordar = recordado;
+        if (recordado && string.IsNullOrWhiteSpace(Email))
+            Email = await CredencialesRecordadas.EmailAsync() ?? string.Empty;
+        try { HuellaDisponible = _biometria is not null && await Plugin.Fingerprint.CrossFingerprint.Current.IsAvailableAsync(); }
+        catch { HuellaDisponible = false; }
+    }
+
+    // Confirma con la huella (o el bloqueo del teléfono) y recién ahí lee los datos guardados
+    public async Task LoginConHuellaAsync()
+    {
+        if (_biometria is null || Procesando) return;
+        var (ok, mensaje) = await _biometria.AutenticarAsync("Entrar a la app", "Confirmá que sos vos para ingresar");
+        if (!ok) { Estado = "No se pudo confirmar tu identidad. Ingresá con tu PIN."; return; }
+
+        var datos = await CredencialesRecordadas.ObtenerAsync();
+        if (datos is null)
+        {
+            CredencialesRecordadas.Borrar();
+            PuedeUsarHuella = false;
+            Estado = "Ingresá con tu email y PIN para volver a activarlo.";
+            return;
+        }
+
+        Procesando = true;
+        Estado = "Verificando...";
+        var (exito, msg) = await _authService.LoginAsync(datos.Value.Email, datos.Value.Pin);
+        Procesando = false;
+
+        if (exito) { Estado = string.Empty; LoginExitoso?.Invoke(); return; }
+
+        // Si el servidor rechazó los datos (PIN cambiado, usuario dado de baja) no se insiste con ellos:
+        // reintentar con un PIN viejo sumaría intentos fallidos y bloquearía la cuenta
+        if (!_authService.UltimoFalloFueDeConexion)
+        {
+            CredencialesRecordadas.Borrar();
+            PuedeUsarHuella = false;
+            Recordar = false;
+            Estado = msg + " Ingresá con tu PIN actual.";
+        }
+        else Estado = msg;
     }
 
     public string Email
@@ -66,6 +139,9 @@ public class LoginViewModel : INotifyPropertyChanged
 
         if (exito)
         {
+            // Solo si la persona lo pidió y el servidor aceptó los datos
+            if (Recordar && HuellaDisponible) await CredencialesRecordadas.GuardarAsync(Email.Trim(), Pin);
+            else CredencialesRecordadas.Borrar();
             Pin = string.Empty;
             LoginExitoso?.Invoke();
         }

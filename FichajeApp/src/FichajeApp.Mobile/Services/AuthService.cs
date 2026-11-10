@@ -37,8 +37,12 @@ public class AuthService
         _clientes = clientes;
     }
 
+    // true si el último intento falló por falta de conexión (y no porque el servidor rechazó los datos)
+    public bool UltimoFalloFueDeConexion { get; private set; }
+
     public async Task<(bool exito, string mensaje)> LoginAsync(string email, string pin)
     {
+        UltimoFalloFueDeConexion = false;
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"{_clientes.BaseUrl}/auth/login",
@@ -66,6 +70,7 @@ public class AuthService
         }
         catch (Exception ex)
         {
+            UltimoFalloFueDeConexion = true;
             return (false, TextosDeError.DeExcepcion(ex));
         }
     }
@@ -91,7 +96,8 @@ public class AuthService
 
     public void Logout()
     {
-        SecureStorage.Default.RemoveAll();
+        // No se usa RemoveAll: los datos recordados para entrar con huella tienen que sobrevivir al cierre de sesiÃ³n
+        foreach (var clave in new[] { TokenKey, NombreKey, IdKey, RolKey, PermisosKey }) SecureStorage.Default.Remove(clave);
         SessionManager.Instance.FinalizarSesion();
     }
 

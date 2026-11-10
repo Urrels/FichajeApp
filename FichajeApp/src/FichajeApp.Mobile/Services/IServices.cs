@@ -19,5 +19,5 @@ public interface IGeolocationService
 
 public interface IBiometricService
 {
-    Task<(bool exito, string mensaje)> AutenticarAsync();
+    Task<(bool exito, string mensaje)> AutenticarAsync(string? titulo = null, string? motivo = null);
 }

@@ -15,13 +15,13 @@ public partial class LoginPage : ContentPage
     private DateTime _primerToque;
 
     public LoginPage(AuthService authService, ConfiguracionApiService configuracion, IClienteService clientes,
-        AparienciaService apariencia)
+        AparienciaService apariencia, IBiometricService biometria)
     {
         InitializeComponent();
         _configuracion = configuracion;
         _clientes = clientes;
         _apariencia = apariencia;
-        _viewModel = new LoginViewModel(authService);
+        _viewModel = new LoginViewModel(authService, biometria);
         _viewModel.LoginExitoso += OnLoginExitoso;
         BindingContext = _viewModel;
     }
@@ -32,6 +32,7 @@ public partial class LoginPage : ContentPage
         base.OnAppearing();
         _viewModel.Limpiar();
         MostrarServidorPersonalizado();
+        await _viewModel.ActualizarHuellaAsync();
         if (_yaOfrecioConfigurar) return;
         _yaOfrecioConfigurar = true;
 
@@ -102,6 +103,8 @@ public partial class LoginPage : ContentPage
 
     // Tocar "Listo" en el teclado entra, igual que el botón
     private async void OnPinCompleted(object sender, EventArgs e) => await _viewModel.LoginAsync();
+
+    private async void OnHuellaClicked(object sender, EventArgs e) => await _viewModel.LoginConHuellaAsync();
 
     private async void OnLoginClicked(object sender, EventArgs e)
     {
