@@ -20,6 +20,7 @@ public class MainApplication : MauiApplication
         base.OnCreate();
 
         RegisterActivityLifecycleCallbacks(new FingerprintActivityLifecycleCallbacks());
+        CanalDeAvisos.Crear(this);
     }
 }
 

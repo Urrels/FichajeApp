@@ -124,5 +124,6 @@ public partial class LoginPage : ContentPage
         // Primer ingreso sin foto de perfil: se la pide antes de seguir
         await FotoDePerfil.ExigirSiFaltaAsync(_perfiles, _auth);
         if (!SessionManager.Instance.EstaLogueado) await Shell.Current.GoToAsync("//LoginPage");
+        else _ = PushDispositivo.PrepararAsync();   // permiso de notificaciones y token para los push
     }
 }

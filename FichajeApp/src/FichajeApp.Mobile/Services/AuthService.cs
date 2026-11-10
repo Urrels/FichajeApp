@@ -118,6 +118,7 @@ public class AuthService
 
     public void Logout()
     {
+        _ = PushDispositivo.QuitarAsync();   // antes de borrar la sesion: se necesita su token
         // No se usa RemoveAll: los datos recordados para entrar con huella tienen que sobrevivir al cierre de sesión
         foreach (var clave in new[] { TokenKey, NombreKey, IdKey, RolKey, PermisosKey }) SecureStorage.Default.Remove(clave);
         RecorridoJornada.Detener(borrarPendientes: true);   // sin sesion no hay jornada que registrar

@@ -87,6 +87,7 @@ Importante: la API tiene que estar encendida con esos usuarios mientras dure la 
 |---|---|
 | ¿Recopila o comparte datos? | Sí, recopila. No comparte con terceros (el servidor es del proveedor y la planilla es del cliente) |
 | Ubicación precisa | Recopilada · opcional · finalidad: funcionalidad de la app. **Ahora también se recopila con la app cerrada** (recorrido durante la jornada): en Data safety, al marcar ubicación, indicá que se recopila también en segundo plano |
+| Identificadores de dispositivo u otros | Token de Firebase Cloud Messaging para los push: recopilado, se asocia a la cuenta, finalidad: funcionalidad de la app (no publicidad), no se comparte con terceros salvo Google como proveedor del servicio de mensajes |
 | Historial de ubicaciones | Es el recorrido durante la jornada: opcional (lo activa la empresa y la persona acepta un aviso) · funcionalidad de la app |
 | Ubicación aproximada | No se usa (el permiso `ACCESS_COARSE_LOCATION` se declara solo porque Android lo exige junto con el preciso) |
 | Nombre, dirección de correo | Recopilados · obligatorios · funcionalidad y administración de la cuenta |

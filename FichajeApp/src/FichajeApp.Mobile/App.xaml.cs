@@ -47,6 +47,7 @@ public partial class App : Application
         {
             await FotoDePerfil.ExigirSiFaltaAsync(_perfiles, _authService);
             if (!SessionManager.Instance.EstaLogueado) await Shell.Current.GoToAsync("//LoginPage");
+            else _ = PushDispositivo.PrepararAsync();
         }
     }
 }

@@ -8,6 +8,7 @@
 		<!-- El mapa usa OpenStreetMap (Mapsui): no lleva ninguna clave -->
 			<!-- Sin copia de seguridad automática (allowBackup=false): el token de sesión no tiene que viajar a otro teléfono -->
 		<uses-library android:name="org.apache.http.legacy" android:required="false" />
+		<meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="avisos" />
 	</application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />
