@@ -9,7 +9,7 @@
 
     <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="8">
         <Label x:Name="Titulo" Style="{StaticResource TextoTitulo}" />
-        <ctl:BannerInline x:Name="Aviso" Row="1" Grid.Row="1" Severidad="Info" IsVisible="False" />
+        <ctl:BannerInline x:Name="Aviso" Grid.Row="1" Severidad="Info" IsVisible="False" />
 
         <Border Grid.Row="2" Style="{StaticResource Tarjeta}" Padding="0" StrokeShape="RoundRectangle 16">
             <mapsui:MapView x:Name="Mapa" />

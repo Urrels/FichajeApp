@@ -73,6 +73,9 @@
                            TextColor="{DynamicResource ColorTexto}" FontSize="13" />
                 </HorizontalStackLayout>
 
+                <!-- Arriba de los botones: abajo quedaba fuera de la pantalla y no se veía por qué falló el ingreso -->
+                <ctl:BannerInline Severidad="Error" Texto="{Binding Estado}" IsVisible="{Binding HayError}" />
+
                 <Button Text="Ingresar"
                         HeightRequest="50"
                         FontAttributes="Bold"
@@ -97,8 +100,6 @@
                 <ActivityIndicator IsRunning="{Binding Procesando}"
                                    IsVisible="{Binding Procesando}"
                                    Color="{DynamicResource ColorPrimario}" />
-
-                <ctl:BannerInline Severidad="Error" Texto="{Binding Estado}" IsVisible="{Binding HayError}" />
 
                 <Label x:Name="ServidorLabel" IsVisible="False" FontSize="11"
                        HorizontalOptions="Center" HorizontalTextAlignment="Center"

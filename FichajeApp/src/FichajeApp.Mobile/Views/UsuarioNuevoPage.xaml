@@ -10,6 +10,9 @@
     <Grid RowDefinitions="*,Auto">
         <ScrollView>
             <VerticalStackLayout Padding="16" Spacing="12">
+                <!-- Arriba: abajo quedaba cortado por el borde del scroll y no se leía el motivo -->
+                <ctl:BannerInline x:Name="Aviso" Severidad="Error" IsVisible="False" />
+
                 <material:TextField x:Name="NombreEntry" Title="Nombre completo" MaxLength="80" />
                 <Label Text="Es único: los fichajes se identifican por nombre." FontSize="12" />
 
@@ -19,7 +22,6 @@
                 <Label Text="Roles" Style="{StaticResource TextoTitulo}" FontSize="16" />
                 <VerticalStackLayout x:Name="RolesLista" Spacing="4" />
 
-                <ctl:BannerInline x:Name="Aviso" Severidad="Error" IsVisible="False" />
             </VerticalStackLayout>
         </ScrollView>
 

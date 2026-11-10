@@ -109,6 +109,12 @@
 	<ItemGroup Condition="Exists('google-services.json')">
 		<GoogleServicesJson Include="google-services.json" />
 	</ItemGroup>
+	<!-- El procesamiento de google-services.json es incremental y no mira el ApplicationId: al pasar de la versión de desarrollo
+	     (io.github.urrels.fichaje.dev, sin entrada en el JSON) a la real, se reutilizaba un resultado sin google_app_id y Firebase
+	     no arrancaba ("no default options were found"). Se borra el sello para que se vuelva a generar siempre. -->
+	<Target Name="RegenerarFirebaseSiCambiaElPaquete" BeforeTargets="ProcessGoogleServicesJson" Condition="'@(GoogleServicesJson)' != ''">
+		<Delete Files="$(IntermediateOutputPath)googsvcsjson.stamp" />
+	</Target>
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Maui" Version="15.0.1" />

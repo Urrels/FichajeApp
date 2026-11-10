@@ -115,9 +115,16 @@ public static class RecorridoJornada
     // Al cambiar la jornada: Entrada empieza el registro (si la empresa lo activó), Salida lo termina
     public static async Task AlFicharAsync(string? tipo, ConfiguracionFichaje config)
     {
-        if (tipo == "Entrada") await IniciarSiCorrespondeAsync(config);
+        // Fichar la entrada es un momento claro para preguntar, aunque haya dicho que no hace un rato
+        if (tipo == "Entrada") await IniciarSiCorrespondeAsync(config, preguntarDeNuevo: true);
         else if (tipo == "Salida") Detener(borrarPendientes: false);
     }
+
+    // Una sola pregunta a la vez (fichar y abrir la pantalla disparan el mismo aviso casi juntos) y, si la persona dijo que no,
+    // no se le insiste cada vez que abre la pantalla: se espera este rato
+    private static readonly SemaphoreSlim Pregunta = new(1, 1);
+    private static DateTime _ultimaNegativa = DateTime.MinValue;
+    private static readonly TimeSpan EsperaTrasNegativa = TimeSpan.FromMinutes(30);
 
     // Al abrir la app o la pantalla de fichar: se retoma si hay una jornada abierta y el servicio no estaba corriendo
     public static async Task RetomarAsync(ConfiguracionFichaje config, string? proximo)
@@ -131,17 +138,24 @@ public static class RecorridoJornada
         _ = RecorridoEnvio.EnviarPendientesAsync();
     }
 
-    public static async Task IniciarSiCorrespondeAsync(ConfiguracionFichaje config)
+    public static async Task IniciarSiCorrespondeAsync(ConfiguracionFichaje config, bool preguntarDeNuevo = false)
     {
+        if (!await Pregunta.WaitAsync(0)) return;   // ya se está preguntando o iniciando
         try
         {
-            if (!config.SeguimientoRecorrido || SessionManager.Instance.EsKiosco) return;
+            if (!config.SeguimientoRecorrido || SessionManager.Instance.EsKiosco || Activo) return;
 
             if (!Preferences.Default.Get(ClaveAceptado, false))
             {
+                if (!preguntarDeNuevo && DateTime.UtcNow - _ultimaNegativa < EsperaTrasNegativa) return;
+
                 var nombre = IPlatformApplication.Current?.Services.GetService<IClienteService>()?.Nombre ?? "La app";
-                // "Cancelar" no se guarda como un "no" definitivo: se vuelve a preguntar la próxima vez que se fiche la entrada
-                if (!await Dialogos.Confirmar("Registro de tu recorrido", string.Format(TextoAviso, nombre), "Acepto")) return;
+                // "Cancelar" no se guarda como un "no" definitivo: se vuelve a preguntar al fichar la próxima entrada
+                if (!await Dialogos.Confirmar("Registro de tu recorrido", string.Format(TextoAviso, nombre), "Acepto"))
+                {
+                    _ultimaNegativa = DateTime.UtcNow;
+                    return;
+                }
                 Preferences.Default.Set(ClaveAceptado, true);
             }
 
@@ -156,6 +170,7 @@ public static class RecorridoJornada
             RecorridoServicioAndroid.Iniciar();
         }
         catch { /* el recorrido es un extra: nunca tiene que impedir fichar */ }
+        finally { Pregunta.Release(); }
     }
 
     public static void Detener(bool borrarPendientes = false)
