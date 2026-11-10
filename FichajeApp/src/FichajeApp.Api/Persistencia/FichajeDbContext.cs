@@ -23,6 +23,7 @@ public class FichajeDbContext : DbContext
     public DbSet<ParametrosFila> Parametros => Set<ParametrosFila>();
     public DbSet<ValorHoraFila> ValoresHora => Set<ValorHoraFila>();
     public DbSet<HorarioFila> Horarios => Set<HorarioFila>();
+    public DbSet<NotificacionFila> Notificaciones => Set<NotificacionFila>();
     public DbSet<FeriadoFila> Feriados => Set<FeriadoFila>();
     public DbSet<ExcedenteFila> Excedentes => Set<ExcedenteFila>();
     public DbSet<LiquidacionFila> Liquidaciones => Set<LiquidacionFila>();
@@ -128,6 +129,13 @@ public class FichajeDbContext : DbContext
             e.Property(x => x.VigenteDesde).HasColumnType("date");
             e.Property(x => x.CargadoPor).HasMaxLength(200);
             e.HasIndex(x => new { x.EmpleadoId, x.VigenteDesde }).IsUnique();
+        });
+        m.Entity<NotificacionFila>(e =>
+        {
+            e.ToTable("Notificaciones");
+            e.Property(x => x.Titulo).HasMaxLength(120);
+            e.Property(x => x.Mensaje).HasMaxLength(400);
+            e.HasIndex(x => new { x.EmpleadoId, x.Fecha });
         });
         m.Entity<HorarioFila>(e =>
         {
@@ -297,6 +305,16 @@ public class ValorHoraFila
     public decimal Valor { get; set; }
     public DateTime VigenteDesde { get; set; }
     public string? CargadoPor { get; set; }
+}
+
+public class NotificacionFila
+{
+    public int Id { get; set; }
+    public int EmpleadoId { get; set; }
+    public string Titulo { get; set; } = "";
+    public string Mensaje { get; set; } = "";
+    public DateTime Fecha { get; set; }
+    public bool Leida { get; set; }
 }
 
 public class HorarioFila

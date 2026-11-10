@@ -96,7 +96,7 @@ public class AuthService
 
     public void Logout()
     {
-        // No se usa RemoveAll: los datos recordados para entrar con huella tienen que sobrevivir al cierre de sesiÃ³n
+        // No se usa RemoveAll: los datos recordados para entrar con huella tienen que sobrevivir al cierre de sesión
         foreach (var clave in new[] { TokenKey, NombreKey, IdKey, RolKey, PermisosKey }) SecureStorage.Default.Remove(clave);
         SessionManager.Instance.FinalizarSesion();
     }

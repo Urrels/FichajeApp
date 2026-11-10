@@ -24,15 +24,17 @@ public class LiquidacionService
     private readonly BitacoraService _bitacora;
     private readonly TimeProvider _tiempo;
     private readonly IHorariosRepositorio _horarios;
+    private readonly NotificacionesService? _notificaciones;
 
     public LiquidacionService(JornadasService jornadas, ILiquidacionRepositorio repositorio, IEmpleadosRepositorio empleados,
-        BitacoraService bitacora, TimeProvider tiempo, IHorariosRepositorio? horarios = null)
+        BitacoraService bitacora, TimeProvider tiempo, IHorariosRepositorio? horarios = null, NotificacionesService? notificaciones = null)
     {
         _jornadas = jornadas;
         _repositorio = repositorio;
         _empleados = empleados;
         _bitacora = bitacora;
         _tiempo = tiempo;
+        _notificaciones = notificaciones;
         _horarios = horarios ?? new FichajeApp.Api.Persistencia.Sql.HorariosNoDisponible();
     }
 
@@ -45,7 +47,7 @@ public class LiquidacionService
         var (jornadas, _) = await _jornadas.ObtenerAsync(desde, hasta, empleado);
         var parametros = await _repositorio.ObtenerParametrosAsync();
 
-        // Horario semanal -> turnos del perÃ­odo. Con un empleado puntual solo se arman los suyos.
+        // Horario semanal -> turnos del período. Con un empleado puntual solo se arman los suyos.
         var nombres = (await _empleados.ListarAsync()).ToDictionary(x => x.Id, x => x.NombreCompleto);
         var horarios = (await _horarios.ListarAsync())
             .Where(h => empleado is null || string.Equals(nombres.GetValueOrDefault(h.EmpleadoId), empleado, StringComparison.OrdinalIgnoreCase))
@@ -198,6 +200,8 @@ public class LiquidacionService
 
         await _horarios.GuardarAsync(empleadoId, horarios);
         await _bitacora.RegistrarAsync(actor, $"HORARIO_GUARDADO:{empleado.NombreCompleto}:{horarios.Count}dias");
+        if (_notificaciones is not null)
+            await _notificaciones.CrearAsync(empleadoId, "Tu horario cambió", "Un administrador actualizó tu horario semanal. Revisalo con tu empresa.");
     }
 
     public async Task GuardarValorHoraAsync(string actor, int empleadoId, decimal valor, DateTime vigenteDesde)

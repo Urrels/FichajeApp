@@ -55,11 +55,19 @@ public class UsuariosAdminService
     private readonly BitacoraService _bitacora;
     private readonly PermisosService _permisos;
     private readonly SesionesVigentes? _sesiones;
+    private readonly IEnviadorDeCorreo? _correo;
+    private readonly NotificacionesService? _notificaciones;
+    private readonly string _nombreApp;
 
     public UsuariosAdminService(IEmpleadosRepositorio empleados, IRolesRepositorio roles, IFichajesRepositorio fichajes,
         HistorialUsuariosService historial, IHistorialUsuariosRepositorio historialRepositorio,
-        GuardaAdministracion guarda, BitacoraService bitacora, PermisosService permisos, SesionesVigentes? sesiones = null)
+        GuardaAdministracion guarda, BitacoraService bitacora, PermisosService permisos, SesionesVigentes? sesiones = null,
+        IEnviadorDeCorreo? correo = null, NotificacionesService? notificaciones = null,
+        Microsoft.Extensions.Options.IOptions<OpcionesCorreo>? opcionesCorreo = null)
     {
+        _correo = correo;
+        _notificaciones = notificaciones;
+        _nombreApp = opcionesCorreo?.Value.NombreApp ?? "HoraTrack";
         _empleados = empleados;
         _roles = roles;
         _fichajes = fichajes;
@@ -139,6 +147,15 @@ public class UsuariosAdminService
 
         await _historial.RegistrarAsync(nuevo, "ALTA", actor);
         await _bitacora.RegistrarAsync(actor, "USUARIO_CREADO:" + nombre);
+
+        // Bienvenida: aviso en la app y mail. Si el mail falla (o no está configurado) el alta igual queda hecha.
+        if (_notificaciones is not null)
+            await _notificaciones.CrearAsync(nuevo.Id, "¡Bienvenido/a!", $"Tu cuenta en {_nombreApp} está lista. Sacate una foto de perfil y ya podés fichar.");
+        if (_correo is { Configurado: true })
+        {
+            var (asunto, html, texto) = PlantillasCorreo.Bienvenida(_nombreApp, nombre);
+            await _correo.EnviarAsync(email, asunto, html, texto);
+        }
         return nuevo.Id;
     }
 
@@ -219,6 +236,8 @@ public class UsuariosAdminService
         _sesiones?.Invalidar(id);
         await _historial.RegistrarAsync(e, "CAMBIO_PIN", actor);
         await _bitacora.RegistrarAsync(actor, "PIN_RESTABLECIDO:" + e.NombreCompleto);
+        if (_notificaciones is not null)
+            await _notificaciones.CrearAsync(e.Id, "Tu PIN fue restablecido", "Un administrador cambió tu PIN. Si no lo esperabas, consultale.");
     }
 
     // Cada empleado cambia su propio PIN
@@ -235,6 +254,8 @@ public class UsuariosAdminService
         await _empleados.ActualizarAsync(e);
         await _bitacora.RegistrarAsync(e.Email, "CAMBIO_PIN");
         await _historial.RegistrarAsync(e, "CAMBIO_PIN", e.Email);
+        if (_notificaciones is not null)
+            await _notificaciones.CrearAsync(e.Id, "Cambiaste tu PIN", "Tu PIN se actualizó correctamente.");
     }
 
     public async Task AsignarRolesAsync(string actor, int id, List<int> rolIds)
