@@ -220,8 +220,8 @@ public class AdminApiService
             (string.IsNullOrWhiteSpace(busqueda) ? "" : $"&busqueda={Uri.EscapeDataString(busqueda)}"));
     public Task<ResultadoConsulta<ConfiguracionFichaje>> ConfiguracionFichajeActual() =>
         Pedir<ConfiguracionFichaje>(HttpMethod.Get, "admin/configuracion-fichaje");
-    public Task<ResultadoConsulta<Respuesta>> GuardarConfiguracionFichaje(string ubicacion, string foto, string modo, int precisionMaxMetros) =>
-        Pedir<Respuesta>(HttpMethod.Put, "admin/configuracion-fichaje", new { ubicacion, foto, modo, precisionMaxMetros });
+    public Task<ResultadoConsulta<Respuesta>> GuardarConfiguracionFichaje(string ubicacion, string foto, string modo, int precisionMaxMetros, bool seguimientoRecorrido) =>
+        Pedir<Respuesta>(HttpMethod.Put, "admin/configuracion-fichaje", new { ubicacion, foto, modo, precisionMaxMetros, seguimientoRecorrido });
     // ---- Lugares conocidos ----
     public Task<ResultadoConsulta<List<SitioAdminItem>>> ListarSitios() => Pedir<List<SitioAdminItem>>(HttpMethod.Get, "admin/sitios");
     public Task<ResultadoConsulta<Respuesta>> CrearSitio(string nombre, double latitud, double longitud, double radioMetros) =>

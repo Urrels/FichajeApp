@@ -63,6 +63,17 @@ public class ConfigFichajeViewModel : VmBase
         ? $"Las fotos se borran solas a los {_retencionDias} días (lo define el servidor)."
         : "Las fotos no se borran nunca (lo define el servidor).";
 
+    private bool _recorrido;
+    public bool Recorrido { get => _recorrido; private set { if (Set(ref _recorrido, value)) Notificar(nameof(RecorridoTexto)); } }
+    public string RecorridoTexto => Recorrido ? "Activado" : "Desactivado";
+
+    public async Task ElegirRecorridoAsync()
+    {
+        var elegida = await Dialogos.Elegir("¿Se registra el recorrido durante la jornada?",
+            new[] { "Desactivado (no se registra nada)", "Activado (solo con la jornada abierta)" });
+        if (elegida is not null) Recorrido = elegida.StartsWith("Activado");
+    }
+
     public string UbicacionTexto => Ubicaciones.FirstOrDefault(u => u.Value == Ubicacion).Key ?? Ubicacion;
     public string FotoTexto => Fotos.FirstOrDefault(f => f.Value == Foto).Key ?? Foto;
 
@@ -75,6 +86,7 @@ public class ConfigFichajeViewModel : VmBase
         Foto = r.Datos.Foto;
         Modo = r.Datos.Modo;
         Precision = r.Datos.PrecisionMaxMetros;
+        Recorrido = r.Datos.SeguimientoRecorrido;
         _retencionDias = r.Datos.RetencionDias;
         Notificar(nameof(RetencionTexto));
         Estado = string.Empty;
@@ -106,7 +118,7 @@ public class ConfigFichajeViewModel : VmBase
 
     public Task GuardarAsync() => ConEspera(async () =>
     {
-        var r = await _api.GuardarConfiguracionFichaje(Ubicacion, Foto, Modo, Precision);
+        var r = await _api.GuardarConfiguracionFichaje(Ubicacion, Foto, Modo, Precision, Recorrido);
         if (!r.Exito) { await _feedback.ErrorAsync(TextosDeError.Para(null, r.Mensaje)); return; }
 
         // El paso siguiente del modo kiosco queda a la vista en pantalla; el resto es solo una confirmación corta
