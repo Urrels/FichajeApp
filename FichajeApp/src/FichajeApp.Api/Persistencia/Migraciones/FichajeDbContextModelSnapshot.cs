@@ -17,7 +17,7 @@ namespace FichajeApp.Api.Persistencia.Migraciones
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.33")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -337,6 +337,34 @@ namespace FichajeApp.Api.Persistencia.Migraciones
                     b.HasIndex("EmpleadoId");
 
                     b.ToTable("UsuarioHistorial", (string)null);
+                });
+
+            modelBuilder.Entity("FichajeApp.Api.Persistencia.HorarioFila", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpleadoId")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("Entrada")
+                        .HasColumnType("time(0)");
+
+                    b.Property<TimeSpan>("Salida")
+                        .HasColumnType("time(0)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpleadoId", "DiaSemana")
+                        .IsUnique();
+
+                    b.ToTable("Horarios", (string)null);
                 });
 
             modelBuilder.Entity("FichajeApp.Api.Persistencia.LiquidacionDiaFila", b =>

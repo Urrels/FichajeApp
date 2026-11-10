@@ -22,6 +22,7 @@ public class FichajeDbContext : DbContext
     public DbSet<ConfigFichajeFila> ConfigFichaje => Set<ConfigFichajeFila>();
     public DbSet<ParametrosFila> Parametros => Set<ParametrosFila>();
     public DbSet<ValorHoraFila> ValoresHora => Set<ValorHoraFila>();
+    public DbSet<HorarioFila> Horarios => Set<HorarioFila>();
     public DbSet<FeriadoFila> Feriados => Set<FeriadoFila>();
     public DbSet<ExcedenteFila> Excedentes => Set<ExcedenteFila>();
     public DbSet<LiquidacionFila> Liquidaciones => Set<LiquidacionFila>();
@@ -127,6 +128,13 @@ public class FichajeDbContext : DbContext
             e.Property(x => x.VigenteDesde).HasColumnType("date");
             e.Property(x => x.CargadoPor).HasMaxLength(200);
             e.HasIndex(x => new { x.EmpleadoId, x.VigenteDesde }).IsUnique();
+        });
+        m.Entity<HorarioFila>(e =>
+        {
+            e.ToTable("Horarios");
+            e.Property(x => x.Entrada).HasColumnType("time(0)");
+            e.Property(x => x.Salida).HasColumnType("time(0)");
+            e.HasIndex(x => new { x.EmpleadoId, x.DiaSemana }).IsUnique();
         });
         m.Entity<FeriadoFila>(e =>
         {
@@ -289,6 +297,15 @@ public class ValorHoraFila
     public decimal Valor { get; set; }
     public DateTime VigenteDesde { get; set; }
     public string? CargadoPor { get; set; }
+}
+
+public class HorarioFila
+{
+    public int Id { get; set; }
+    public int EmpleadoId { get; set; }
+    public int DiaSemana { get; set; }   // 0 = domingo ... 6 = sábado (DayOfWeek)
+    public TimeSpan Entrada { get; set; }
+    public TimeSpan Salida { get; set; }
 }
 
 public class FeriadoFila

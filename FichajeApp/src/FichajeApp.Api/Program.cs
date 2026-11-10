@@ -73,6 +73,7 @@ if (usaSql)
     builder.Services.AddSingleton<IHistorialUsuariosRepositorio, HistorialUsuariosSqlRepositorio>();
     builder.Services.AddSingleton<IFichajesRepositorio, FichajesSqlRepositorio>();
     builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSqlRepositorio>();
+    builder.Services.AddSingleton<IHorariosRepositorio, HorariosSqlRepositorio>();
     builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSqlRepositorio>();
     builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSqlRepositorio>();
     // Migra la base y siembra permisos, roles y el primer administrador antes de que arranque el resto
@@ -95,6 +96,7 @@ else
         sp.GetRequiredService<IOptions<FichajeOptions>>()));
 
     builder.Services.AddSingleton<ISitiosAdminRepositorio, SitiosAdminNoDisponible>();
+    builder.Services.AddSingleton<IHorariosRepositorio, HorariosNoDisponible>();
 
     // Repositorios de la administración
     builder.Services.AddSingleton<IRolesRepositorio, RolesSheetsRepositorio>();

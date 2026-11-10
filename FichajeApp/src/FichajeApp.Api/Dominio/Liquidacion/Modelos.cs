@@ -134,9 +134,24 @@ public class EntradaLiquidacion
 {
     public List<Jornada> Jornadas { get; set; } = new();
     public List<TurnoAsignado> Turnos { get; set; } = new();
+
+    // Empleados (en minúsculas) con horario semanal cargado: se les paga por turnos aunque en este rango no les toque ninguno
+    public HashSet<string> EmpleadosConHorario { get; set; } = new();
     public List<ValorHoraEmpleado> ValoresHora { get; set; } = new();
     public HashSet<DateTime> Feriados { get; set; } = new();
     public HashSet<(string Empleado, DateTime Fecha)> ExcedentesAprobados { get; set; } = new();
     public ParametrosLiquidacion Parametros { get; set; } = new();
     public DateTime Ahora { get; set; } = DateTime.Now;
+}
+
+// Horario semanal de un empleado: un día de la semana con su entrada y su salida.
+// Si la salida es menor o igual a la entrada, el turno termina al día siguiente (turno nocturno).
+public class HorarioEmpleado
+{
+    public int EmpleadoId { get; set; }
+    public DayOfWeek Dia { get; set; }
+    public TimeSpan Entrada { get; set; }
+    public TimeSpan Salida { get; set; }
+
+    public bool TerminaAlDiaSiguiente => Salida <= Entrada;
 }

@@ -91,3 +91,11 @@ public interface IConfiguracionFichajeRepositorio
     Task<FichajeApp.Api.Models.ConfiguracionFichaje?> ObtenerAsync();
     Task GuardarAsync(FichajeApp.Api.Models.ConfiguracionFichaje configuracion);
 }
+
+// Horario semanal por empleado (con SQL; con la planilla de Google no está disponible)
+public interface IHorariosRepositorio
+{
+    Task<List<HorarioEmpleado>> ListarAsync();
+    // Reemplaza todo el horario del empleado por el recibido (lista vacía = sin horario)
+    Task GuardarAsync(int empleadoId, IReadOnlyCollection<HorarioEmpleado> horarios);
+}
