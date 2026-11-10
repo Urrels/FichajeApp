@@ -72,8 +72,12 @@ public class NotificacionesService
     private readonly TimeProvider _tiempo;
     private readonly ILogger<NotificacionesService>? _log;
 
-    public NotificacionesService(INotificacionesRepositorio repo, TimeProvider tiempo, ILogger<NotificacionesService>? log = null)
+    private readonly PushService? _push;
+
+    public NotificacionesService(INotificacionesRepositorio repo, TimeProvider tiempo, ILogger<NotificacionesService>? log = null,
+        PushService? push = null)
     {
+        _push = push;
         _repo = repo;
         _tiempo = tiempo;
         _log = log;
@@ -90,6 +94,8 @@ public class NotificacionesService
                 Mensaje = Recortar(mensaje, 400),
                 Fecha = _tiempo.GetLocalNow().DateTime
             });
+            // Ademas del aviso dentro de la app, un push al telefono (si esta configurado y la persona lo registro)
+            if (_push is not null) await _push.NotificarAsync(empleadoId, Recortar(titulo, 120), Recortar(mensaje, 400));
         }
         catch (Exception ex) { _log?.LogWarning("No se pudo guardar una notificación: {Tipo}", ex.GetType().Name); }
     }

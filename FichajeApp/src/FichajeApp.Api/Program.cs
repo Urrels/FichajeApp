@@ -76,6 +76,7 @@ if (usaSql)
     builder.Services.AddSingleton<IHorariosRepositorio, HorariosSqlRepositorio>();
     builder.Services.AddSingleton<INotificacionesRepositorio, NotificacionesSqlRepositorio>();
     builder.Services.AddSingleton<IRecorridoRepositorio, RecorridoSqlRepositorio>();
+    builder.Services.AddSingleton<IDispositivosPushRepositorio, DispositivosPushSqlRepositorio>();
     builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSqlRepositorio>();
     builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSqlRepositorio>();
     // Migra la base y siembra permisos, roles y el primer administrador antes de que arranque el resto
@@ -101,6 +102,7 @@ else
     builder.Services.AddSingleton<IHorariosRepositorio, HorariosNoDisponible>();
     builder.Services.AddSingleton<INotificacionesRepositorio, NotificacionesNoDisponible>();
     builder.Services.AddSingleton<IRecorridoRepositorio, RecorridoNoDisponible>();
+    builder.Services.AddSingleton<IDispositivosPushRepositorio, DispositivosPushNoDisponible>();
 
     // Repositorios de la administración
     builder.Services.AddSingleton<IRolesRepositorio, RolesSheetsRepositorio>();
@@ -122,9 +124,18 @@ if (builder.Configuration.GetSection(OpcionesCorreo.Seccion).Get<OpcionesCorreo>
     builder.Services.AddSingleton<IEnviadorDeCorreo, SmtpEnviador>();
 else
     builder.Services.AddSingleton<IEnviadorDeCorreo, EnviadorNulo>();
+// Push (Firebase Cloud Messaging): sin la clave de la cuenta de servicio no se manda nada
+builder.Services.Configure<OpcionesPush>(builder.Configuration.GetSection(OpcionesPush.Seccion));
+if (builder.Configuration.GetSection(OpcionesPush.Seccion).Get<OpcionesPush>()?.Configurado == true)
+    builder.Services.AddSingleton<IEnviadorPush, FirebaseEnviador>();
+else
+    builder.Services.AddSingleton<IEnviadorPush, EnviadorPushNulo>();
+builder.Services.AddSingleton<PushService>();
 builder.Services.AddSingleton<NotificacionesService>();
 builder.Services.AddSingleton<RecuperacionDePin>();
 builder.Services.AddScoped<RecorridoService>();
+builder.Services.AddScoped<RecordatorioRecorrido>();
+builder.Services.AddHostedService<RecordatorioRecorridoHostedService>();
 builder.Services.AddHostedService<LimpiezaRecorridoHostedService>();
 builder.Services.AddSingleton<IAlmacenFotos, AlmacenFotosEnDisco>();
 builder.Services.AddSingleton<IAlmacenPerfiles, AlmacenPerfilesEnDisco>();
