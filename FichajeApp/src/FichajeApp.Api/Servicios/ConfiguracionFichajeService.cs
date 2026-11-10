@@ -57,14 +57,18 @@ public class ConfiguracionFichajeService
             throw new InvalidOperationException(
                 $"La precisión del GPS tiene que estar entre {ConfiguracionFichaje.PrecisionMinima} y {ConfiguracionFichaje.PrecisionMaxima} metros.");
 
-        await _repositorio.GuardarAsync(new ConfiguracionFichaje { Ubicacion = ubicacion, Foto = foto, Modo = modo, PrecisionMaxMetros = precision });
+        var recorrido = r.SeguimientoRecorrido ?? (await ObtenerAsync()).SeguimientoRecorrido;
+        await _repositorio.GuardarAsync(new ConfiguracionFichaje
+        {
+            Ubicacion = ubicacion, Foto = foto, Modo = modo, PrecisionMaxMetros = precision, SeguimientoRecorrido = recorrido
+        });
         _cache.Remove(ClaveCache);
 
         // El rol de las cuentas de sucursal no viene de fábrica: se crea la primera vez que se activa el kiosco
         if (modo == ConfiguracionFichaje.ModoKiosco && await RolKiosco.AsegurarAsync(_roles))
             await _bitacora.RegistrarAsync(actor, "ROL_KIOSCO_CREADO");
 
-        await _bitacora.RegistrarAsync(actor, $"CONFIG_FICHAJE:{ubicacion}/{foto}/{modo}/{precision}m");
+        await _bitacora.RegistrarAsync(actor, $"CONFIG_FICHAJE:{ubicacion}/{foto}/{modo}/{precision}m/recorrido={recorrido}");
     }
 
     private static string Elegir(string? valor, string[] permitidos, string cual) =>

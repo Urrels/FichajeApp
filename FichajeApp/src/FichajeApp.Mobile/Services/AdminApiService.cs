@@ -220,8 +220,8 @@ public class AdminApiService
             (string.IsNullOrWhiteSpace(busqueda) ? "" : $"&busqueda={Uri.EscapeDataString(busqueda)}"));
     public Task<ResultadoConsulta<ConfiguracionFichaje>> ConfiguracionFichajeActual() =>
         Pedir<ConfiguracionFichaje>(HttpMethod.Get, "admin/configuracion-fichaje");
-    public Task<ResultadoConsulta<Respuesta>> GuardarConfiguracionFichaje(string ubicacion, string foto, string modo, int precisionMaxMetros) =>
-        Pedir<Respuesta>(HttpMethod.Put, "admin/configuracion-fichaje", new { ubicacion, foto, modo, precisionMaxMetros });
+    public Task<ResultadoConsulta<Respuesta>> GuardarConfiguracionFichaje(string ubicacion, string foto, string modo, int precisionMaxMetros, bool seguimientoRecorrido) =>
+        Pedir<Respuesta>(HttpMethod.Put, "admin/configuracion-fichaje", new { ubicacion, foto, modo, precisionMaxMetros, seguimientoRecorrido });
     // ---- Lugares conocidos ----
     public Task<ResultadoConsulta<List<SitioAdminItem>>> ListarSitios() => Pedir<List<SitioAdminItem>>(HttpMethod.Get, "admin/sitios");
     public Task<ResultadoConsulta<Respuesta>> CrearSitio(string nombre, double latitud, double longitud, double radioMetros) =>
@@ -310,6 +310,16 @@ public class AdminApiService
     public Task<ResultadoConsulta<List<ValorHoraItem>>> ValoresHora() => Pedir<List<ValorHoraItem>>(HttpMethod.Get, "admin/liquidacion/valor-hora");
     public Task<ResultadoConsulta<Respuesta>> GuardarValorHora(int empleadoId, decimal valor, DateTime vigenteDesde) =>
         Pedir<Respuesta>(HttpMethod.Put, "admin/liquidacion/valor-hora", new { empleadoId, valor, vigenteDesde });
+    public Task<ResultadoConsulta<NotificacionesRespuesta>> Notificaciones() =>
+        Pedir<NotificacionesRespuesta>(HttpMethod.Get, "notificaciones");
+    public Task<ResultadoConsulta<NotificacionesRespuesta>> CantidadDeNotificaciones() =>
+        Pedir<NotificacionesRespuesta>(HttpMethod.Get, "notificaciones/cantidad");
+    public Task<ResultadoConsulta<Respuesta>> LeerNotificaciones() =>
+        Pedir<Respuesta>(HttpMethod.Post, "notificaciones/leer-todas");
+    public Task<ResultadoConsulta<List<HorarioDia>>> HorarioDe(int empleadoId) =>
+        Pedir<List<HorarioDia>>(HttpMethod.Get, $"admin/liquidacion/horario/{empleadoId}");
+    public Task<ResultadoConsulta<Respuesta>> GuardarHorario(int empleadoId, List<HorarioDia> dias) =>
+        Pedir<Respuesta>(HttpMethod.Put, $"admin/liquidacion/horario/{empleadoId}", dias);
     public Task<ResultadoConsulta<List<EmpleadoResumen>>> EmpleadosParaLiquidacion() =>
         Pedir<List<EmpleadoResumen>>(HttpMethod.Get, "admin/liquidacion/empleados");
     public Task<ResultadoConsulta<List<FeriadoItem>>> Feriados(DateTime desde, DateTime hasta) =>
@@ -436,4 +446,30 @@ public class AdminApiService
         catch { /* no era JSON con "mensaje" */ }
         return $"El servidor respondió con error ({(int)respuesta.StatusCode})";
     }
+}
+
+// Un día del horario semanal. Dia: 0 = domingo ... 6 = sábado; horas "hh:mm"
+public class HorarioDia
+{
+    public int Dia { get; set; }
+    public string Entrada { get; set; } = "08:00";
+    public string Salida { get; set; } = "16:00";
+}
+
+public class NotificacionItem
+{
+    public int Id { get; set; }
+    public string Titulo { get; set; } = string.Empty;
+    public string Mensaje { get; set; } = string.Empty;
+    public DateTime Fecha { get; set; }
+    public bool Leida { get; set; }
+    public string FechaTexto => Fecha.ToString("dd/MM HH:mm");
+    // Las no leídas se ven en negrita
+    public FontAttributes Peso => Leida ? FontAttributes.None : FontAttributes.Bold;
+}
+
+public class NotificacionesRespuesta
+{
+    public int NoLeidas { get; set; }
+    public List<NotificacionItem> Items { get; set; } = new();
 }

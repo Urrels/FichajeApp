@@ -12,6 +12,11 @@ public partial class AppShell : Shell, ISessionObserver
 
         // Pantallas que se abren desde el menú de administración
         Routing.RegisterRoute(nameof(UsuariosPage), typeof(UsuariosPage));
+        Routing.RegisterRoute(nameof(UsuarioNuevoPage), typeof(UsuarioNuevoPage));
+        Routing.RegisterRoute(nameof(HorarioPage), typeof(HorarioPage));
+        Routing.RegisterRoute(nameof(RecorridoPage), typeof(RecorridoPage));
+        Routing.RegisterRoute(nameof(NotificacionesPage), typeof(NotificacionesPage));
+        Routing.RegisterRoute(nameof(OlvidePinPage), typeof(OlvidePinPage));
         Routing.RegisterRoute(nameof(SitiosPage), typeof(SitiosPage));
         Routing.RegisterRoute(nameof(RolesPage), typeof(RolesPage));
         Routing.RegisterRoute(nameof(BitacoraPage), typeof(BitacoraPage));
@@ -27,7 +32,34 @@ public partial class AppShell : Shell, ISessionObserver
         SessionManager.Instance.Suscribir(this);
     }
 
-    public void OnSesionIniciada(string nombreCompleto) => ActualizarMenu();
+    public void OnSesionIniciada(string nombreCompleto)
+    {
+        ActualizarMenu();
+        _ = ActualizarGloboAsync();
+    }
+
+    private async void OnNotificaciones(object? sender, EventArgs e)
+    {
+        FlyoutIsPresented = false;
+        await GoToAsync(nameof(NotificacionesPage));
+    }
+
+    // "Notificaciones (2)": cuantas hay sin leer. Si no se puede consultar, queda sin numero.
+    public async Task ActualizarGloboAsync()
+    {
+        int cantidad = 0;
+        try
+        {
+            var api = IPlatformApplication.Current?.Services.GetService<AdminApiService>();
+            if (api is not null && SessionManager.Instance.EstaLogueado)
+            {
+                var r = await api.CantidadDeNotificaciones();
+                if (r.Exito && r.Datos is not null) cantidad = r.Datos.NoLeidas;
+            }
+        }
+        catch { }
+        MainThread.BeginInvokeOnMainThread(() => NotifItem.Text = cantidad > 0 ? $"Notificaciones ({cantidad})" : "Notificaciones");
+    }
 
     // Al cerrar la sesión (o vencer el token) se vuelve al login desde cualquier pantalla
     public void OnSesionFinalizada()
@@ -48,6 +80,7 @@ public partial class AppShell : Shell, ISessionObserver
             SupervisorItem.FlyoutItemIsVisible = supervisor;
             AdminItem.FlyoutItemIsVisible = administrador;
             FichajeItem.FlyoutItemIsVisible = !kiosco;
+            Shell.SetFlyoutItemIsVisible(NotifItem, sesion.EstaLogueado && !kiosco);
         });
     }
 }

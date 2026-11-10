@@ -28,6 +28,11 @@
                               Tocado="OnFoto" />
             <Label Text="{Binding RetencionTexto}" Style="{StaticResource TextoAclaracion}" Margin="4,0,0,0" />
 
+            <Label Text="RECORRIDO" Style="{StaticResource EncabezadoSeccion}" />
+            <ctl:OpcionDeMenu Titulo="¿Se registra el recorrido durante la jornada?" Icono="{x:Static iconos:MaterialOutlined.Route}" Valor="{Binding RecorridoTexto}"
+                              Descripcion="Mientras la jornada está abierta (entre la entrada y la salida), el teléfono guarda su ubicación cada unos minutos, también con la app cerrada, y se ve una notificación fija. Fuera de la jornada no se registra nada. Cada persona recibe un aviso y tiene que estar de acuerdo. Se guarda 90 días."
+                              Tocado="OnRecorrido" />
+
             <Label Text="MODO" Style="{StaticResource EncabezadoSeccion}" />
             <ctl:OpcionDeMenu Titulo="¿Cómo ficha tu equipo?" Icono="{x:Static iconos:MaterialOutlined.Smartphone}" Valor="{Binding ModoTexto}"
                               Descripcion="Kiosco es para varias personas en el mismo teléfono (uno por sucursal). Viene apagado: al activarlo se crea el rol Kiosco."

@@ -149,6 +149,18 @@ public partial class SupervisorPage : ContentPage
     private void OnVerTodosClicked(object sender, EventArgs e) =>
         EncuadrarTodos(ConUbicacion());
 
+    // El recorrido que guardó el teléfono de la persona elegida en el filtro, el día "Desde"
+    private async void OnVerRecorridoClicked(object sender, EventArgs e)
+    {
+        var persona = _viewModel.EmpleadoSeleccionado;
+        if (string.IsNullOrEmpty(persona) || persona == "Todos")
+        {
+            await Dialogos.Aviso("Elegí una persona", "Elegí en el filtro Empleado a quién querés ver el recorrido.");
+            return;
+        }
+        await Shell.Current.GoToAsync($"{nameof(RecorridoPage)}?empleado={Uri.EscapeDataString(persona)}&fecha={_viewModel.Desde:yyyy-MM-dd}");
+    }
+
     // El control de Mapsui toma su tamaño unos instantes después que la pantalla; si los datos llegan antes, se espera (hasta 6 s)
     private void EsperarMapaYEncuadrar()
     {

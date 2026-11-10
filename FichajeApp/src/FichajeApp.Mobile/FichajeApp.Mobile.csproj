@@ -112,6 +112,11 @@
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 			<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
 		<PackageReference Include="Plugin.Fingerprint" Version="2.1.5" />
+		<!-- Detección de caras en el teléfono (ML Kit, modelo incluido en la app: funciona sin internet) para validar la foto de perfil -->
+		<PackageReference Include="Xamarin.Google.MLKit.FaceDetection" Version="116.1.7.9" />
+		<!-- ML Kit arrastra versiones viejas de estas dos; con la 1.9 de Fragment que ya usa MAUI aparecen clases duplicadas -->
+		<PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.9.1" />
+		<PackageReference Include="Xamarin.AndroidX.Collection.Ktx" Version="1.6.0.1" />
 		<!-- Mapsui arrastra SkiaSharp 2.88 y HarfBuzzSharp 2.8: el generador de imágenes de MAUI 10 necesita las 3.x / 8.3 -->
 		<PackageReference Include="SkiaSharp" Version="3.119.2" />
 		<PackageReference Include="SkiaSharp.HarfBuzz" Version="3.119.2" />

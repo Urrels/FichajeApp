@@ -106,3 +106,33 @@ El volumen `datos` queda en Docker: respaldalo con `docker run --rm -v fichajeap
 - Los PIN obvios (0000, 1234, 4321, 2580...) se rechazan al crear o cambiar un PIN.
 - La sesión de la cuenta de sucursal (kiosco) dura 14 días. Si se pierde el teléfono, dar de baja la cuenta corta la sesión enseguida.
 - Los pedidos tienen un tope de 1 MB y todas las respuestas llevan cabeceras de seguridad (HSTS fuera de desarrollo).
+
+## Mails (bienvenida y "Olvidé mi PIN")
+
+La API manda dos mails: la **bienvenida** al dar de alta a alguien (sin el PIN, por seguridad) y el **código de 6 dígitos** para cambiar el PIN
+desde "Olvidé mi PIN" en el login. Hace falta un servidor SMTP. **Sin configurarlo la app funciona igual**, solo que no salen mails y
+"Olvidé mi PIN" avisa que hay que pedirle al administrador que restablezca el PIN.
+
+Variables de entorno (en Azure: App Service → Configuración → Variables de entorno):
+
+| Variable | Valor |
+|---|---|
+| `Correo__Host` | Servidor SMTP, por ejemplo `smtp.gmail.com` |
+| `Correo__Puerto` | `587` (STARTTLS, por defecto) o `465` (TLS directo) |
+| `Correo__Usuario` | Cuenta que envía, por ejemplo la casilla de Gmail |
+| `Correo__Clave` | Contraseña de aplicación (ver abajo). **Nunca** la contraseña normal de la cuenta |
+| `Correo__Remitente` | Opcional: la dirección que se muestra como remitente (por defecto, el usuario) |
+| `Correo__NombreRemitente` | Opcional: nombre que se muestra (por defecto `HoraTrack`) |
+| `Correo__NombreApp` | Opcional: nombre de la app en los textos de los mails (por defecto `HoraTrack`) |
+
+**Con Gmail:** la cuenta necesita verificación en dos pasos; después se crea una *contraseña de aplicación* en
+`myaccount.google.com/apppasswords` y esa es la que va en `Correo__Clave`. Gmail permite unos 500 mails por día, de sobra para este uso.
+Otros servicios (Brevo, Mailjet, el correo del hosting) también sirven: cambian solo el host, el puerto y las credenciales.
+
+Después de guardar las variables hay que reiniciar el App Service. Los códigos de recuperación viven en memoria del servidor: si se reinicia,
+hay que pedir uno nuevo. Cada código vale 15 minutos, se puede pedir uno por minuto y se bloquea a los 5 intentos fallidos.
+
+## Notificaciones dentro de la app
+
+El menú lateral tiene **Notificaciones** (con el número de avisos sin leer). Hoy se generan al darte de alta, cuando cambia tu PIN y cuando
+cambia tu horario. Necesitan la base SQL (con la planilla de Google no se guardan). No son notificaciones "push": se ven al abrir la app.

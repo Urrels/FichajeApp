@@ -23,15 +23,19 @@ public class LiquidacionService
     private readonly IEmpleadosRepositorio _empleados;
     private readonly BitacoraService _bitacora;
     private readonly TimeProvider _tiempo;
+    private readonly IHorariosRepositorio _horarios;
+    private readonly NotificacionesService? _notificaciones;
 
     public LiquidacionService(JornadasService jornadas, ILiquidacionRepositorio repositorio, IEmpleadosRepositorio empleados,
-        BitacoraService bitacora, TimeProvider tiempo)
+        BitacoraService bitacora, TimeProvider tiempo, IHorariosRepositorio? horarios = null, NotificacionesService? notificaciones = null)
     {
         _jornadas = jornadas;
         _repositorio = repositorio;
         _empleados = empleados;
         _bitacora = bitacora;
         _tiempo = tiempo;
+        _notificaciones = notificaciones;
+        _horarios = horarios ?? new FichajeApp.Api.Persistencia.Sql.HorariosNoDisponible();
     }
 
     private DateTime Ahora => _tiempo.GetLocalNow().DateTime;
@@ -42,9 +46,18 @@ public class LiquidacionService
 
         var (jornadas, _) = await _jornadas.ObtenerAsync(desde, hasta, empleado);
         var parametros = await _repositorio.ObtenerParametrosAsync();
+
+        // Horario semanal -> turnos del período. Con un empleado puntual solo se arman los suyos.
+        var nombres = (await _empleados.ListarAsync()).ToDictionary(x => x.Id, x => x.NombreCompleto);
+        var horarios = (await _horarios.ListarAsync())
+            .Where(h => empleado is null || string.Equals(nombres.GetValueOrDefault(h.EmpleadoId), empleado, StringComparison.OrdinalIgnoreCase))
+            .ToList();
         var entrada = new EntradaLiquidacion
         {
             Jornadas = jornadas,
+            Turnos = GeneradorDeTurnos.Generar(horarios, nombres, desde, hasta),
+            EmpleadosConHorario = horarios.Where(h => nombres.ContainsKey(h.EmpleadoId))
+                .Select(h => nombres[h.EmpleadoId].ToLowerInvariant()).ToHashSet(),
             ValoresHora = await _repositorio.ListarValoresHoraAsync(),
             Feriados = (await _repositorio.ListarFeriadosAsync()).Where(f => !f.Excluido && f.PagaRecargo(parametros.PagarPuentes))
                 .Select(f => f.Fecha.Date).ToHashSet(),
@@ -170,6 +183,25 @@ public class LiquidacionService
                 VigenteDesde = v.VigenteDesde
             })
             .OrderBy(v => v.Empleado, StringComparer.OrdinalIgnoreCase).ThenByDescending(v => v.VigenteDesde).ToList();
+    }
+
+    // ---- Horario semanal por empleado ----
+
+    public async Task<List<HorarioEmpleado>> ListarHorariosAsync(int empleadoId) =>
+        (await _horarios.ListarAsync()).Where(h => h.EmpleadoId == empleadoId).OrderBy(h => ((int)h.Dia + 6) % 7).ToList();
+
+    public async Task GuardarHorariosAsync(string actor, int empleadoId, List<HorarioEmpleado> horarios)
+    {
+        var empleado = await _empleados.ObtenerPorIdAsync(empleadoId)
+            ?? throw new InvalidOperationException("El empleado no existe.");
+        foreach (var h in horarios) h.EmpleadoId = empleadoId;
+        var error = GeneradorDeTurnos.Validar(horarios);
+        if (error is not null) throw new InvalidOperationException(error);
+
+        await _horarios.GuardarAsync(empleadoId, horarios);
+        await _bitacora.RegistrarAsync(actor, $"HORARIO_GUARDADO:{empleado.NombreCompleto}:{horarios.Count}dias");
+        if (_notificaciones is not null)
+            await _notificaciones.CrearAsync(empleadoId, "Tu horario cambió", "Un administrador actualizó tu horario semanal. Revisalo con tu empresa.");
     }
 
     public async Task GuardarValorHoraAsync(string actor, int empleadoId, decimal valor, DateTime vigenteDesde)

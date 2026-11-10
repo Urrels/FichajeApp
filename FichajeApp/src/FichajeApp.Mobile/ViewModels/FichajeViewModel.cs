@@ -78,6 +78,10 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
     {
         var config = await _apiService.ObtenerConfiguracionFichajeAsync();
         if (config.PideUbicacion) await _geoService.PrecalentarAsync(config.PrecisionMaxMetros);
+
+        // Si hay una jornada abierta y la empresa registra el recorrido, se retoma (por ejemplo, después de reabrir la app)
+        var proximo = _proximo ?? await _apiService.ObtenerProximoTipoAsync();
+        await RecorridoJornada.RetomarAsync(config, proximo);
     }
 
     // Al salir de la pantalla o pasar la app a segundo plano: se deja de escuchar el GPS
@@ -232,6 +236,9 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         await ActualizarProximoAsync();
         Procesando = false;
         await MostrarConfirmacionAsync(resultado.Tipo ?? "Fichaje");
+
+        // La entrada empieza el registro del recorrido (si la empresa lo activó); la salida lo termina
+        await RecorridoJornada.AlFicharAsync(resultado.Tipo, config);
     }
 
     // Al empezar un fichaje se limpia lo del anterior

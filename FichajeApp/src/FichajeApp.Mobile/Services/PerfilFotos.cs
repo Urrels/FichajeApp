@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace FichajeApp.Mobile.Services;
@@ -51,6 +51,18 @@ public class PerfilFotos
             if (!await _api.DescargarFotoDePerfil(empleadoId, ruta)) return null;
             BorrarVersionesViejas(empleadoId, ruta);
             return ruta;
+        }
+        catch { return null; }
+    }
+
+    // true/false según el servidor; null si no se pudo consultar (por ejemplo sin conexión)
+    public async Task<bool?> TieneFotoAsync(int empleadoId)
+    {
+        try
+        {
+            await AsegurarVersionesAsync();
+            if (_cargadoEn == DateTime.MinValue) return null;
+            return _versiones.ContainsKey(empleadoId);
         }
         catch { return null; }
     }

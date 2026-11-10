@@ -37,8 +37,12 @@ public class AuthService
         _clientes = clientes;
     }
 
+    // true si el último intento falló por falta de conexión (y no porque el servidor rechazó los datos)
+    public bool UltimoFalloFueDeConexion { get; private set; }
+
     public async Task<(bool exito, string mensaje)> LoginAsync(string email, string pin)
     {
+        UltimoFalloFueDeConexion = false;
         try
         {
             var response = await _httpClient.PostAsJsonAsync($"{_clientes.BaseUrl}/auth/login",
@@ -66,8 +70,31 @@ public class AuthService
         }
         catch (Exception ex)
         {
+            UltimoFalloFueDeConexion = true;
             return (false, TextosDeError.DeExcepcion(ex));
         }
+    }
+
+    // "Olvide mi PIN": pide el codigo por mail y despues lo canjea por un PIN nuevo (no hace falta sesion)
+    public Task<(bool exito, string mensaje)> SolicitarCodigoAsync(string email) =>
+        PostSinSesionAsync("auth/olvide-pin", new { email });
+
+    public Task<(bool exito, string mensaje)> RestablecerPinAsync(string email, string codigo, string pinNuevo) =>
+        PostSinSesionAsync("auth/restablecer-pin", new { email, codigo, pinNuevo });
+
+    private async Task<(bool exito, string mensaje)> PostSinSesionAsync(string ruta, object cuerpo)
+    {
+        try
+        {
+            using var respuesta = await _httpClient.PostAsJsonAsync($"{_clientes.BaseUrl}/{ruta}", cuerpo);
+            Dictionary<string, string>? datos = null;
+            try { datos = await respuesta.Content.ReadFromJsonAsync<Dictionary<string, string>>(); } catch { }
+            var mensaje = datos?.GetValueOrDefault("mensaje");
+            if (respuesta.IsSuccessStatusCode) return (true, mensaje ?? "Listo");
+            if ((int)respuesta.StatusCode == 429) return (false, "Demasiados intentos. Esper" + (char)0xE1 + " un minuto y volv" + (char)0xE9 + " a probar.");
+            return (false, mensaje ?? TextosDeError.TiempoAgotado);
+        }
+        catch (Exception ex) { return (false, TextosDeError.DeExcepcion(ex)); }
     }
 
     public async Task<bool> RestaurarSesionAsync()
@@ -91,7 +118,9 @@ public class AuthService
 
     public void Logout()
     {
-        SecureStorage.Default.RemoveAll();
+        // No se usa RemoveAll: los datos recordados para entrar con huella tienen que sobrevivir al cierre de sesión
+        foreach (var clave in new[] { TokenKey, NombreKey, IdKey, RolKey, PermisosKey }) SecureStorage.Default.Remove(clave);
+        RecorridoJornada.Detener(borrarPendientes: true);   // sin sesion no hay jornada que registrar
         SessionManager.Instance.FinalizarSesion();
     }
 

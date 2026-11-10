@@ -268,7 +268,7 @@ public class ApiIntegracionTests : IClassFixture<ApiFactory>
         var csv = await admin.GetAsync("/api/admin/liquidacion/liquidaciones/1/csv");
         Assert.Equal("text/csv", csv.Content.Headers.ContentType?.MediaType);
         var texto = await csv.Content.ReadAsStringAsync();
-        Assert.Contains("Ana Empleada;8;8;8;0;0;0;8000,00", texto);
+        Assert.Contains("Ana Empleada;8;0;8;8;0;0;0;8000,00", texto);
     }
 
     [Fact]

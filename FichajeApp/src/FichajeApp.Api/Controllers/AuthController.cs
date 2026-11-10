@@ -15,11 +15,13 @@ public class AuthController : ControllerBase
 
     private readonly LoginService _loginService;
     private readonly JwtService _jwtService;
+    private readonly RecuperacionDePin _recuperacion;
 
-    public AuthController(LoginService loginService, JwtService jwtService)
+    public AuthController(LoginService loginService, JwtService jwtService, RecuperacionDePin recuperacion)
     {
         _loginService = loginService;
         _jwtService = jwtService;
+        _recuperacion = recuperacion;
     }
 
     // Limitado por IP (ver "login" en Program.cs): un PIN de 4 dígitos se prueba entero en minutos sin límite
@@ -53,5 +55,30 @@ public class AuthController : ControllerBase
             default:
                 return Unauthorized(new { mensaje = MensajeCredenciales });
         }
+    }
+
+    public record OlvidePinRequest(string? Email);
+    public record RestablecerPinRequest(string? Email, string? Codigo, string? PinNuevo);
+
+    // Manda un código por mail. La respuesta es la misma exista o no la cuenta (no delata qué mails están dados de alta).
+    [HttpPost("olvide-pin")]
+    [EnableRateLimiting("login")]
+    [ManejarReglasNegocio]
+    public async Task<IActionResult> OlvidePin([FromBody] OlvidePinRequest r)
+    {
+        if (!_recuperacion.CorreoDisponible)
+            return StatusCode(503, new { mensaje = "Esta empresa todavía no activó el envío de mails. Pedile a tu administrador que restablezca tu PIN." });
+
+        await _recuperacion.SolicitarAsync(r.Email);
+        return Ok(new { mensaje = "Si el email está dado de alta, te mandamos un código. Revisá también la carpeta de spam." });
+    }
+
+    [HttpPost("restablecer-pin")]
+    [EnableRateLimiting("login")]
+    [ManejarReglasNegocio]
+    public async Task<IActionResult> RestablecerPin([FromBody] RestablecerPinRequest r)
+    {
+        await _recuperacion.RestablecerAsync(r.Email, r.Codigo, r.PinNuevo);
+        return Ok(new { mensaje = "Listo, ya podés ingresar con tu PIN nuevo." });
     }
 }

@@ -87,7 +87,7 @@ public static class ReportePdf
         {
             d.SaltoSiNoEntra(44);
             d.Texto(MargenX, "F2", 10, Recortar(grupo.Key, 40)); d.Y -= 13;
-            d.Texto(MargenX + 8, "F2", 8, "Fecha"); d.Texto(120, "F2", 8, "Horario"); d.Texto(380, "F2", 8, "A pagar (h)");
+            d.Texto(MargenX + 8, "F2", 8, "Fecha"); d.Texto(120, "F2", 8, "Horario"); d.Texto(290, "F2", 8, "Asignadas (h)"); d.Texto(380, "F2", 8, "A pagar (h)");
             d.Texto(440, "F2", 8, "Importe"); d.Y -= 4;
             d.Linea(MargenX, 555); d.Y -= 10;
 
@@ -96,6 +96,7 @@ public static class ReportePdf
                 d.SaltoSiNoEntra(14);
                 d.Texto(MargenX + 8, "F3", 8, $"{x.Fecha:dd/MM} {NombreDia(x.Fecha)}");
                 d.Texto(120, "F3", 8, Horario(x));
+                if (x.MinAsignados > 0) d.Numero(338, 8, Horas(x.MinAsignados));
                 d.Numero(430, 8, Horas(x.MinPagables));
                 d.Numero(555, 8, Dinero(x.Importe));
                 if (!string.IsNullOrWhiteSpace(x.Observacion))

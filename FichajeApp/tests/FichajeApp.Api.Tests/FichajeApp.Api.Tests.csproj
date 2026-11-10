@@ -38,6 +38,7 @@
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\BuscadorDeUbicacion.cs" Link="Mobile\BuscadorDeUbicacion.cs" />
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\Iniciales.cs" Link="Mobile\Iniciales.cs" />
     <Compile Include="..\..\src\FichajeApp.Mobile\Services\AccionDeError.cs" Link="Mobile\AccionDeError.cs" />
+    <Compile Include="..\..\src\FichajeApp.Mobile\Services\ReglasDeCara.cs" Link="Mobile\ReglasDeCara.cs" />
   </ItemGroup>
 
 </Project>

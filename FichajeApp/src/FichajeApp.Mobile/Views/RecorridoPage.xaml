@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
+             x:Class="FichajeApp.Mobile.Views.RecorridoPage"
+             Title="Recorrido"
+             BackgroundColor="{DynamicResource ColorFondo}">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="8">
+        <Label x:Name="Titulo" Style="{StaticResource TextoTitulo}" />
+        <ctl:BannerInline x:Name="Aviso" Row="1" Grid.Row="1" Severidad="Info" IsVisible="False" />
+
+        <Border Grid.Row="2" Style="{StaticResource Tarjeta}" Padding="0" StrokeShape="RoundRectangle 16">
+            <mapsui:MapView x:Name="Mapa" />
+        </Border>
+    </Grid>
+</ContentPage>

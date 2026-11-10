@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
+             xmlns:svc="clr-namespace:FichajeApp.Mobile.Services"
+             x:Class="FichajeApp.Mobile.Views.NotificacionesPage"
+             Title="Notificaciones"
+             BackgroundColor="{DynamicResource ColorFondo}">
+
+    <Grid RowDefinitions="Auto,*" Padding="16" RowSpacing="8">
+        <ctl:BannerInline x:Name="Aviso" Severidad="Error" IsVisible="False" />
+
+        <RefreshView Grid.Row="1" x:Name="Refresco" Refreshing="OnRefrescar">
+            <CollectionView x:Name="Lista">
+                <CollectionView.EmptyView>
+                    <ctl:EstadoVacio Icono="🔔" Titulo="Sin notificaciones" Mensaje="Acá vas a ver los avisos de tu cuenta." />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="svc:NotificacionItem">
+                        <Border Margin="0,0,0,8" Padding="12" StrokeThickness="1" Stroke="{DynamicResource ColorBorde}"
+                                BackgroundColor="{DynamicResource ColorSuperficie}" StrokeShape="RoundRectangle 12">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding Titulo}" FontAttributes="{Binding Peso}" FontSize="15"
+                                       TextColor="{DynamicResource ColorTexto}" />
+                                <Label Text="{Binding Mensaje}" FontSize="13" TextColor="{DynamicResource ColorTexto}" />
+                                <Label Text="{Binding FechaTexto}" FontSize="11" TextColor="{DynamicResource ColorTextoSuave}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+    </Grid>
+</ContentPage>

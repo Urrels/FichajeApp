@@ -73,6 +73,9 @@ if (usaSql)
     builder.Services.AddSingleton<IHistorialUsuariosRepositorio, HistorialUsuariosSqlRepositorio>();
     builder.Services.AddSingleton<IFichajesRepositorio, FichajesSqlRepositorio>();
     builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSqlRepositorio>();
+    builder.Services.AddSingleton<IHorariosRepositorio, HorariosSqlRepositorio>();
+    builder.Services.AddSingleton<INotificacionesRepositorio, NotificacionesSqlRepositorio>();
+    builder.Services.AddSingleton<IRecorridoRepositorio, RecorridoSqlRepositorio>();
     builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSqlRepositorio>();
     builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSqlRepositorio>();
     // Migra la base y siembra permisos, roles y el primer administrador antes de que arranque el resto
@@ -95,6 +98,9 @@ else
         sp.GetRequiredService<IOptions<FichajeOptions>>()));
 
     builder.Services.AddSingleton<ISitiosAdminRepositorio, SitiosAdminNoDisponible>();
+    builder.Services.AddSingleton<IHorariosRepositorio, HorariosNoDisponible>();
+    builder.Services.AddSingleton<INotificacionesRepositorio, NotificacionesNoDisponible>();
+    builder.Services.AddSingleton<IRecorridoRepositorio, RecorridoNoDisponible>();
 
     // Repositorios de la administración
     builder.Services.AddSingleton<IRolesRepositorio, RolesSheetsRepositorio>();
@@ -109,6 +115,17 @@ builder.Services.AddSingleton<ISitiosService, SitiosService>();
 builder.Services.AddSingleton<SitiosAdminService>();
 builder.Services.AddSingleton<JwtService>();
 builder.Services.AddSingleton<SesionesVigentes>();
+
+// Mails (bienvenida y recuperación del PIN) y avisos dentro de la app
+builder.Services.Configure<OpcionesCorreo>(builder.Configuration.GetSection(OpcionesCorreo.Seccion));
+if (builder.Configuration.GetSection(OpcionesCorreo.Seccion).Get<OpcionesCorreo>()?.Configurado == true)
+    builder.Services.AddSingleton<IEnviadorDeCorreo, SmtpEnviador>();
+else
+    builder.Services.AddSingleton<IEnviadorDeCorreo, EnviadorNulo>();
+builder.Services.AddSingleton<NotificacionesService>();
+builder.Services.AddSingleton<RecuperacionDePin>();
+builder.Services.AddScoped<RecorridoService>();
+builder.Services.AddHostedService<LimpiezaRecorridoHostedService>();
 builder.Services.AddSingleton<IAlmacenFotos, AlmacenFotosEnDisco>();
 builder.Services.AddSingleton<IAlmacenPerfiles, AlmacenPerfilesEnDisco>();
 builder.Services.AddSingleton<LimpiezaFotos>();

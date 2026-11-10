@@ -10,18 +10,22 @@ public partial class LoginPage : ContentPage
     private readonly ConfiguracionApiService _configuracion;
     private readonly IClienteService _clientes;
     private readonly AparienciaService _apariencia;
+    private readonly AuthService _auth;
+    private readonly PerfilFotos _perfiles;
     private bool _yaOfrecioConfigurar;
     private int _toquesEnElLogo;
     private DateTime _primerToque;
 
     public LoginPage(AuthService authService, ConfiguracionApiService configuracion, IClienteService clientes,
-        AparienciaService apariencia)
+        AparienciaService apariencia, IBiometricService biometria, PerfilFotos perfiles)
     {
         InitializeComponent();
         _configuracion = configuracion;
         _clientes = clientes;
         _apariencia = apariencia;
-        _viewModel = new LoginViewModel(authService);
+        _auth = authService;
+        _perfiles = perfiles;
+        _viewModel = new LoginViewModel(authService, biometria);
         _viewModel.LoginExitoso += OnLoginExitoso;
         BindingContext = _viewModel;
     }
@@ -32,6 +36,7 @@ public partial class LoginPage : ContentPage
         base.OnAppearing();
         _viewModel.Limpiar();
         MostrarServidorPersonalizado();
+        await _viewModel.ActualizarHuellaAsync();
         if (_yaOfrecioConfigurar) return;
         _yaOfrecioConfigurar = true;
 
@@ -103,6 +108,10 @@ public partial class LoginPage : ContentPage
     // Tocar "Listo" en el teclado entra, igual que el botón
     private async void OnPinCompleted(object sender, EventArgs e) => await _viewModel.LoginAsync();
 
+    private async void OnOlvidePinClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(OlvidePinPage));
+
+    private async void OnHuellaClicked(object sender, EventArgs e) => await _viewModel.LoginConHuellaAsync();
+
     private async void OnLoginClicked(object sender, EventArgs e)
     {
         await _viewModel.LoginAsync();
@@ -112,5 +121,8 @@ public partial class LoginPage : ContentPage
     {
         // El supervisor y el administrador entran directo a su panel; desde el menú pueden ir a fichar
         await Shell.Current.GoToAsync(Navegacion.RutaInicial());
+        // Primer ingreso sin foto de perfil: se la pide antes de seguir
+        await FotoDePerfil.ExigirSiFaltaAsync(_perfiles, _auth);
+        if (!SessionManager.Instance.EstaLogueado) await Shell.Current.GoToAsync("//LoginPage");
     }
 }

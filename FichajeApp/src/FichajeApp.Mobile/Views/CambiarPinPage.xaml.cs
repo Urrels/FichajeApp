@@ -45,6 +45,7 @@ public partial class CambiarPinPage : ContentPage
             return;
         }
 
+        await CredencialesRecordadas.ActualizarPinAsync(NuevoEntry.Text);   // la huella sigue entrando con el PIN nuevo
         await Dialogos.Aviso("Listo", "Tu PIN se actualizó.");
         await Shell.Current.GoToAsync("..");
     }

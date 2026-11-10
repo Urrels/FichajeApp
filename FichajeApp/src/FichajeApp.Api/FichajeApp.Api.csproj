@@ -10,6 +10,7 @@
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.68.0.3601" />
     <PackageReference Include="Google.Apis.Sheets.v4" Version="1.68.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="MailKit" Version="4.13.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.14">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

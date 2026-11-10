@@ -48,7 +48,7 @@ public class ConfiguracionFichajeSqlRepositorio : BaseSql, IConfiguracionFichaje
         var f = await db.ConfigFichaje.FirstOrDefaultAsync(c => c.Id == 1);
         return f is null
             ? null
-            : new ConfiguracionFichaje { Ubicacion = f.Ubicacion, Foto = f.Foto, Modo = f.Modo, PrecisionMaxMetros = f.PrecisionMaxMetros };
+            : new ConfiguracionFichaje { Ubicacion = f.Ubicacion, Foto = f.Foto, Modo = f.Modo, PrecisionMaxMetros = f.PrecisionMaxMetros, SeguimientoRecorrido = f.SeguimientoRecorrido };
     });
 
     public async Task GuardarAsync(ConfiguracionFichaje c)
@@ -60,6 +60,7 @@ public class ConfiguracionFichajeSqlRepositorio : BaseSql, IConfiguracionFichaje
         f.Foto = c.Foto;
         f.Modo = c.Modo;
         f.PrecisionMaxMetros = c.PrecisionMaxMetros;
+        f.SeguimientoRecorrido = c.SeguimientoRecorrido;
         await db.SaveChangesAsync();
     }
 }

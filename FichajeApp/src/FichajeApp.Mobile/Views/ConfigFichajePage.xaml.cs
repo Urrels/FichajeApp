@@ -23,5 +23,6 @@ public partial class ConfigFichajePage : ContentPage
     private async void OnPrecision(object sender, EventArgs e) => await _viewModel.ElegirPrecisionAsync();
     private async void OnModo(object sender, EventArgs e) => await _viewModel.ElegirModoAsync();
     private async void OnFoto(object sender, EventArgs e) => await _viewModel.ElegirFotoAsync();
+    private async void OnRecorrido(object sender, EventArgs e) => await _viewModel.ElegirRecorridoAsync();
     private async void OnGuardar(object sender, EventArgs e) => await _viewModel.GuardarAsync();
 }

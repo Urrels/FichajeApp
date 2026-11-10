@@ -8,10 +8,12 @@ public partial class App : Application
     private readonly AparienciaService _apariencia;
 
     private readonly ConfiguracionApiService _configuracion;
+    private readonly PerfilFotos _perfiles;
 
-    public App(AuthService authService, IClienteService clientes, AparienciaService apariencia, ConfiguracionApiService configuracion)
+    public App(AuthService authService, IClienteService clientes, AparienciaService apariencia, ConfiguracionApiService configuracion, PerfilFotos perfiles)
     {
         _configuracion = configuracion;
+        _perfiles = perfiles;
         InitializeComponent();
 
         // El diseño es claro (fondo y tarjetas claras). Con el teléfono en modo oscuro, los textos de la plantilla de MAUI
@@ -39,5 +41,12 @@ public partial class App : Application
 
         // La apariencia vigente se pide sin bloquear el arranque; si cambió, la pantalla se actualiza sola
         _ = _apariencia.ActualizarAsync();
+
+        // Sesión restaurada sin foto de perfil (por ejemplo, quien ya estaba dado de alta antes de esta versión)
+        if (haySesion)
+        {
+            await FotoDePerfil.ExigirSiFaltaAsync(_perfiles, _authService);
+            if (!SessionManager.Instance.EstaLogueado) await Shell.Current.GoToAsync("//LoginPage");
+        }
     }
 }

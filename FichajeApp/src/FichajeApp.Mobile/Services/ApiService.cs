@@ -15,7 +15,7 @@ public class FichajeRequest
 }
 
 // Cómo se ficha en este cliente: ubicación (Ninguna / Libre / SedeFija) y foto (No / Opcional / Obligatoria)
-public record ConfiguracionFichaje(string Ubicacion, string Foto, int RetencionDias = 90, string Modo = "Personal", int PrecisionMaxMetros = 50)
+public record ConfiguracionFichaje(string Ubicacion, string Foto, int RetencionDias = 90, string Modo = "Personal", int PrecisionMaxMetros = 50, bool SeguimientoRecorrido = false)
 {
     public static readonly ConfiguracionFichaje PorDefecto = new("Libre", "No");
     public bool PideUbicacion => Ubicacion != "Ninguna";
@@ -90,6 +90,9 @@ public class ApiService
     public Task<ResultadoConsulta<List<FichajeItem>>> ObtenerPresentesAsync() =>
         GetAsync<List<FichajeItem>>("supervisor/presentes");
 
+    public Task<ResultadoConsulta<List<PuntoRecorridoItem>>> ObtenerRecorridoAsync(string empleado, DateTime fecha) =>
+        GetAsync<List<PuntoRecorridoItem>>($"supervisor/recorrido?empleado={Uri.EscapeDataString(empleado)}&fecha={fecha:yyyy-MM-dd}");
+
     public Task<ResultadoConsulta<List<string>>> ObtenerEmpleadosAsync() =>
         GetAsync<List<string>>("supervisor/empleados");
 
@@ -110,7 +113,8 @@ public class ApiService
             r.Datos.TryGetProperty(campo, out var v) && v.ValueKind == System.Text.Json.JsonValueKind.String ? v.GetString() ?? porDefecto : porDefecto;
         var dias = r.Datos.TryGetProperty("retencionDias", out var d) && d.TryGetInt32(out var n) ? n : 90;
         var precision = r.Datos.TryGetProperty("precisionMaxMetros", out var pm) && pm.TryGetInt32(out var m) ? m : 50;
-        return new ConfiguracionFichaje(Texto("ubicacion", "Libre"), Texto("foto", "No"), dias, "Personal", precision);
+        var recorrido = r.Datos.TryGetProperty("seguimientoRecorrido", out var sr) && sr.ValueKind == System.Text.Json.JsonValueKind.True;
+        return new ConfiguracionFichaje(Texto("ubicacion", "Libre"), Texto("foto", "No"), dias, "Personal", precision, recorrido);
     }
 
     // Empleados que pueden fichar en el teléfono compartido de la sucursal, con lo que les toca ahora
@@ -236,4 +240,13 @@ public class ApiService
             return new ResultadoFichaje(false, TextosDeError.DeExcepcion(ex));
         }
     }
+}
+
+// Un punto del recorrido de una persona (lo que ve el supervisor)
+public class PuntoRecorridoItem
+{
+    public DateTime FechaHora { get; set; }
+    public double Latitud { get; set; }
+    public double Longitud { get; set; }
+    public double? Precision { get; set; }
 }

@@ -23,10 +23,20 @@ urrelsgisela@gmail.com).<br>
 <ul>
   <li><strong>Datos de la persona empleada:</strong> nombre y apellido, email y un PIN (se guarda cifrado, nunca en texto).</li>
   <li><strong>Fichajes:</strong> fecha y hora de cada entrada y salida.</li>
-  <li><strong>Ubicación precisa (GPS)</strong>, si la empresa lo activó. La app la usa solo mientras la pantalla de fichar está abierta,
-      para tenerla lista al momento de fichar, y guarda la ubicación solo al registrar un fichaje. No se sigue la ubicación en segundo plano.</li>
+  <li><strong>Ubicación precisa (GPS) al fichar</strong>, si la empresa lo activó. La app la usa mientras la pantalla de fichar está abierta,
+      para tenerla lista al momento de fichar, y la guarda al registrar un fichaje.</li>
+  <li><strong>Recorrido durante la jornada</strong>, solo si la empresa lo activó y la persona lo aceptó en un aviso dentro de la app:
+      desde que se ficha la entrada hasta que se ficha la salida, la app guarda la ubicación aproximadamente cada 3 minutos, <strong>también con la app cerrada o sin usarla</strong>,
+      y muestra una notificación fija mientras lo hace. Fuera de la jornada no se registra ninguna ubicación. La app no usa el permiso de ubicación en segundo plano
+      de Android: lo hace con un servicio en primer plano visible para la persona.</li>
   <li><strong>Foto de la cara</strong> al fichar, si la empresa lo activó.</li>
-  <li><strong>Foto de perfil</strong> (opcional): la carga la persona o un administrador para reconocerla en las listas de la app.</li>
+  <li><strong>Foto de perfil</strong>: se pide al iniciar sesión por primera vez, para reconocer a la persona en las listas y en los fichajes.
+      La app comprueba en el propio teléfono que la foto contenga una cara; esa comprobación no envía la foto a ningún servicio de terceros.</li>
+  <li><strong>Horario semanal</strong> asignado por la empresa, para calcular las horas.</li>
+  <li><strong>Avisos y correos:</strong> la app guarda avisos de la cuenta (bienvenida, cambio de PIN o de horario) y puede enviar al email de la persona un correo de bienvenida
+      y un código para cambiar el PIN si lo olvida. No se envía publicidad.</li>
+  <li><strong>Datos guardados en el teléfono:</strong> si la persona elige «Recordar mis datos», el email y el PIN se guardan cifrados en el teléfono y solo se usan
+      después de confirmar con la huella o el bloqueo de pantalla.</li>
   <li><strong>Huella o PIN del teléfono:</strong> se usa solo para confirmar que quien ficha es la persona; la app no recibe ni guarda la huella.</li>
 </ul>
 
@@ -40,6 +50,7 @@ urrelsgisela@gmail.com).<br>
 <ul>
   <li>Fichajes, datos de empleados y liquidaciones: en una base de datos SQL alojada en Microsoft Azure, con copias de seguridad automáticas.</li>
   <li>Fotos de los fichajes: en el servidor de la aplicación; se borran automáticamente a los 90 días.</li>
+  <li>Recorrido durante la jornada: en la base de datos; se borra automáticamente a los 90 días.</li>
   <li>Foto de perfil: hasta que la persona o un administrador la quite.</li>
   <li>Los datos viajan cifrados (HTTPS).</li>
   <li>Se conservan mientras dure la relación laboral y el plazo que exija la ley.</li>

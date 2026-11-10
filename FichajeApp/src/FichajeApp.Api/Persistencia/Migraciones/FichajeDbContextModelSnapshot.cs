@@ -17,7 +17,7 @@ namespace FichajeApp.Api.Persistencia.Migraciones
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.33")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -96,6 +96,9 @@ namespace FichajeApp.Api.Persistencia.Migraciones
 
                     b.Property<int>("PrecisionMaxMetros")
                         .HasColumnType("int");
+
+                    b.Property<bool>("SeguimientoRecorrido")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Ubicacion")
                         .IsRequired()
@@ -339,6 +342,34 @@ namespace FichajeApp.Api.Persistencia.Migraciones
                     b.ToTable("UsuarioHistorial", (string)null);
                 });
 
+            modelBuilder.Entity("FichajeApp.Api.Persistencia.HorarioFila", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpleadoId")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("Entrada")
+                        .HasColumnType("time(0)");
+
+                    b.Property<TimeSpan>("Salida")
+                        .HasColumnType("time(0)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpleadoId", "DiaSemana")
+                        .IsUnique();
+
+                    b.ToTable("Horarios", (string)null);
+                });
+
             modelBuilder.Entity("FichajeApp.Api.Persistencia.LiquidacionDiaFila", b =>
                 {
                     b.Property<int>("Id")
@@ -460,6 +491,40 @@ namespace FichajeApp.Api.Persistencia.Migraciones
                     b.ToTable("Liquidaciones", (string)null);
                 });
 
+            modelBuilder.Entity("FichajeApp.Api.Persistencia.NotificacionFila", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EmpleadoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Leida")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Mensaje")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpleadoId", "Fecha");
+
+                    b.ToTable("Notificaciones", (string)null);
+                });
+
             modelBuilder.Entity("FichajeApp.Api.Persistencia.ParametrosFila", b =>
                 {
                     b.Property<int>("Id")
@@ -513,6 +578,36 @@ namespace FichajeApp.Api.Persistencia.Migraciones
                         .IsUnique();
 
                     b.ToTable("Permisos", (string)null);
+                });
+
+            modelBuilder.Entity("FichajeApp.Api.Persistencia.RecorridoPuntoFila", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EmpleadoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaHora")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("Latitud")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitud")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Precision")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpleadoId", "FechaHora");
+
+                    b.ToTable("RecorridoPuntos", (string)null);
                 });
 
             modelBuilder.Entity("FichajeApp.Api.Persistencia.RolFila", b =>

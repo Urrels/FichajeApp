@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
+             x:Class="FichajeApp.Mobile.Views.UsuarioNuevoPage"
+             Title="Nuevo usuario"
+             BackgroundColor="{DynamicResource ColorFondo}">
+
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="12">
+                <material:TextField x:Name="NombreEntry" Title="Nombre completo" MaxLength="80" />
+                <Label Text="Es único: los fichajes se identifican por nombre." FontSize="12" />
+
+                <material:TextField x:Name="EmailEntry" Title="Email" Keyboard="Email" MaxLength="100" />
+                <material:TextField x:Name="PinEntry" Title="PIN de 4 dígitos" IsPassword="True" Keyboard="Numeric" MaxLength="4" />
+
+                <Label Text="Roles" Style="{StaticResource TextoTitulo}" FontSize="16" />
+                <VerticalStackLayout x:Name="RolesLista" Spacing="4" />
+
+                <ctl:BannerInline x:Name="Aviso" Severidad="Error" IsVisible="False" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Acciones siempre visibles abajo: "Listo" estaba escondido en un menú -->
+        <VerticalStackLayout Grid.Row="1" Padding="16" Spacing="8">
+            <ActivityIndicator x:Name="Espera" IsRunning="False" IsVisible="False" />
+            <Button x:Name="CrearButton" Text="Revisar y crear" Clicked="OnRevisar" />
+            <Button Text="Cancelar" Clicked="OnCancelar" BackgroundColor="Transparent"
+                    TextColor="{DynamicResource ColorTextoSuave}" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

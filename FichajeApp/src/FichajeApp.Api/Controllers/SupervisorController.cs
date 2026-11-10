@@ -57,6 +57,17 @@ public class SupervisorController : ControllerBase
     [HttpGet("presentes")]
     public async Task<IActionResult> Presentes() => Ok(await _consulta.ObtenerPresentesAsync());
 
+    // GET api/supervisor/recorrido?empleado=Nombre&fecha=2026-10-29  -> los puntos de ubicación de esa persona ese día
+    [HttpGet("recorrido")]
+    public async Task<IActionResult> Recorrido([FromQuery] string empleado, [FromQuery] DateTime? fecha, [FromServices] Servicios.RecorridoService recorrido)
+    {
+        var persona = (await _empleados.ListarAsync()).FirstOrDefault(e => e.NombreCompleto.Equals(empleado ?? "", StringComparison.OrdinalIgnoreCase));
+        if (persona is null) return NotFound(new { mensaje = "No encontramos a esa persona." });
+
+        var puntos = await recorrido.ObtenerAsync(persona.Id, (fecha ?? DateTime.Now).Date);
+        return Ok(puntos.Select(p => new { p.FechaHora, p.Latitud, p.Longitud, p.Precision }));
+    }
+
     // GET api/supervisor/empleados  -> nombres de los empleados activos (para el filtro)
     [HttpGet("empleados")]
     public async Task<IActionResult> Empleados()

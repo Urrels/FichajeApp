@@ -44,7 +44,8 @@ public static class LiquidacionCalculo
 
         var jornadas = e.Jornadas.Where(j => j.Fecha >= desde && j.Fecha <= hasta).ToList();
         var turnos = e.Turnos.Where(t => t.Fecha >= desde && t.Fecha <= hasta).ToList();
-        bool usaTurnos = e.Turnos.Count > 0;
+        // El modo "con turnos" vale por empleado: quien no tiene horario cargado se sigue pagando por lo fichado
+        var conTurnos = e.Turnos.Select(t => t.Empleado.ToLowerInvariant()).Concat(e.EmpleadosConHorario).ToHashSet();
 
         var claves = jornadas.Select(j => (Empleado: j.Empleado.ToLowerInvariant(), j.Fecha))
             .Union(turnos.Select(t => (Empleado: t.Empleado.ToLowerInvariant(), t.Fecha)))
@@ -67,6 +68,7 @@ public static class LiquidacionCalculo
             // Un turno que todavía no terminó no genera fila
             if (jornadasDia.Count == 0 && turnosDia.Any(t => t.Fin > e.Ahora)) continue;
 
+            bool usaTurnos = conTurnos.Contains(clave.Empleado);
             int efectivo, excedente, pagables;
             bool aprobado = false;
 

@@ -35,27 +35,12 @@ public class UsuariosViewModel : VmBase
         Estado = r.Datos.Total == 0 ? "No hay usuarios" : $"{r.Datos.Total} usuario(s)";
     });
 
-    public async Task NuevoAsync()
-    {
-        var nombre = await Dialogos.Texto("Nuevo usuario", "Nombre completo (es único: los fichajes se identifican por nombre)", maximo: 80);
-        if (string.IsNullOrEmpty(nombre)) return;
-        var email = await Dialogos.Texto("Nuevo usuario", "Email", maximo: 100, teclado: Keyboard.Email);
-        if (string.IsNullOrEmpty(email)) return;
-        var pin = await Dialogos.Texto("Nuevo usuario", "PIN de 4 dígitos", maximo: 4, teclado: Keyboard.Numeric);
-        if (string.IsNullOrEmpty(pin)) return;
-
-        var roles = await ObtenerRolesAsync();
-        if (roles is null) return;
-        var porDefecto = roles.Where(r => r.Nombre == "Empleado").Select(r => r.Id);
-        var elegidos = await Dialogos.ElegirVarios("Roles", roles.Select(r => (r.Id, r.Nombre)).ToList(), porDefecto);
-        if (elegidos is null) return;
-
-        await Ejecutar(() => _api.CrearUsuario(nombre, email, pin, elegidos), "Usuario creado");
-    }
+    // Pantalla propia con vista previa; al volver, UsuariosPage.OnAppearing recarga la lista
+    public Task NuevoAsync() => Shell.Current.GoToAsync(nameof(Views.UsuarioNuevoPage));
 
     public async Task AccionesAsync(UsuarioAdmin usuario)
     {
-        var opciones = new List<string> { "Editar datos", "Foto de perfil", "Asignar roles", "Restablecer PIN" };
+        var opciones = new List<string> { "Editar datos", "Foto de perfil", "Asignar roles", "Horario semanal", "Restablecer PIN" };
         if (usuario.Bloqueado) opciones.Add("Desbloquear");
         opciones.Add("Ver historial");
 
@@ -65,6 +50,9 @@ public class UsuariosViewModel : VmBase
             case "Editar datos": await EditarAsync(usuario); break;
             case "Foto de perfil": await FotoDePerfilAsync(usuario); break;
             case "Asignar roles": await AsignarRolesAsync(usuario); break;
+            case "Horario semanal":
+                await Shell.Current.GoToAsync($"{nameof(Views.HorarioPage)}?id={usuario.Id}&nombre={Uri.EscapeDataString(usuario.NombreCompleto)}");
+                break;
             case "Restablecer PIN": await RestablecerPinAsync(usuario); break;
             case "Desbloquear": await Ejecutar(() => _api.Desbloquear(usuario.Id), "Usuario desbloqueado"); break;
             case "Ver historial": await HistorialAsync(usuario); break;
@@ -89,7 +77,7 @@ public class UsuariosViewModel : VmBase
         }
 
         string? foto;
-        try { foto = await FotoFichaje.TomarAsync(); }
+        try { foto = await FotoDePerfil.TomarValidadaAsync(); }
         catch (Exception ex) { await Dialogos.Aviso("No se pudo sacar la foto", TextosDeError.DeExcepcion(ex)); return; }
         if (foto is null) return;   // canceló
 
