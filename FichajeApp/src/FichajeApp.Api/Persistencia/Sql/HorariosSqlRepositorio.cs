@@ -14,18 +14,16 @@ public class HorariosSqlRepositorio : BaseSql, IHorariosRepositorio
             .Select(h => new HorarioEmpleado { EmpleadoId = h.EmpleadoId, Dia = (DayOfWeek)h.DiaSemana, Entrada = h.Entrada, Salida = h.Salida })
             .ToList());
 
-    public async Task GuardarAsync(int empleadoId, IReadOnlyCollection<HorarioEmpleado> horarios)
+    // Con los reintentos de la base activados (Azure SQL) EF no admite transacciones manuales sueltas: se usa EnTransaccionAsync
+    public Task GuardarAsync(int empleadoId, IReadOnlyCollection<HorarioEmpleado> horarios) => EnTransaccionAsync(async db =>
     {
-        await using var db = await Fabrica.CreateDbContextAsync();
-        await using var tx = await db.Database.BeginTransactionAsync();
         db.Horarios.RemoveRange(await db.Horarios.Where(h => h.EmpleadoId == empleadoId).ToListAsync());
         db.Horarios.AddRange(horarios.Select(h => new HorarioFila
         {
             EmpleadoId = empleadoId, DiaSemana = (int)h.Dia, Entrada = h.Entrada, Salida = h.Salida
         }));
         await db.SaveChangesAsync();
-        await tx.CommitAsync();
-    }
+    });
 }
 
 public class HorariosNoDisponible : IHorariosRepositorio

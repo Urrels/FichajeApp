@@ -34,10 +34,11 @@ public class RecuperacionDePin
     private readonly TimeProvider _tiempo;
     private readonly string _app;
     private readonly SesionesVigentes? _sesiones;
+    private readonly LoginService? _login;
 
     public RecuperacionDePin(IEmpleadosRepositorio empleados, IEnviadorDeCorreo correo, NotificacionesService notificaciones,
         BitacoraService bitacora, HistorialUsuariosService historial, TimeProvider tiempo, IOptions<OpcionesCorreo> opciones,
-        SesionesVigentes? sesiones = null)
+        SesionesVigentes? sesiones = null, LoginService? login = null)
     {
         _empleados = empleados;
         _correo = correo;
@@ -47,6 +48,7 @@ public class RecuperacionDePin
         _tiempo = tiempo;
         _app = opciones.Value.NombreApp;
         _sesiones = sesiones;
+        _login = login;
     }
 
     public bool CorreoDisponible => _correo.Configurado;
@@ -109,6 +111,7 @@ public class RecuperacionDePin
         empleado.IntentosFallidos = 0;
         await _empleados.ActualizarAsync(empleado);
         _sesiones?.Invalidar(empleado.Id);
+        _login?.Liberar(empleado.Id);   // el bloqueo temporal por intentos fallidos vive en memoria
         _pedidos.TryRemove(clave, out _);
 
         await _historial.RegistrarAsync(empleado, "CAMBIO_PIN", empleado.Email);

@@ -424,6 +424,30 @@ public class LiquidacionController : AdminControllerBase
         return Ok(new { mensaje = "Valor hora guardado" });
     }
 
+    // Horario semanal de un empleado. Dia: 0 = domingo ... 6 = sábado; horas "hh:mm".
+    public record HorarioDiaDto(int Dia, string Entrada, string Salida);
+
+    [HttpGet("horario/{empleadoId:int}")]
+    public async Task<IActionResult> Horario(int empleadoId) =>
+        Ok((await _liquidacion.ListarHorariosAsync(empleadoId))
+            .Select(h => new HorarioDiaDto((int)h.Dia, h.Entrada.ToString(@"hh\:mm"), h.Salida.ToString(@"hh\:mm"))));
+
+    [HttpPut("horario/{empleadoId:int}")]
+    public async Task<IActionResult> GuardarHorario(int empleadoId, [FromBody] List<HorarioDiaDto> dias)
+    {
+        var lista = new List<HorarioEmpleado>();
+        foreach (var d in dias)
+        {
+            if (d.Dia is < 0 or > 6 ||
+                !TimeSpan.TryParseExact(d.Entrada, @"h\:mm", System.Globalization.CultureInfo.InvariantCulture, out var entrada) ||
+                !TimeSpan.TryParseExact(d.Salida, @"h\:mm", System.Globalization.CultureInfo.InvariantCulture, out var salida))
+                return BadRequest(new { mensaje = "Día u hora inválidos. Usá el formato hh:mm." });
+            lista.Add(new HorarioEmpleado { Dia = (DayOfWeek)d.Dia, Entrada = entrada, Salida = salida });
+        }
+        await _liquidacion.GuardarHorariosAsync(Actor, empleadoId, lista);
+        return Ok(new { mensaje = "Horario guardado" });
+    }
+
     [HttpGet("feriados")]
     public async Task<IActionResult> Feriados([FromQuery] DateTime desde, [FromQuery] DateTime hasta) =>
         Ok(await _liquidacion.ListarFeriadosAsync(desde, hasta));
