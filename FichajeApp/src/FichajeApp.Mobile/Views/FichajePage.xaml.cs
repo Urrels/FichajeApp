@@ -104,15 +104,16 @@ public partial class FichajePage : ContentPage
     // Tocar la propia foto: sacar una nueva con la cámara frontal o quitarla (vuelven a verse las iniciales)
     private async void OnMiFotoTapped(object? sender, TappedEventArgs e)
     {
-        const string Nueva = "Sacar una foto nueva", Quitar = "Quitar mi foto";
-        var elegida = await Dialogos.Elegir("Tu foto de perfil", new[] { Nueva, Quitar });
+        // La foto de perfil es obligatoria: se puede cambiar, pero no quitar
+        const string Nueva = "Sacar una foto nueva";
+        var elegida = await Dialogos.Elegir("Tu foto de perfil", new[] { Nueva });
         if (elegida is null) return;
 
         try
         {
             if (elegida == Nueva)
             {
-                var foto = await FotoFichaje.TomarAsync();
+                var foto = await FotoDePerfil.TomarValidadaAsync();
                 if (foto is null) return;   // canceló
                 var r = await _perfiles.GuardarAsync(null, foto);
                 await _feedback.ResultadoAsync(r.Exito, "Foto de perfil actualizada.", r.Mensaje);

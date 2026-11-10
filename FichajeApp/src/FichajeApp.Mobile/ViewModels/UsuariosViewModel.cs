@@ -77,7 +77,7 @@ public class UsuariosViewModel : VmBase
         }
 
         string? foto;
-        try { foto = await FotoFichaje.TomarAsync(); }
+        try { foto = await FotoDePerfil.TomarValidadaAsync(); }
         catch (Exception ex) { await Dialogos.Aviso("No se pudo sacar la foto", TextosDeError.DeExcepcion(ex)); return; }
         if (foto is null) return;   // canceló
 

@@ -10,17 +10,21 @@ public partial class LoginPage : ContentPage
     private readonly ConfiguracionApiService _configuracion;
     private readonly IClienteService _clientes;
     private readonly AparienciaService _apariencia;
+    private readonly AuthService _auth;
+    private readonly PerfilFotos _perfiles;
     private bool _yaOfrecioConfigurar;
     private int _toquesEnElLogo;
     private DateTime _primerToque;
 
     public LoginPage(AuthService authService, ConfiguracionApiService configuracion, IClienteService clientes,
-        AparienciaService apariencia, IBiometricService biometria)
+        AparienciaService apariencia, IBiometricService biometria, PerfilFotos perfiles)
     {
         InitializeComponent();
         _configuracion = configuracion;
         _clientes = clientes;
         _apariencia = apariencia;
+        _auth = authService;
+        _perfiles = perfiles;
         _viewModel = new LoginViewModel(authService, biometria);
         _viewModel.LoginExitoso += OnLoginExitoso;
         BindingContext = _viewModel;
@@ -115,5 +119,8 @@ public partial class LoginPage : ContentPage
     {
         // El supervisor y el administrador entran directo a su panel; desde el menú pueden ir a fichar
         await Shell.Current.GoToAsync(Navegacion.RutaInicial());
+        // Primer ingreso sin foto de perfil: se la pide antes de seguir
+        await FotoDePerfil.ExigirSiFaltaAsync(_perfiles, _auth);
+        if (!SessionManager.Instance.EstaLogueado) await Shell.Current.GoToAsync("//LoginPage");
     }
 }
