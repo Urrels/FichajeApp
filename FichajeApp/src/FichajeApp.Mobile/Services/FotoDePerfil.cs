@@ -44,7 +44,9 @@ public static class FotoDePerfil
             try { foto = await TomarValidadaAsync(); }
             catch (Exception ex)
             {
-                await Dialogos.Aviso("No se pudo sacar la foto", TextosDeError.DeExcepcion(ex));
+                // Negar el permiso de cámara no es "algo salió mal de nuestro lado": se le dice qué hacer
+                var mensaje = ex is PermissionException ? TextosDeError.CamaraNoDisponible : TextosDeError.DeExcepcion(ex);
+                await Dialogos.Aviso("No se pudo sacar la foto", mensaje);
                 foto = null;
             }
 

@@ -48,7 +48,23 @@ public partial class FichajePage : ContentPage
         MiFoto.EmpleadoId = sesion.EmpleadoId ?? 0;
         PinButton.IsVisible = sesion.TienePermiso(NombresPermisos.CambiarPin);
         PanelButton.IsVisible = sesion.EsSupervisor || sesion.EsAdministrador;
+        _ = ActualizarNotificacionesAsync();
     }
+
+    // Esta pantalla no tiene menú lateral visible: el centro de notificaciones se abre desde acá, con el número de avisos sin leer
+    private async Task ActualizarNotificacionesAsync()
+    {
+        try
+        {
+            var api = IPlatformApplication.Current?.Services.GetService<AdminApiService>();
+            var r = api is null ? null : await api.CantidadDeNotificaciones();
+            var cantidad = r is { Exito: true, Datos: not null } ? r.Datos.NoLeidas : 0;
+            NotifButton.Text = cantidad > 0 ? $"Avisos ({cantidad})" : "Avisos";
+        }
+        catch { /* sin conexión: queda sin número */ }
+    }
+
+    private async void OnNotificaciones(object? sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(NotificacionesPage));
 
     // En una pantalla corta (o con la letra grande del sistema) el botón de 200 quedaba tapado por lo de abajo: se achica a lo que entra
     private void AjustarBoton()

@@ -125,9 +125,12 @@
             <!-- Esta pantalla no tiene barra superior: el supervisor/administrador vuelve a su panel desde acá -->
             <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" x:Name="PanelButton" Text="Volver a mi panel" Clicked="OnVolverAlPanel" IsVisible="False" />
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" x:Name="PinButton" Text="Cambiar PIN" Clicked="OnCambiarPin" IsVisible="False" />
-                <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" Grid.Column="1" Text="Cerrar sesión" Clicked="OnCerrarSesion" />
+            <!-- Una sola fila: "Avisos" abre el centro de notificaciones (con el número de avisos sin leer) -->
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Button BackgroundColor="Transparent" BorderColor="{DynamicResource ColorPrimario}" BorderWidth="1" FontSize="14" Padding="4,0"
+                        TextColor="{DynamicResource ColorPrimario}" x:Name="NotifButton" Text="Avisos" Clicked="OnNotificaciones" />
+                <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" Grid.Column="1" FontSize="14" Padding="4,0" x:Name="PinButton" Text="Cambiar PIN" Clicked="OnCambiarPin" IsVisible="False" />
+                <Button BackgroundColor="{DynamicResource ColorPrimario}" TextColor="{DynamicResource ColorPrimarioTexto}" Grid.Column="2" FontSize="14" Padding="4,0" Text="Cerrar sesión" Clicked="OnCerrarSesion" />
             </Grid>
         </VerticalStackLayout>
     </Grid>
