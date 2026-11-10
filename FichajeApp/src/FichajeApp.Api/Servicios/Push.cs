@@ -67,6 +67,21 @@ public class FirebaseEnviador : IEnviadorPush
     }
 }
 
+public static class EnviadorPushFabrica
+{
+    // Sin clave, o con una clave que no se puede leer, no se manda ningún push y la app sigue funcionando
+    public static IEnviadorPush Crear(OpcionesPush opciones, ILogger log)
+    {
+        if (!opciones.Configurado) return new EnviadorPushNulo();
+        try { return new FirebaseEnviador(Microsoft.Extensions.Options.Options.Create(opciones)); }
+        catch (Exception ex)
+        {
+            log.LogError("Push__CredencialesJson no es válido (tiene que ser el contenido completo del JSON de la cuenta de servicio): {Tipo}. Push desactivado.", ex.GetType().Name);
+            return new EnviadorPushNulo();
+        }
+    }
+}
+
 public class EnviadorPushNulo : IEnviadorPush
 {
     public bool Configurado => false;

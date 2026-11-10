@@ -126,10 +126,10 @@ else
     builder.Services.AddSingleton<IEnviadorDeCorreo, EnviadorNulo>();
 // Push (Firebase Cloud Messaging): sin la clave de la cuenta de servicio no se manda nada
 builder.Services.Configure<OpcionesPush>(builder.Configuration.GetSection(OpcionesPush.Seccion));
-if (builder.Configuration.GetSection(OpcionesPush.Seccion).Get<OpcionesPush>()?.Configurado == true)
-    builder.Services.AddSingleton<IEnviadorPush, FirebaseEnviador>();
-else
-    builder.Services.AddSingleton<IEnviadorPush, EnviadorPushNulo>();
+// Si la clave está mal pegada, el push queda apagado (con un aviso en el log): una configuración opcional nunca tumba el servidor ni el login
+builder.Services.AddSingleton<IEnviadorPush>(sp => EnviadorPushFabrica.Crear(
+    sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<OpcionesPush>>().Value,
+    sp.GetRequiredService<ILoggerFactory>().CreateLogger("Push")));
 builder.Services.AddSingleton<PushService>();
 builder.Services.AddSingleton<NotificacionesService>();
 builder.Services.AddSingleton<RecuperacionDePin>();

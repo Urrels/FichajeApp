@@ -138,3 +138,24 @@ public class PushTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => _push.RegistrarAsync(2, new string('x', 401)));
     }
 }
+
+public class PushConfiguracionTests
+{
+    [Fact]
+    public void SinCredenciales_NoHayPush()
+    {
+        var enviador = EnviadorPushFabrica.Crear(new OpcionesPush(), Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance);
+        Assert.False(enviador.Configurado);
+    }
+
+    [Theory]
+    [InlineData("esto no es un json")]
+    [InlineData("{ \"type\": \"service_account\" }")]
+    [InlineData("{ roto")]
+    public void ConCredencialesMalPegadas_NoSeCaeNada_ElPushQuedaApagado(string json)
+    {
+        var enviador = EnviadorPushFabrica.Crear(new OpcionesPush { CredencialesJson = json },
+            Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance);
+        Assert.False(enviador.Configurado);
+    }
+}
