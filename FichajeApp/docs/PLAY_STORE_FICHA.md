@@ -36,10 +36,12 @@ HoraTrack es la app para registrar la entrada y la salida del personal de tu emp
 
 PARA EL PERSONAL
 • Fichá con un solo toque: la app te dice si te toca entrada o salida.
-• Si tu empresa lo pide, se registra tu ubicación al fichar. La app la usa solo mientras la pantalla de fichar está abierta y nunca en segundo plano.
-• Confirmás que sos vos con la huella, el patrón o el PIN de bloqueo de tu teléfono.
+• Si tu empresa lo pide, se registra tu ubicación al fichar.
+• Si tu empresa lo activa y vos lo aceptás, la app registra tu recorrido mientras tu jornada está abierta (de la entrada a la salida), con una notificación fija. Fuera de la jornada no registra nada.
+• Confirmás que sos vos con la huella, el patrón o el PIN de bloqueo de tu teléfono, y podés entrar con la huella.
 • Si tu empresa lo activa, sacás una selfie al fichar.
-• Tenés tu foto de perfil y podés cambiar tu PIN.
+• Tenés tu foto de perfil, podés cambiar tu PIN y recuperarlo por mail si lo olvidás.
+• Un centro de notificaciones con los avisos de tu cuenta.
 
 PARA LOS SUPERVISORES
 • Mirá quién está presente en un mapa y consultá los fichajes por fecha y por persona.
@@ -84,7 +86,8 @@ Importante: la API tiene que estar encendida con esos usuarios mientras dure la 
 | Pregunta | Respuesta |
 |---|---|
 | ¿Recopila o comparte datos? | Sí, recopila. No comparte con terceros (el servidor es del proveedor y la planilla es del cliente) |
-| Ubicación precisa | Recopilada · opcional · finalidad: funcionalidad de la app |
+| Ubicación precisa | Recopilada · opcional · finalidad: funcionalidad de la app. **Ahora también se recopila con la app cerrada** (recorrido durante la jornada): en Data safety, al marcar ubicación, indicá que se recopila también en segundo plano |
+| Historial de ubicaciones | Es el recorrido durante la jornada: opcional (lo activa la empresa y la persona acepta un aviso) · funcionalidad de la app |
 | Ubicación aproximada | No se usa (el permiso `ACCESS_COARSE_LOCATION` se declara solo porque Android lo exige junto con el preciso) |
 | Nombre, dirección de correo | Recopilados · obligatorios · funcionalidad y administración de la cuenta |
 | Fotos | Recopiladas (selfie al fichar y foto de perfil) · opcional según el cliente · funcionalidad de la app |
@@ -99,7 +102,14 @@ Importante: la API tiene que estar encendida con esos usuarios mientras dure la 
 - **Clasificación de contenido**: sin violencia, sexo, drogas, apuestas, ni contenido generado por usuarios → apta para todos.
 - **Público objetivo**: 18 años o más. **No es para niños.**
 - **Anuncios**: no tiene. **Apps de gobierno / noticias / finanzas / salud**: no.
-- **Permisos sensibles**: la ubicación se usa solo en primer plano. **No** se declara ubicación en segundo plano.
+- **Permisos sensibles**: la app **no declara** `ACCESS_BACKGROUND_LOCATION` (no hace falta: el recorrido usa un servicio en primer plano
+  iniciado con la app a la vista), así que **no** aplica el formulario de «ubicación en segundo plano».
+- **Servicios en primer plano** (Contenido de la app → Permisos de servicios en primer plano): hay que declarar el tipo **Ubicación**
+  (`FOREGROUND_SERVICE_LOCATION`). Google pide una descripción y **un video** que muestre: (1) la empresa activando «Recorrido» en Cómo se ficha;
+  (2) un empleado fichando la entrada y viendo el **aviso destacado** de consentimiento; (3) la **notificación fija** visible mientras corre;
+  (4) la salida, que la hace desaparecer. Texto sugerido: «La app registra la ubicación del empleado cada pocos minutos únicamente mientras su
+  jornada laboral está abierta, para que su empleador vea el recorrido. Se muestra una notificación persistente y se detiene al fichar la salida.»
+- **Notificaciones** (`POST_NOTIFICATIONS`): se usa para la notificación fija del servicio y no para publicidad.
 - **Declaración de uso de la cámara**: selfie al fichar (opcional, la activa el administrador) y foto de perfil.
 - **Declaración de ID de publicidad**: la app no lo usa.
 
@@ -108,7 +118,9 @@ Importante: la API tiene que estar encendida con esos usuarios mientras dure la 
 | Permiso | Para qué | Nota |
 |---|---|---|
 | `INTERNET`, `ACCESS_NETWORK_STATE` | Hablar con la API | |
-| `ACCESS_FINE_LOCATION` | Ubicación del fichaje | Primer plano |
+| `ACCESS_FINE_LOCATION` | Ubicación del fichaje y del recorrido | Primer plano; el recorrido usa un servicio en primer plano |
+| `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION` | Servicio del recorrido durante la jornada | Requiere la declaración de servicios en primer plano en Play Console |
+| `POST_NOTIFICATIONS` | Notificación fija del recorrido | Android 13 o más |
 | `ACCESS_COARSE_LOCATION` | Requerido junto al preciso desde Android 12 | |
 | `CAMERA` | Selfie y foto de perfil | `uses-feature camera` con `required=false`: se instala sin cámara |
 | `USE_BIOMETRIC`, `USE_FINGERPRINT` | Confirmar identidad | `USE_FINGERPRINT` está en desuso; lo declara la librería de huella. Verificar si se puede quitar al migrar |

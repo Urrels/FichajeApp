@@ -164,3 +164,14 @@ Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, mo
 - [ ] Volver a la app desde segundo plano retoma la ubicación sola.
 - [ ] Dejar la pantalla de Fichar abierta más de 10 minutos y tocar el botón igual ficha (con una espera corta si hace falta).
 - [ ] Con el GPS del teléfono apagado, fichar muestra «El GPS está apagado…».
+
+## Recorrido durante la jornada (opcional)
+
+- [ ] Administración → Cómo se ficha → **Recorrido**: Activado → Guardar. Viene **Desactivado** de fábrica.
+- [ ] Con un empleado: al fichar la **entrada** aparece el aviso «Registro de tu recorrido». «Cancelar» no activa nada y vuelve a preguntar la próxima entrada; «Acepto» pide el permiso de ubicación (y el de notificaciones en Android 13+).
+- [ ] Con la jornada abierta aparece la **notificación fija** «Registrando tu recorrido». Pasar la app a segundo plano y cerrarla: la notificación sigue.
+- [ ] Pasados unos minutos, Supervisor → Historial → elegir la persona → **Ver recorrido** muestra puntos unidos por una línea.
+- [ ] Al fichar la **salida** la notificación desaparece y no se guardan más puntos.
+- [ ] Cerrar sesión con la jornada abierta también detiene el registro.
+- [ ] Con el recorrido **Desactivado** nunca aparece el aviso ni la notificación.
+- [ ] Reabrir la app con la jornada abierta retoma el registro (sin volver a pedir aceptación).

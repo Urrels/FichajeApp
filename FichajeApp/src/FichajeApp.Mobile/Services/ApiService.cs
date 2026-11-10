@@ -90,6 +90,9 @@ public class ApiService
     public Task<ResultadoConsulta<List<FichajeItem>>> ObtenerPresentesAsync() =>
         GetAsync<List<FichajeItem>>("supervisor/presentes");
 
+    public Task<ResultadoConsulta<List<PuntoRecorridoItem>>> ObtenerRecorridoAsync(string empleado, DateTime fecha) =>
+        GetAsync<List<PuntoRecorridoItem>>($"supervisor/recorrido?empleado={Uri.EscapeDataString(empleado)}&fecha={fecha:yyyy-MM-dd}");
+
     public Task<ResultadoConsulta<List<string>>> ObtenerEmpleadosAsync() =>
         GetAsync<List<string>>("supervisor/empleados");
 
@@ -237,4 +240,13 @@ public class ApiService
             return new ResultadoFichaje(false, TextosDeError.DeExcepcion(ex));
         }
     }
+}
+
+// Un punto del recorrido de una persona (lo que ve el supervisor)
+public class PuntoRecorridoItem
+{
+    public DateTime FechaHora { get; set; }
+    public double Latitud { get; set; }
+    public double Longitud { get; set; }
+    public double? Precision { get; set; }
 }

@@ -18,7 +18,7 @@
 - **Datos de la persona empleada:** nombre y apellido, email y un PIN (se guarda cifrado, nunca en texto).
 - **Fichajes:** fecha y hora de cada entrada y salida.
 - **Ubicación precisa** (GPS) al momento de fichar, si la empresa lo activó. Se escucha solo mientras la pantalla de fichar está abierta y se guarda al registrar el fichaje; la app no
-  sigue la ubicación en segundo plano.
+  sigue la ubicación fuera de la jornada. Si la empresa activa el «recorrido durante la jornada» (opcional, con aviso y aceptación de la persona), se guarda la ubicación cada pocos minutos entre la entrada y la salida, con una notificación fija, y se borra a los 90 días.
 - **Foto de la cara** al fichar, si la empresa lo activó.
 - **Foto de perfil** (opcional): la carga la persona o un administrador para reconocerla en las listas de la app.
 - **Huella o PIN del teléfono:** se usa solo para confirmar que quien ficha es la persona; la app no recibe ni guarda la huella.
@@ -61,4 +61,4 @@ Si cambia esta política, se publicará la nueva versión en esta página.
 | ¿Se pueden pedir que se borren? | Sí (contactando a la empresa) |
 | ¿Se comparten con terceros? | No (el almacenamiento en Google Sheets es del propio cliente) |
 
-Permisos que la app declara: **ubicación precisa en primer plano**, **cámara** (opcional), **biometría**. No usa ubicación en segundo plano.
+Permisos que la app declara: **ubicación precisa en primer plano**, **cámara** (opcional), **biometría**. El recorrido opcional durante la jornada usa un servicio en primer plano con notificación fija, sin el permiso de ubicación en segundo plano.

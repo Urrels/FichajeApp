@@ -14,6 +14,7 @@ public partial class AppShell : Shell, ISessionObserver
         Routing.RegisterRoute(nameof(UsuariosPage), typeof(UsuariosPage));
         Routing.RegisterRoute(nameof(UsuarioNuevoPage), typeof(UsuarioNuevoPage));
         Routing.RegisterRoute(nameof(HorarioPage), typeof(HorarioPage));
+        Routing.RegisterRoute(nameof(RecorridoPage), typeof(RecorridoPage));
         Routing.RegisterRoute(nameof(NotificacionesPage), typeof(NotificacionesPage));
         Routing.RegisterRoute(nameof(OlvidePinPage), typeof(OlvidePinPage));
         Routing.RegisterRoute(nameof(SitiosPage), typeof(SitiosPage));

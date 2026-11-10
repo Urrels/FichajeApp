@@ -51,6 +51,7 @@
                 <Label Text="Unir con línea (recorrido de una persona)" VerticalOptions="Center" />
             </HorizontalStackLayout>
             <Button Text="Buscar" Clicked="OnBuscarClicked" />
+            <Button Text="Ver recorrido de la persona elegida (fecha Desde)" Clicked="OnVerRecorridoClicked" Style="{StaticResource BotonSecundario}" />
         </VerticalStackLayout>
 
         <Border Grid.Row="2" Style="{StaticResource Tarjeta}" Padding="0" StrokeShape="RoundRectangle 16">

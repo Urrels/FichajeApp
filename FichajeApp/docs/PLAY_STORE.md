@@ -92,7 +92,7 @@ El `.aab` queda en `src/FichajeApp.Mobile/bin/Release/net10.0-android36.0/publis
   fichajes con hora y lugar) y dónde (la planilla del cliente). Hay generadores gratuitos; ajustalo a lo anterior.
 - **Seguridad de los datos (Data safety)**: ubicación precisa, nombre y email; se recopilan y se comparten con el servidor
   del cliente; se cifran en tránsito (HTTPS); el usuario puede pedir que se borren.
-- **Permisos de ubicación**: la app usa ubicación **solo en primer plano** (al tocar Fichar). No pidas ubicación en segundo plano:
+- **Permisos de ubicación**: al fichar la app usa ubicación en primer plano. El recorrido durante la jornada usa un **servicio en primer plano** de tipo ubicación (ver PLAY_STORE_FICHA.md): no se declara ACCESS_BACKGROUND_LOCATION. No pidas ubicación en segundo plano:
   dispara una revisión extra.
 - **Clasificación de contenido**: cuestionario (la app no tiene contenido sensible → apta para todos).
 - **Público objetivo**: adultos (no es para niños). **Anuncios**: no. **Acceso a la app**: dar un usuario y PIN de prueba
