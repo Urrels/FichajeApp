@@ -75,6 +75,7 @@ if (usaSql)
     builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSqlRepositorio>();
     builder.Services.AddSingleton<IHorariosRepositorio, HorariosSqlRepositorio>();
     builder.Services.AddSingleton<INotificacionesRepositorio, NotificacionesSqlRepositorio>();
+    builder.Services.AddSingleton<IRecorridoRepositorio, RecorridoSqlRepositorio>();
     builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSqlRepositorio>();
     builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSqlRepositorio>();
     // Migra la base y siembra permisos, roles y el primer administrador antes de que arranque el resto
@@ -99,6 +100,7 @@ else
     builder.Services.AddSingleton<ISitiosAdminRepositorio, SitiosAdminNoDisponible>();
     builder.Services.AddSingleton<IHorariosRepositorio, HorariosNoDisponible>();
     builder.Services.AddSingleton<INotificacionesRepositorio, NotificacionesNoDisponible>();
+    builder.Services.AddSingleton<IRecorridoRepositorio, RecorridoNoDisponible>();
 
     // Repositorios de la administración
     builder.Services.AddSingleton<IRolesRepositorio, RolesSheetsRepositorio>();
@@ -122,6 +124,8 @@ else
     builder.Services.AddSingleton<IEnviadorDeCorreo, EnviadorNulo>();
 builder.Services.AddSingleton<NotificacionesService>();
 builder.Services.AddSingleton<RecuperacionDePin>();
+builder.Services.AddScoped<RecorridoService>();
+builder.Services.AddHostedService<LimpiezaRecorridoHostedService>();
 builder.Services.AddSingleton<IAlmacenFotos, AlmacenFotosEnDisco>();
 builder.Services.AddSingleton<IAlmacenPerfiles, AlmacenPerfilesEnDisco>();
 builder.Services.AddSingleton<LimpiezaFotos>();

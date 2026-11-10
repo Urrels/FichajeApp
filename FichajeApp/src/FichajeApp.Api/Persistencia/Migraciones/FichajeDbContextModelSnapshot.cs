@@ -97,6 +97,9 @@ namespace FichajeApp.Api.Persistencia.Migraciones
                     b.Property<int>("PrecisionMaxMetros")
                         .HasColumnType("int");
 
+                    b.Property<bool>("SeguimientoRecorrido")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Ubicacion")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -575,6 +578,36 @@ namespace FichajeApp.Api.Persistencia.Migraciones
                         .IsUnique();
 
                     b.ToTable("Permisos", (string)null);
+                });
+
+            modelBuilder.Entity("FichajeApp.Api.Persistencia.RecorridoPuntoFila", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EmpleadoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaHora")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("Latitud")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitud")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Precision")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmpleadoId", "FechaHora");
+
+                    b.ToTable("RecorridoPuntos", (string)null);
                 });
 
             modelBuilder.Entity("FichajeApp.Api.Persistencia.RolFila", b =>

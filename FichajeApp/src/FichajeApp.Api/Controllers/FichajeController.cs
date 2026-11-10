@@ -18,10 +18,12 @@ public class FichajeController : ControllerBase
     private readonly IEmpleadosRepositorio _empleadosService;
     private readonly ISitiosService _sitiosService;
     private readonly ILogger<FichajeController> _log;
+    private readonly Servicios.RecorridoService _recorrido;
 
     public FichajeController(IFichajeService fichajeService, IEmpleadosRepositorio empleadosService,
-        ISitiosService sitiosService, ILogger<FichajeController> log)
+        ISitiosService sitiosService, ILogger<FichajeController> log, Servicios.RecorridoService recorrido)
     {
+        _recorrido = recorrido;
         _log = log;
         _fichajeService = fichajeService;
         _empleadosService = empleadosService;
@@ -33,7 +35,7 @@ public class FichajeController : ControllerBase
     public async Task<IActionResult> Configuracion()
     {
         var c = await _fichajeService.ConfiguracionAsync();
-        return Ok(new { ubicacion = c.Ubicacion, foto = c.Foto, retencionDias = c.RetencionFotosDias, precisionMaxMetros = c.PrecisionMaxMetros });
+        return Ok(new { ubicacion = c.Ubicacion, foto = c.Foto, retencionDias = c.RetencionFotosDias, precisionMaxMetros = c.PrecisionMaxMetros, seguimientoRecorrido = c.SeguimientoRecorrido });
     }
 
     // Qué va a ser el próximo fichaje del usuario (Entrada o Salida), para mostrarlo antes de fichar
@@ -49,6 +51,29 @@ public class FichajeController : ControllerBase
             return NotFound(new { mensaje = "Empleado no encontrado" });
 
         return Ok(new { proximo = await _fichajeService.ProximoTipoAsync(empleado.NombreCompleto) });
+    }
+
+    public record RecorridoRequest(List<Servicios.PuntoRecorrido>? Puntos);
+
+    // Puntos del recorrido durante la jornada. "seguir": false le dice al teléfono que pare (jornada cerrada u opción apagada).
+    [HttpPost("recorrido")]
+    public async Task<IActionResult> Recorrido([FromBody] RecorridoRequest request)
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        if (string.IsNullOrEmpty(email)) return Unauthorized();
+
+        var empleado = await _empleadosService.BuscarPorEmailAsync(email);
+        if (empleado is null) return NotFound(new { mensaje = "Empleado no encontrado" });
+
+        try
+        {
+            var r = await _recorrido.RegistrarAsync(empleado, request.Puntos);
+            return Ok(new { aceptados = r.Aceptados, seguir = r.Seguir, mensaje = r.Motivo });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
     }
 
     [HttpPost]

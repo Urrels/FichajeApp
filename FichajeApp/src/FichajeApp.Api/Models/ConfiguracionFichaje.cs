@@ -32,6 +32,9 @@ public class ConfiguracionFichaje
     public const int PrecisionMinima = 10, PrecisionMaxima = 500;
     public int PrecisionMaxMetros { get; set; } = 50;
 
+    // Registrar el recorrido (puntos de ubicacion cada pocos minutos) mientras la jornada esta abierta. Apagado por defecto.
+    public bool SeguimientoRecorrido { get; set; }
+
     // Cuánto tiempo se guardan las fotos (lo define el servidor, no el administrador); 0 = para siempre
     public int RetencionFotosDias { get; set; }
 }
@@ -46,4 +49,7 @@ public class GuardarConfiguracionFichajeRequest
 
     // Si no viene, se conserva la precisión actual
     public int? PrecisionMaxMetros { get; set; }
+
+    // Si no viene, se conserva lo actual
+    public bool? SeguimientoRecorrido { get; set; }
 }

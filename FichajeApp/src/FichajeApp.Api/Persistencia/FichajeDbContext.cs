@@ -24,6 +24,7 @@ public class FichajeDbContext : DbContext
     public DbSet<ValorHoraFila> ValoresHora => Set<ValorHoraFila>();
     public DbSet<HorarioFila> Horarios => Set<HorarioFila>();
     public DbSet<NotificacionFila> Notificaciones => Set<NotificacionFila>();
+    public DbSet<RecorridoPuntoFila> RecorridoPuntos => Set<RecorridoPuntoFila>();
     public DbSet<FeriadoFila> Feriados => Set<FeriadoFila>();
     public DbSet<ExcedenteFila> Excedentes => Set<ExcedenteFila>();
     public DbSet<LiquidacionFila> Liquidaciones => Set<LiquidacionFila>();
@@ -129,6 +130,11 @@ public class FichajeDbContext : DbContext
             e.Property(x => x.VigenteDesde).HasColumnType("date");
             e.Property(x => x.CargadoPor).HasMaxLength(200);
             e.HasIndex(x => new { x.EmpleadoId, x.VigenteDesde }).IsUnique();
+        });
+        m.Entity<RecorridoPuntoFila>(e =>
+        {
+            e.ToTable("RecorridoPuntos");
+            e.HasIndex(x => new { x.EmpleadoId, x.FechaHora });
         });
         m.Entity<NotificacionFila>(e =>
         {
@@ -284,6 +290,17 @@ public class ConfigFichajeFila
     public string Foto { get; set; } = "No";
     public string Modo { get; set; } = "Personal";
     public int PrecisionMaxMetros { get; set; }
+    public bool SeguimientoRecorrido { get; set; }
+}
+
+public class RecorridoPuntoFila
+{
+    public int Id { get; set; }
+    public int EmpleadoId { get; set; }
+    public DateTime FechaHora { get; set; }
+    public double Latitud { get; set; }
+    public double Longitud { get; set; }
+    public double? Precision { get; set; }
 }
 
 public class ParametrosFila
