@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ctl="clr-namespace:FichajeApp.Mobile.Views.Componentes"
+             x:Class="FichajeApp.Mobile.Views.HorarioPage"
+             Title="Horario semanal"
+             BackgroundColor="{DynamicResource ColorFondo}">
+
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="8">
+                <Label x:Name="Nombre" Style="{StaticResource TextoTitulo}" />
+                <Label Text="Marcá los días que trabaja y a qué hora entra y sale. Si sale más temprano de lo que entra, el turno termina al día siguiente. Sin horario cargado, se le paga todo lo que ficha."
+                       FontSize="12" />
+                <VerticalStackLayout x:Name="Dias" Spacing="4" />
+                <Label Text="Con horario, las horas fuera de turno no se pagan hasta que un administrador las aprueba en Liquidación."
+                       FontSize="12" />
+                <ctl:BannerInline x:Name="Aviso" Severidad="Error" IsVisible="False" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <VerticalStackLayout Grid.Row="1" Padding="16" Spacing="8">
+            <ActivityIndicator x:Name="Espera" IsRunning="False" IsVisible="False" />
+            <Button x:Name="GuardarButton" Text="Guardar horario" Clicked="OnGuardar" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

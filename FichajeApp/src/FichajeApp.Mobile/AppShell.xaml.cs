@@ -13,6 +13,7 @@ public partial class AppShell : Shell, ISessionObserver
         // Pantallas que se abren desde el menú de administración
         Routing.RegisterRoute(nameof(UsuariosPage), typeof(UsuariosPage));
         Routing.RegisterRoute(nameof(UsuarioNuevoPage), typeof(UsuarioNuevoPage));
+        Routing.RegisterRoute(nameof(HorarioPage), typeof(HorarioPage));
         Routing.RegisterRoute(nameof(SitiosPage), typeof(SitiosPage));
         Routing.RegisterRoute(nameof(RolesPage), typeof(RolesPage));
         Routing.RegisterRoute(nameof(BitacoraPage), typeof(BitacoraPage));

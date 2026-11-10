@@ -40,7 +40,7 @@ public class UsuariosViewModel : VmBase
 
     public async Task AccionesAsync(UsuarioAdmin usuario)
     {
-        var opciones = new List<string> { "Editar datos", "Foto de perfil", "Asignar roles", "Restablecer PIN" };
+        var opciones = new List<string> { "Editar datos", "Foto de perfil", "Asignar roles", "Horario semanal", "Restablecer PIN" };
         if (usuario.Bloqueado) opciones.Add("Desbloquear");
         opciones.Add("Ver historial");
 
@@ -50,6 +50,9 @@ public class UsuariosViewModel : VmBase
             case "Editar datos": await EditarAsync(usuario); break;
             case "Foto de perfil": await FotoDePerfilAsync(usuario); break;
             case "Asignar roles": await AsignarRolesAsync(usuario); break;
+            case "Horario semanal":
+                await Shell.Current.GoToAsync($"{nameof(Views.HorarioPage)}?id={usuario.Id}&nombre={Uri.EscapeDataString(usuario.NombreCompleto)}");
+                break;
             case "Restablecer PIN": await RestablecerPinAsync(usuario); break;
             case "Desbloquear": await Ejecutar(() => _api.Desbloquear(usuario.Id), "Usuario desbloqueado"); break;
             case "Ver historial": await HistorialAsync(usuario); break;

@@ -361,10 +361,10 @@ public class LiquidacionController : AdminControllerBase
         var ar = new System.Globalization.CultureInfo("es-AR");
 
         var sb = new StringBuilder();
-        sb.AppendLine("Empleado;Horas trabajadas;Horas a pagar;Horas normales;Horas extra;Horas domingo/feriado;Ausencias;Importe");
+        sb.AppendLine("Empleado;Horas trabajadas;Horas asignadas;Horas a pagar;Horas normales;Horas extra;Horas domingo/feriado;Ausencias;Importe");
         foreach (var r in resumen)
             sb.AppendLine(string.Join(';', Celda(r.Empleado), LiquidacionCalculo.Horas(r.MinTrabajados).ToString(ar),
-                LiquidacionCalculo.Horas(r.MinPagables).ToString(ar), LiquidacionCalculo.Horas(r.MinNormales).ToString(ar),
+                LiquidacionCalculo.Horas(r.MinAsignados).ToString(ar), LiquidacionCalculo.Horas(r.MinPagables).ToString(ar), LiquidacionCalculo.Horas(r.MinNormales).ToString(ar),
                 LiquidacionCalculo.Horas(r.MinExtra).ToString(ar), LiquidacionCalculo.Horas(r.MinFeriado).ToString(ar),
                 r.Ausencias, r.Importe.ToString("0.00", ar)));
 
