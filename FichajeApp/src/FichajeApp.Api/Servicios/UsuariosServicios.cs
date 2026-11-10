@@ -58,14 +58,16 @@ public class UsuariosAdminService
     private readonly IEnviadorDeCorreo? _correo;
     private readonly NotificacionesService? _notificaciones;
     private readonly string _nombreApp;
+    private readonly LoginService? _login;   // para levantar el bloqueo temporal por intentos fallidos
 
     public UsuariosAdminService(IEmpleadosRepositorio empleados, IRolesRepositorio roles, IFichajesRepositorio fichajes,
         HistorialUsuariosService historial, IHistorialUsuariosRepositorio historialRepositorio,
         GuardaAdministracion guarda, BitacoraService bitacora, PermisosService permisos, SesionesVigentes? sesiones = null,
         IEnviadorDeCorreo? correo = null, NotificacionesService? notificaciones = null,
-        Microsoft.Extensions.Options.IOptions<OpcionesCorreo>? opcionesCorreo = null)
+        Microsoft.Extensions.Options.IOptions<OpcionesCorreo>? opcionesCorreo = null, LoginService? login = null)
     {
         _correo = correo;
+        _login = login;
         _notificaciones = notificaciones;
         _nombreApp = opcionesCorreo?.Value.NombreApp ?? "HoraTrack";
         _empleados = empleados;
@@ -218,6 +220,7 @@ public class UsuariosAdminService
         e.IntentosFallidos = 0;
         await _empleados.ActualizarAsync(e);
         _sesiones?.Invalidar(id);
+        _login?.Liberar(id);
         await _bitacora.RegistrarAsync(actor, "DESBLOQUEO_USUARIO:" + e.NombreCompleto);
         await _historial.RegistrarAsync(e, "DESBLOQUEO", actor);
     }
@@ -234,6 +237,7 @@ public class UsuariosAdminService
         e.IntentosFallidos = 0;
         await _empleados.ActualizarAsync(e);
         _sesiones?.Invalidar(id);
+        _login?.Liberar(id);
         await _historial.RegistrarAsync(e, "CAMBIO_PIN", actor);
         await _bitacora.RegistrarAsync(actor, "PIN_RESTABLECIDO:" + e.NombreCompleto);
         if (_notificaciones is not null)
