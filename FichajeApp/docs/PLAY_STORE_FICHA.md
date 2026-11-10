@@ -22,8 +22,8 @@ Límites de Play: nombre 30 caracteres, descripción corta 80, descripción larg
 
 - **Nombre** (30): `HoraTrack`
 - **Tipo**: App · **Gratis** · Categoría: *Productividad* (o *Negocios*)
-- **Correo de contacto**: `[EMAIL]`
-- **Política de privacidad**: `[URL pública]`
+- **Correo de contacto**: `urrelsgisela@gmail.com`
+- **Política de privacidad**: `https://urrels.github.io/FichajeApp/privacidad/`
 
 ## Descripción corta (80)
 
@@ -32,12 +32,12 @@ Límites de Play: nombre 30 caracteres, descripción corta 80, descripción larg
 ## Descripción larga
 
 ```
-Fichaje es la app para registrar la entrada y la salida del personal de [EMPRESA] desde el celular.
+HoraTrack es la app para registrar la entrada y la salida del personal de tu empresa desde el celular.
 
 PARA EL PERSONAL
 • Fichá con un solo toque: la app te dice si te toca entrada o salida.
-• Se registra tu ubicación en el momento de fichar, si tu empresa lo pide. Solo cuando tocás el botón, nunca en segundo plano.
-• Confirmás que sos vos con la huella o el bloqueo de tu teléfono.
+• Si tu empresa lo pide, se registra tu ubicación al fichar. La app la usa solo mientras la pantalla de fichar está abierta y nunca en segundo plano.
+• Confirmás que sos vos con la huella, el patrón o el PIN de bloqueo de tu teléfono.
 • Si tu empresa lo activa, sacás una selfie al fichar.
 • Tenés tu foto de perfil y podés cambiar tu PIN.
 
@@ -73,7 +73,7 @@ Esta app requiere iniciar sesión con una cuenta creada por la empresa.
 Servidor de prueba activo: [URL de la API]
 Administrador de prueba  — Email: [EMAIL]  PIN: [PIN]
 Empleado de prueba       — Email: [EMAIL]  PIN: [PIN]
-Para ver el fichaje con ubicación hay que permitir el permiso de ubicación. Se puede probar en el emulador con una ubicación simulada.
+Para fichar el teléfono tiene que tener un bloqueo de pantalla (PIN, patrón o huella) y el permiso de ubicación. En la cuenta de prueba la ubicación está desactivada (Cómo se ficha → Ubicación: Ninguna), así que se puede probar en un emulador.
 ```
 
 Importante: la API tiene que estar encendida con esos usuarios mientras dure la revisión. La app rechaza ubicaciones simuladas
