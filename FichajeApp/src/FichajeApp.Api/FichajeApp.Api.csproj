@@ -24,6 +24,8 @@
     <!-- Nada de esto viaja al servidor al publicar: son archivos de esta máquina (fotos, configuración de desarrollo)
          y el servidor tiene los suyos. Subirlos pisaría o filtraría datos. -->
     <Content Update="datos\**" CopyToPublishDirectory="Never" />
+    <!-- La API ya no usa credenciales de Google, pero en algunas máquinas queda la carpeta vieja: que nunca viaje al servidor -->
+    <Content Update="credentials\**" CopyToPublishDirectory="Never" CopyToOutputDirectory="Never" />
     <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
