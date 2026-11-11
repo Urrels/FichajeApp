@@ -21,7 +21,7 @@ Verde, ámbar y rojo **solo** para éxito, aviso y error. Nunca se comunica algo
 
 | Situación | Componente |
 |---|---|
-| La pantalla no puede cumplir su función (sin conexión al abrir, servidor caído, planilla desconectada) | `EstadoDeError` (pantalla completa, con "Reintentar") |
+| La pantalla no puede cumplir su función (sin conexión al abrir, servidor caído) | `EstadoDeError` (pantalla completa, con "Reintentar") |
 | Dato mal escrito | Mensaje en línea bajo el campo |
 | Problema recuperable que se queda a la vista | `BannerInline` (Info / Aviso / Error / Éxito) |
 | Salió bien | `IFeedback.ExitoAsync` (snackbar de 3 s, sin botón) |

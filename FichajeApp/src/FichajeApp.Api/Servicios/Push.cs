@@ -120,13 +120,6 @@ public class DispositivosPushSqlRepositorio : Persistencia.Sql.BaseSql, IDisposi
         LeerAsync(db => db.DispositivosPush.Where(d => d.EmpleadoId == empleadoId).Select(d => d.Token).ToListAsync());
 }
 
-public class DispositivosPushNoDisponible : IDispositivosPushRepositorio
-{
-    public Task GuardarAsync(int empleadoId, string token, DateTime ahora) => Task.CompletedTask;
-    public Task EliminarAsync(string token) => Task.CompletedTask;
-    public Task<List<string>> ListarTokensAsync(int empleadoId) => Task.FromResult(new List<string>());
-}
-
 // Registra los teléfonos de cada persona y les manda los avisos. Mandar un push nunca rompe la operación que lo origina.
 public class PushService
 {

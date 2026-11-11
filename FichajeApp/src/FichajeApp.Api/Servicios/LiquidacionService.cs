@@ -35,7 +35,14 @@ public class LiquidacionService
         _bitacora = bitacora;
         _tiempo = tiempo;
         _notificaciones = notificaciones;
-        _horarios = horarios ?? new FichajeApp.Api.Persistencia.Sql.HorariosNoDisponible();
+        _horarios = horarios ?? new SinHorarios();
+    }
+
+    // Sin repositorio de horarios (por ejemplo en una prueba unitaria) nadie tiene horario asignado: se paga lo fichado
+    private sealed class SinHorarios : IHorariosRepositorio
+    {
+        public Task<List<HorarioEmpleado>> ListarAsync() => Task.FromResult(new List<HorarioEmpleado>());
+        public Task GuardarAsync(int empleadoId, IReadOnlyCollection<HorarioEmpleado> horarios) => Task.CompletedTask;
     }
 
     private DateTime Ahora => _tiempo.GetLocalNow().DateTime;

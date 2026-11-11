@@ -1,6 +1,6 @@
 namespace FichajeApp.Api.Models;
 
-// Cómo ficha este cliente. Lo cambia el administrador desde la app (pestaña ConfigFichaje de la planilla);
+// Cómo ficha este cliente. Lo cambia el administrador desde la app (se guarda en la base);
 // mientras no lo cambie se usa lo de appsettings (ubicación) y "sin foto".
 public class ConfiguracionFichaje
 {

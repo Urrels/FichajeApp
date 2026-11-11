@@ -4,7 +4,7 @@ using FichajeApp.Api.Models;
 
 namespace FichajeApp.Api.Repositorios;
 
-// Acceso a datos detrás de interfaces (Dependency Inversion): hoy Google Sheets, mañana una base de datos.
+// Acceso a datos detrás de interfaces (Dependency Inversion): hoy la base de datos SQL.
 // Los servicios solo conocen estas interfaces, lo que permite probarlos con repositorios en memoria.
 
 public interface IEmpleadosRepositorio
@@ -92,7 +92,7 @@ public interface IConfiguracionFichajeRepositorio
     Task GuardarAsync(FichajeApp.Api.Models.ConfiguracionFichaje configuracion);
 }
 
-// Horario semanal por empleado (con SQL; con la planilla de Google no está disponible)
+// Horario semanal por empleado 
 public interface IHorariosRepositorio
 {
     Task<List<HorarioEmpleado>> ListarAsync();

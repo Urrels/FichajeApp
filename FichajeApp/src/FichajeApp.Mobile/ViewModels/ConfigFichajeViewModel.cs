@@ -3,7 +3,7 @@ using FichajeApp.Mobile.Services;
 namespace FichajeApp.Mobile.ViewModels;
 
 // El administrador elige cómo ficha su empresa: si se pide ubicación y si se pide foto.
-// Se guarda en la planilla y vale para todos los teléfonos al próximo fichaje.
+// Se guarda en el servidor y vale para todos los teléfonos al próximo fichaje.
 public class ConfigFichajeViewModel : VmBase
 {
     private static readonly Dictionary<string, string> Ubicaciones = new()

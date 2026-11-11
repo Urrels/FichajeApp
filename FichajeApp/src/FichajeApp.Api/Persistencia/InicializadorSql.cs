@@ -7,7 +7,6 @@ namespace FichajeApp.Api.Persistencia;
 
 // Al arrancar con base de datos SQL: aplica las migraciones pendientes y siembra lo que la administración necesita
 // (permisos, roles iniciales, parámetros y el primer administrador). Es idempotente: no toca lo que ya existe.
-// Es el equivalente de InicializadorPlanilla para la planilla de Google.
 //
 // El primer administrador sale de la configuración (variables de entorno Setup__AdminNombre, Setup__AdminEmail y
 // Setup__AdminPin) y solo se crea si todavía no hay ningún empleado.
@@ -53,6 +52,7 @@ public class InicializadorSql : IHostedService
             await db.Database.MigrateAsync(cancelar);
         }
 
+        await RetirarPermisosObsoletosAsync();
         await SembrarPermisosAsync();
         await SembrarRolesAsync();
         await AsegurarPermisosDelAdministradorAsync();
@@ -63,6 +63,20 @@ public class InicializadorSql : IHostedService
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    // Borra los permisos que ya no existen en el catálogo (con sus asignaciones a roles), por ejemplo el de cambiar la
+    // catálogo: si no, seguirían apareciendo en la pantalla de roles sin hacer nada.
+    private async Task RetirarPermisosObsoletosAsync()
+    {
+        await using var db = await _fabrica.CreateDbContextAsync();
+        var ids = await db.Permisos.Where(p => CatalogoPermisos.Obsoletos.Contains(p.Nombre)).Select(p => p.Id).ToListAsync();
+        if (ids.Count == 0) return;
+
+        db.RolPermisos.RemoveRange(db.RolPermisos.Where(rp => ids.Contains(rp.PermisoId)));
+        db.Permisos.RemoveRange(db.Permisos.Where(p => ids.Contains(p.Id)));
+        await db.SaveChangesAsync();
+        _log.LogInformation("Se retiraron {Cantidad} permisos que ya no se usan.", ids.Count);
+    }
 
     private async Task SembrarPermisosAsync()
     {
@@ -144,7 +158,7 @@ public class InicializadorSql : IHostedService
         }
     }
 
-    // Si nadie puede administrar, se promueve a Setup:AdminEmail (o Planilla:AdministradorInicial)
+    // Si nadie puede administrar, se promueve a Setup:AdminEmail
     private async Task GarantizarAdministradorAsync()
     {
         var usuarios = await _permisos.RolesDeUsuariosActivosAsync();
@@ -154,7 +168,6 @@ public class InicializadorSql : IHostedService
         if (hayAdministrador) return;
 
         var email = _config["Setup:AdminEmail"];
-        if (string.IsNullOrWhiteSpace(email)) email = _config["Planilla:AdministradorInicial"];
         if (string.IsNullOrWhiteSpace(email))
         {
             _log.LogWarning("Ningún usuario activo puede administrar el sistema. Definí Setup__AdminNombre, Setup__AdminEmail y Setup__AdminPin " +
@@ -176,8 +189,3 @@ public class InicializadorSql : IHostedService
     }
 }
 
-// Con base SQL no existe la planilla que inicializar (ver ConexionService)
-public class InicializadorNulo : FichajeApp.Api.Infrastructure.IInicializadorPlanilla
-{
-    public Task InicializarAsync(FichajeApp.Api.Infrastructure.NuevoAdministrador? nuevo = null) => Task.CompletedTask;
-}

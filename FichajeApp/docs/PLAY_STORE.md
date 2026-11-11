@@ -1,11 +1,11 @@
 # Publicar en Google Play, paso a paso
 
-Cada cliente es **una app distinta** en Play Store (su propio nombre, ícono, colores, API y planilla).
+Cada cliente es **una app distinta** en Play Store (su propio nombre, ícono, colores, API y base de datos).
 Hay dos piezas que se publican por separado: la **API** (un servidor con HTTPS) y la **app Android** (un `.aab` en Play Console).
 
 ## 0. Orden recomendado
 
-1. Servidor de la API con HTTPS → 2. conectar la planilla de Google desde la app → 3. identidad de la app (ID, ícono, URL)
+1. Servidor de la API con HTTPS → 2. crear la base de datos y el primer administrador → 3. identidad de la app (ID, ícono, URL)
 → 4. firmar → 5. cuenta de Play Console → 6. ficha de la tienda y formularios → 7. prueba cerrada → 8. producción.
 
 ## 1. La API tiene que estar en internet con HTTPS
@@ -14,28 +14,17 @@ La app de Play Store no puede hablar con `localhost` ni con `http://` (Android l
 
 - Un servidor (VPS, Azure App Service, Railway, etc.) con .NET 8 y un dominio con certificado, por ejemplo `https://api-clientea.tudominio.com`.
 - Publicar la API: `dotnet publish src/FichajeApp.Api -c Release -o publicar`.
-- Variable de entorno `Jwt__Secret` distinta por cliente (32+ caracteres al azar). `Setup__Clave` (opcional): el código de activación.
-- La carpeta `datos/` de la API (credencial cifrada, llaves y código de activación) tiene que **persistir** entre reinicios y
-  despliegues. Se puede mover con `Setup__Carpeta`. Si se pierde, hay que volver a cargar la conexión desde la app.
+- Variable de entorno `Jwt__Secret` distinta por cliente (32+ caracteres al azar). `ConnectionStrings__Fichaje` (la base SQL) y `Setup__AdminNombre`, `Setup__AdminEmail` y `Setup__AdminPin` (el primer administrador).
+- La carpeta `datos/` de la API (las fotos) tiene que **persistir** entre reinicios y
+  despliegues. Se puede mover con `Setup__Carpeta`. Si se pierde, se pierden las fotos (los fichajes están en la base).
 - Una instancia por cliente (la caché está en memoria; con varias instancias hay que cambiarla).
 
-## 2. Conectar la planilla de Google
+## 2. La base de datos y el primer administrador
 
-### Una sola vez, la hace quien instala el servidor (vos): la cuenta de servicio
-1. En <https://console.cloud.google.com> crear un proyecto y activar **Google Sheets API** y **Google Drive API** (APIs y servicios → Biblioteca → Habilitar). La de Drive se usa para que el servidor cree la planilla del cliente y se la comparta.
-2. IAM y administración → **Cuentas de servicio** → crear una → pestaña **Claves** → *Agregar clave* → JSON.
-3. Poner ese archivo en el servidor y apuntar `GoogleSheets__CredentialsPath` a él (por ejemplo `credentials/service-account.json`).
-   Con una cuenta por cliente o una sola para todos: a Google le da igual, lo que separa a los clientes es cada planilla.
-4. Mandale al cliente su **código de activación** por un medio privado (el cliente no tiene acceso al servidor). Es `Setup__Clave`, o la que imprime la API al arrancar y está en `datos/clave-instalacion.txt`).
+La API guarda todo en **SQL Server / Azure SQL** (ver [SERVIDOR.md](SERVIDOR.md)). Con `ConnectionStrings__Fichaje` definida, al
+arrancar crea las tablas y, con `Setup__AdminNombre`, `Setup__AdminEmail` y `Setup__AdminPin`, el primer administrador. No hay nada
+que conectar desde la app: se abre y se entra con ese usuario.
 
-### Lo que hace cada cliente (no necesita ningún archivo)
-1. Abrir la app → en el login, **Conectar mi planilla de Google** (aparece sola si el servidor todavía no tiene planilla).
-2. Crear una planilla de Google Sheets vacía y **compartirla como Editor** con el correo que muestra la pantalla (botón *Copiar correo*).
-3. Pegar el link de la planilla, cargar los datos del primer administrador (nombre, email, PIN de 4 dígitos) y el código de activación.
-4. **Probar y guardar**: la API comprueba el acceso, crea las pestañas y al administrador. Ya se puede iniciar sesión.
-
-Si el servidor no tiene ninguna cuenta de servicio, la misma pantalla pide el archivo `.json` (se guarda cifrado en el servidor).
-Si falla, el mensaje dice qué falta: planilla no compartida, API de Sheets sin activar, link incorrecto, etc.
 ## 3. Identidad de la app (por cliente)
 
 - `src/FichajeApp.Mobile/Clientes/<cliente>/`: `cliente.json` (nombre, `apiBaseUrl` con tu `https://…/api`, colores),
@@ -89,7 +78,7 @@ El `.aab` queda en `src/FichajeApp.Mobile/bin/Release/net10.0-android36.0/publis
   mínimo 2 capturas de teléfono.
 - **Política de privacidad** (URL pública, obligatoria): tiene que decir que se usa la **ubicación precisa** al fichar,
   la **huella/PIN del teléfono** (solo para confirmar identidad, no se guarda) y qué datos se guardan (nombre, email,
-  fichajes con hora y lugar) y dónde (la planilla del cliente). Hay generadores gratuitos; ajustalo a lo anterior.
+  fichajes con hora y lugar) y dónde (la base de datos del cliente). Hay generadores gratuitos; ajustalo a lo anterior.
 - **Seguridad de los datos (Data safety)**: ubicación precisa, nombre y email; se recopilan y se comparten con el servidor
   del cliente; se cifran en tránsito (HTTPS); el usuario puede pedir que se borren.
 - **Permisos de ubicación**: al fichar la app usa ubicación en primer plano. El recorrido durante la jornada usa un **servicio en primer plano** de tipo ubicación (ver PLAY_STORE_FICHA.md): no se declara ACCESS_BACKGROUND_LOCATION. No pidas ubicación en segundo plano:

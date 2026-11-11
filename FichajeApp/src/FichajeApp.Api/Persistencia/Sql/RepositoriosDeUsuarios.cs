@@ -5,7 +5,7 @@ using FichajeApp.Api.Repositorios;
 
 namespace FichajeApp.Api.Persistencia.Sql;
 
-// Tabla Empleados. Reemplaza a GoogleSheetsEmpleadosService (el decorador con caché se pone encima, igual que antes).
+// Tabla Empleados (el decorador con caché se pone encima).
 public class EmpleadosSqlRepositorio : BaseSql, IEmpleadosRepositorio
 {
     public EmpleadosSqlRepositorio(IDbContextFactory<FichajeDbContext> fabrica) : base(fabrica) { }
@@ -19,7 +19,7 @@ public class EmpleadosSqlRepositorio : BaseSql, IEmpleadosRepositorio
         return fila is null ? null : Mapear(fila);
     });
 
-    // La comparación no distingue mayúsculas, como en la planilla (en SQL Server ya es así; ToLower también lo asegura en otros motores)
+    // La comparación no distingue mayúsculas, (en SQL Server ya es así; ToLower también lo asegura en otros motores)
     public Task<EmpleadoDto?> BuscarPorEmailAsync(string email, bool incluirInactivos = false) => LeerAsync(async db =>
     {
         var buscado = (email ?? string.Empty).Trim().ToLower();
@@ -56,12 +56,13 @@ public class EmpleadosSqlRepositorio : BaseSql, IEmpleadosRepositorio
         f.Rol = string.IsNullOrWhiteSpace(e.Rol) ? "Empleado" : e.Rol;
         f.IntentosFallidos = e.IntentosFallidos;
         f.Bloqueado = e.Bloqueado;
+        f.SupervisorId = e.SupervisorId;
     }
 
     private static EmpleadoDto Mapear(EmpleadoFila f) => new()
     {
         Id = f.Id, NombreCompleto = f.NombreCompleto, Email = f.Email, PinHash = f.PinHash, Activo = f.Activo,
-        Rol = f.Rol, IntentosFallidos = f.IntentosFallidos, Bloqueado = f.Bloqueado
+        Rol = f.Rol, IntentosFallidos = f.IntentosFallidos, Bloqueado = f.Bloqueado, SupervisorId = f.SupervisorId
     };
 }
 

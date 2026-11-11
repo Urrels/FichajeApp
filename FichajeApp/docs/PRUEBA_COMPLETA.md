@@ -1,45 +1,17 @@
 # Prueba completa, de punta a punta
 
-Hasta ahora casi todo se probó con tests automáticos y compilando, **no con una planilla real y un teléfono**. Esta lista sirve para
+Hasta ahora casi todo se probó con tests automáticos y compilando, **no con una base real y un teléfono**. Esta lista sirve para
 recorrerlo todo una vez antes de dárselo a un cliente. Marcá cada punto; si algo falla, anotá el mensaje exacto de la pantalla.
 
-Usá una **planilla de Google nueva y vacía** y los datos de prueba (administrador `admin@prueba.com`, PIN `1234`).
+Usá una **base de datos nueva y vacía** y los datos de prueba (administrador `admin@prueba.com`, PIN `1234`, definidos con
+`Setup__AdminNombre`, `Setup__AdminEmail` y `Setup__AdminPin`).
 
-## Empezar de cero con una planilla nueva
-
-Importante: la conexión que se guarda desde la app queda en `src/FichajeApp.Api/datos/conexion.json` y **manda sobre** el
-`SpreadsheetId` de `appsettings`. Por eso, vaciar el `SpreadsheetId` no alcanza para cambiar de planilla.
-
-**Opción 1, desde la app (la más simple):** entrá como administrador → Administración → **Conexión con Google Sheets**.
-Compartí la planilla nueva (vacía) con el correo que muestra la pantalla, pegá su link y completá los datos del primer
-administrador de esa planilla. Al guardar, la app cierra tu sesión y tenés que entrar con el administrador nuevo.
-La planilla vieja no se toca.
-
-**Opción 2, desde la PC (para empezar totalmente limpio):**
-1. Cerrá la API.
-2. Borrá **solo** el archivo `src/FichajeApp.Api/datos/conexion.json` (no la carpeta: ahí están las fotos y las llaves).
-3. En `appsettings.Development.json` dejá `"SpreadsheetId": ""` y `"Setup": { "Clave": "prueba123" }`.
-4. Iniciá la API. En el teléfono, al abrir la app, si todavía tenía una sesión de la planilla vieja se cierra sola y te lleva
-   a "Conectar Google Sheets": compartí la planilla nueva con el correo, pegá el link y completá el administrador.
-
-Las fotos de la prueba anterior quedan en `datos/fotos`; si querés borrarlas, borrá esa carpeta.
-## A. Conectar la planilla (como lo haría un cliente)
-- [ ] **Todo de una vez**: con "Crear la planilla por mí" activado, escribís tu Gmail, el nombre de la empresa y los datos del administrador, tocás **Crear y conectar** y el servidor crea la planilla, la prepara y te la comparte (te llega un mail y aparece en Drive → «Compartidos conmigo»). Requiere **Google Drive API** habilitada en el proyecto de Google Cloud.
-- [ ] Si la planilla conectada se **borra** (probar borrándola en Drive), al abrir la app aparece "Conectar Google Sheets" con un aviso rojo que explica que ya no está disponible, y se puede crear una nueva con el código de activación.
-- [ ] La app, al abrir, te lleva sola a "Conectar Google Sheets" (o con el botón del login).
-- [ ] La pantalla muestra el correo de la cuenta de servicio para compartir la planilla; "Copiar correo" funciona.
-- [ ] Con la planilla **sin compartir**: el mensaje dice con qué correo hay que compartirla.
-- [ ] Con un código de activación incorrecto: dice que no es correcto.
-- [ ] Con todo bien: se guarda y aparecen en la planilla las pestañas `Empleados`, `Fichajes`, `Sitios`, `Roles`, `Permisos`, `Parametros`, etc.
-- [ ] Entrás con el administrador que cargaste y ves **su panel** (Supervisor/Administración), no la pantalla del kiosco.
-- [ ] Desde Administración → "Conexión con Google Sheets" se puede volver a abrir (solo el administrador).
-- [ ] Sin sesión de administrador, intentar reconectar con el código **ya no funciona** ("La planilla ya está conectada…").
-
-- [ ] (Teléfono) 5 toques al logo del login cambian la dirección del servidor; una dirección mala se rechaza y una caída avisa "Guardada, pero no responde"; vacía vuelve a la original.
-
+## A. Primer arranque
+- [ ] Con la base vacía, al arrancar la API se crean las tablas y el administrador. `GET /api/configuracion/estado` responde `configurada: true`.
+- [ ] Entrás con el administrador y ves **su panel** (Supervisor/Administración), no la pantalla del kiosco.
+- [ ] En el login **no** aparece ningún botón para conectar nada, y Administración no tiene ninguna opción de conexión.
+- [ ] (Teléfono) 5 toques al logo del login cambian la dirección del servidor; una dirección mala se rechaza y una caída avisa "no responde".
 - [ ] (Teléfono en modo oscuro) los textos se leen bien: la app siempre se ve clara.
-- [ ] Al guardar la planilla con un dato mal puesto aparece un **cartel** "No se pudo conectar" con el motivo, y se puede reintentar con el mismo código.
-- [ ] Al guardar bien, la app vuelve **sola al inicio de sesión**.
 
 ## B. Usuarios y roles
 - [ ] Administración → Usuarios: crear dos empleados y un supervisor; el empleado entra y ve solo "Fichar".
@@ -62,7 +34,7 @@ Las fotos de la prueba anterior quedan en `datos/fotos`; si querés borrarlas, b
 - [ ] Administración → "Cómo se ficha": cambiar Ubicación a **Ninguna** y Foto a **Obligatoria**, guardar.
 - [ ] En el próximo fichaje no pide GPS y pide la foto; el aviso de consentimiento aparece solo la primera vez.
 - [ ] Si el empleado no acepta el aviso, no se le saca la foto y no ficha.
-- [ ] En la planilla, el fichaje tiene "Sin ubicación" como lugar y el nombre del archivo de la foto en la columna `O`.
+- [ ] El fichaje queda con "Sin ubicación" como lugar y con el nombre del archivo de la foto.
 - [ ] Dice cuántos días se guardan las fotos (90).
 
 ## E. Supervisor
@@ -78,7 +50,7 @@ Las fotos de la prueba anterior quedan en `datos/fotos`; si querés borrarlas, b
 - [ ] Tocar un nombre, PIN correcto (+ foto si corresponde): registra y cambia a Salida.
 - [ ] PIN incorrecto: avisa y **no** cierra la sesión del teléfono; 3 errores frenan a ese empleado 15 minutos.
 - [ ] Cerrar y abrir la app: sigue en el kiosco sin pedir login.
-- [ ] El fichaje queda en la planilla a nombre del empleado y con "Sucursal Centro" como lugar.
+- [ ] El fichaje queda a nombre del empleado y con "Sucursal Centro" como lugar.
 
 ## G. Liquidación de horas
 - [ ] Cargar el valor hora de cada empleado y un feriado.
@@ -103,7 +75,6 @@ Las fotos de la prueba anterior quedan en `datos/fotos`; si querés borrarlas, b
 - [ ] Cerrar período, marcar como pagada, dar de baja, eliminar rol o feriado piden confirmación con el **verbo** en el botón ("Dar de baja", "Eliminar feriado") y dicen la consecuencia.
 - [ ] Un PIN incorrecto en el kiosco dice "Ese PIN no coincide. Probá de nuevo.".
 - [ ] Si el kiosco no puede cargar la lista (por ejemplo, el modo está apagado), aparece una **pantalla de error** con el botón "Reintentar", no una línea de texto.
-- [ ] Si la planilla conectada se borró, "Conectar Google Sheets" muestra el aviso en un **banner rojo**.
 
 ## J. En el teléfono real
 Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, modo avión y rotación.
@@ -138,7 +109,6 @@ Ver [TELEFONO_REAL.md](TELEFONO_REAL.md): cámara, GPS al aire libre, huella, mo
 - [ ] Con «Ubicación libre» activada, fichar dentro del radio queda con el nombre del lugar y sin pedir motivo; fichar lejos pide el motivo.
 - [ ] Al eliminar un lugar, fichar ahí vuelve a pedir el motivo enseguida (sin esperar).
 - [ ] Un nombre repetido, un radio fuera de 10 a 5000 m o una ubicación inválida se rechazan con un mensaje claro.
-- [ ] Con la API conectada a SQL no aparecen «Conectar mi planilla de Google» en el login ni «Conexión con Google Sheets» en Administración.
 
 ## R. Seguridad de roles y sesiones
 - [ ] Un usuario con un rol que solo tenga «Administrar usuarios» no puede asignarse el rol Administrador, ni crear un usuario Administrador: aparece «No podés dar ni quitar el rol…».

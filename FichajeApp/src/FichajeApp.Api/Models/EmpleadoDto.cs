@@ -19,7 +19,15 @@ public class EmpleadoDto
     public int IntentosFallidos { get; set; }
     public bool Bloqueado { get; set; }
 
+    // Jerarquía: quién tiene a cargo a esta persona. null = nadie en particular (queda a cargo del administrador).
+    // Solo se muestra al supervisor cuya persona le fue asignada; el administrador ve a todos.
+    public int? SupervisorId { get; set; }
+
     // Número de fila en la hoja, para poder actualizarla
     [JsonIgnore]
     public int Fila { get; set; }
+
+    // Copia completa. Un solo lugar: antes cada caché y cada prueba tenía su propia copia campo por campo y agregar un
+    // campo nuevo (como SupervisorId) se perdía en silencio en la que se olvidaban.
+    public EmpleadoDto Clonar() => (EmpleadoDto)MemberwiseClone();
 }

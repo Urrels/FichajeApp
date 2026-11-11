@@ -9,7 +9,21 @@
        FlyoutBackgroundColor="{DynamicResource ColorSuperficie}">
 
     <!-- Menú lateral en tonos cálidos: el ítem actual se marca con arena en vez del gris de la plantilla -->
+    <!-- Cabecera del menú: quién tiene la sesión abierta y con qué rol (se completa en AppShell.xaml.cs) -->
+    <Shell.FlyoutHeader>
+        <VerticalStackLayout BackgroundColor="{DynamicResource ColorPrimario}" Padding="20,48,20,20" Spacing="4">
+            <Label x:Name="MenuNombre" Text="Fichaje" FontSize="20" FontAttributes="Bold" TextColor="{DynamicResource ColorPrimarioTexto}" />
+            <Label x:Name="MenuRol" FontSize="13" Opacity="0.85" TextColor="{DynamicResource ColorPrimarioTexto}" />
+        </VerticalStackLayout>
+    </Shell.FlyoutHeader>
+
     <Shell.Resources>
+        <!-- Letra más grande y oscura: antes el menú era chico y de bajo contraste -->
+        <Style TargetType="Label" Class="FlyoutItemLabelStyle">
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="TextColor" Value="{DynamicResource ColorTexto}" />
+            <Setter Property="Margin" Value="8,0,0,0" />
+        </Style>
         <Style TargetType="Grid" Class="FlyoutItemLayoutStyle">
             <Setter Property="VisualStateManager.VisualStateGroups">
                 <VisualStateGroupList>
@@ -21,7 +35,7 @@
                         </VisualState>
                         <VisualState x:Name="Selected">
                             <VisualState.Setters>
-                                <Setter Property="BackgroundColor" Value="#F3E3D2" />
+                                <Setter Property="BackgroundColor" Value="#EADCCB" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>

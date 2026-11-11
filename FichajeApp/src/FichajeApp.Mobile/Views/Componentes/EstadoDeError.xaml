@@ -5,7 +5,7 @@
              x:Name="Raiz">
 
     <!-- Pantalla de error: se usa cuando la pantalla NO puede cumplir su función (sin conexión al abrir, servidor caído,
-         planilla desconectada). Para fallas chicas se usa un snackbar; para decidir algo, un modal. -->
+         servidor sin conexión). Para fallas chicas se usa un snackbar; para decidir algo, un modal. -->
     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Padding="32" Spacing="12">
         <Label Text="{Binding Icono, Source={x:Reference Raiz}}" FontSize="52" HorizontalOptions="Center" />
         <Label Text="{Binding Titulo, Source={x:Reference Raiz}}" FontSize="20" FontAttributes="Bold"

@@ -24,8 +24,6 @@ public partial class AppShell : Shell, ISessionObserver
         Routing.RegisterRoute(nameof(LiquidacionPage), typeof(LiquidacionPage));
         Routing.RegisterRoute(nameof(CambiarPinPage), typeof(CambiarPinPage));
         Routing.RegisterRoute(nameof(AparienciaPage), typeof(AparienciaPage));
-        Routing.RegisterRoute(nameof(ConfiguracionPage), typeof(ConfiguracionPage));
-        Routing.RegisterRoute(nameof(AyudaClavePage), typeof(AyudaClavePage));
         Routing.RegisterRoute(nameof(ConfigFichajePage), typeof(ConfigFichajePage));
         Routing.RegisterRoute(nameof(FotoFichajePage), typeof(FotoFichajePage));
 
@@ -77,6 +75,8 @@ public partial class AppShell : Shell, ISessionObserver
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            MenuNombre.Text = sesion.EstaLogueado && !string.IsNullOrWhiteSpace(sesion.NombreCompleto) ? sesion.NombreCompleto : "Fichaje";
+            MenuRol.Text = !sesion.EstaLogueado ? "" : kiosco ? "Kiosco" : administrador ? "Administrador" : supervisor ? "Supervisor" : "Empleado";
             SupervisorItem.FlyoutItemIsVisible = supervisor;
             AdminItem.FlyoutItemIsVisible = administrador;
             FichajeItem.FlyoutItemIsVisible = !kiosco;

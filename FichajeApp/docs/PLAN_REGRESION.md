@@ -115,7 +115,6 @@ Armado leyendo el código de `main` y de los PR #36, #37 y #38 (probados juntos 
 | REG-ADM-12 | Fichajes (corrección) | `JornadasYFichajesAdmin` | Fichaje manual inválido | Fecha futura; egreso anterior al ingreso; jornada >24 h; superposición; fecha en período liquidado | Cada caso con su mensaje: "No se puede cargar un fichaje con fecha futura", "El egreso tiene que ser posterior al ingreso", "Una jornada no puede durar más de 24 horas", "El fichaje se superpone…", "Esa fecha pertenece a un período ya liquidado" | Alta |
 | REG-ADM-13 | Cómo se ficha | `ConfiguracionFichajeService`, `ConfigFichajeViewModel` | Cambiar ubicación, foto, modo y precisión | Guardar cada combinación válida; probar valores inválidos por API | Se aplica en el siguiente fichaje. Un valor inválido: "La opción de … no es válida. Opciones: …" | Alta |
 | REG-ADM-14 | Apariencia | `AparienciaService` (servidor), `ClienteService` | Cambiar nombre, colores y logo | Guardar nombre, colores y un logo PNG o JPG | La app toma colores y logo. Rechaza: nombre largo, color que no sea `#RRGGBB`, logo que no sea PNG/JPG o muy pesado | Media |
-| REG-ADM-15 | Configuración | `ConfiguracionController`, `ConfiguracionPage` | Estado de conexión con Google | Abrir el estado y cargar el .json de la cuenta de servicio | Muestra el estado. Con un archivo que no es válido: "No pudimos leer ese archivo…" | Media |
 
 ### 6. Liquidación
 
@@ -159,8 +158,6 @@ Armado leyendo el código de `main` y de los PR #36, #37 y #38 (probados juntos 
 | REG-API-07 | API | `ManejarReglasNegocio` | Excepción de negocio | Provocar un `InvalidOperationException` | 400 con `{mensaje}` | Alta |
 | REG-API-08 | API | `Program.cs`, `ConfiguracionSegura` | Arranque sin secreto JWT | Iniciar sin `Jwt__Secret`, o con menos de 32 caracteres | No arranca y explica qué falta | Media |
 | REG-API-09 | API | `RequierePermiso` en cada controlador | Matriz de permisos | Llamar a un endpoint de cada controlador con un rol sin el permiso | Todos responden 403. Sin token: 401 | Alta |
-| REG-API-10 | API | `Servicios/ConexionService`, `ConfiguracionController` | Hoja de Google no conectada | Arrancar con `conexion.json` renombrado | Muestra el código de activación en el log y la app guía al usuario a configurar. No hay errores sin explicación | Media |
-| REG-API-11 | Datos | Repositorios de Google Sheets | Hoja con datos incompletos | Fichaje sin empleado, fila sin Id | La API devuelve error controlado (400, 404 o mensaje de negocio) y no un 500 sin explicación | Media |
 
 ### 9. Casos borde de la interfaz y transiciones
 

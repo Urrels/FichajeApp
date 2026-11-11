@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace FichajeApp.Api.Persistencia;
 
-// Base de datos SQL del cliente (SQL Server / Azure SQL). Las tablas replican las pestañas de la planilla de Google:
-// los repositorios de Persistencia/Sql implementan las mismas interfaces que los de Sheets y los servicios no cambian.
+// Base de datos SQL del cliente (SQL Server / Azure SQL): una tabla por cada cosa que guarda la app.
+// Los repositorios de Persistencia/Sql implementan las interfaces de Repositorios/ y los servicios solo conocen esas interfaces.
 public class FichajeDbContext : DbContext
 {
     public FichajeDbContext(DbContextOptions<FichajeDbContext> opciones) : base(opciones) { }
@@ -42,6 +42,9 @@ public class FichajeDbContext : DbContext
             e.Property(x => x.Rol).HasMaxLength(50).IsRequired();
             e.HasIndex(x => x.Email).IsUnique();
             e.HasIndex(x => x.NombreCompleto).IsUnique();
+            // Jerarquía: los empleados no se borran (se dan de baja), así que no hay cascada; el índice acelera "mis empleados"
+            e.HasIndex(x => x.SupervisorId);
+            e.HasOne<EmpleadoFila>().WithMany().HasForeignKey(x => x.SupervisorId).OnDelete(DeleteBehavior.NoAction);
         });
 
         m.Entity<RolFila>(e =>
@@ -220,6 +223,8 @@ public class EmpleadoFila
     public string Rol { get; set; } = "Empleado";
     public int IntentosFallidos { get; set; }
     public bool Bloqueado { get; set; }
+    // Quién tiene a cargo a esta persona (otro empleado con rol de supervisor). null = a cargo del administrador.
+    public int? SupervisorId { get; set; }
 }
 
 public class RolFila { public int Id { get; set; } public string Nombre { get; set; } = ""; public int? PadreId { get; set; } public bool Protegido { get; set; } }

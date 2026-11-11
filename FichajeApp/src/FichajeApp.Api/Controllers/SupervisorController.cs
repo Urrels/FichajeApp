@@ -18,18 +18,36 @@ public class SupervisorController : ControllerBase
     private readonly ConsultaFichajesService _consulta;
     private readonly IEmpleadosRepositorio _empleados;
     private readonly IAlmacenFotos _fotos;
+    private readonly Servicios.JerarquiaService _jerarquia;
 
-    public SupervisorController(ConsultaFichajesService consulta, IEmpleadosRepositorio empleados, IAlmacenFotos fotos)
+    public SupervisorController(ConsultaFichajesService consulta, IEmpleadosRepositorio empleados, IAlmacenFotos fotos,
+        Servicios.JerarquiaService jerarquia)
     {
         _consulta = consulta;
         _empleados = empleados;
         _fotos = fotos;
+        _jerarquia = jerarquia;
     }
 
-    // GET api/supervisor/foto?archivo=2026/10/29/<id>.jpg  -> la foto de un fichaje (solo supervisores)
+    // A quién puede ver quien hace el pedido: el administrador a todos, el supervisor solo a sus empleados asignados
+    private Task<Servicios.AlcanceDeUsuario> AlcanceAsync() =>
+        _jerarquia.AlcanceDeAsync(User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value);
+
+    private IActionResult FueraDeAlcance() =>
+        StatusCode(StatusCodes.Status403Forbidden, new { mensaje = "Esa persona no está a tu cargo." });
+
+    // GET api/supervisor/foto?archivo=2026/10/29/<id>.jpg  -> la foto de un fichaje (solo de las personas a cargo)
     [HttpGet("foto")]
     public async Task<IActionResult> Foto([FromQuery] string archivo)
     {
+        var alcance = await AlcanceAsync();
+        if (!alcance.EsGlobal)
+        {
+            // La foto pertenece al fichaje que la guardó: solo se entrega si esa persona está a cargo de quien pide
+            var dueno = (await _consulta.ObtenerFotoDeAsync(archivo ?? ""));
+            if (dueno is null || !alcance.Incluye(dueno)) return FueraDeAlcance();
+        }
+
         var foto = await _fotos.LeerAsync(archivo ?? "");
         if (foto is null) return NotFound(new { mensaje = "La foto ya no está disponible (las fotos se borran pasado un tiempo)." });
 
@@ -50,12 +68,20 @@ public class SupervisorController : ControllerBase
         if ((h - d).TotalDays > MaxDias)
             return BadRequest(new { mensaje = $"El rango no puede superar {MaxDias} días" });
 
-        return Ok(await _consulta.ObtenerAsync(d, h, empleado));
+        var alcance = await AlcanceAsync();
+        if (!string.IsNullOrWhiteSpace(empleado) && !alcance.Incluye(empleado)) return FueraDeAlcance();
+
+        var fichajes = await _consulta.ObtenerAsync(d, h, empleado);
+        return Ok(fichajes.Where(f => alcance.Incluye(f.NombreCompleto)).ToList());
     }
 
     // GET api/supervisor/presentes
     [HttpGet("presentes")]
-    public async Task<IActionResult> Presentes() => Ok(await _consulta.ObtenerPresentesAsync());
+    public async Task<IActionResult> Presentes()
+    {
+        var alcance = await AlcanceAsync();
+        return Ok((await _consulta.ObtenerPresentesAsync()).Where(f => alcance.Incluye(f.NombreCompleto)).ToList());
+    }
 
     // GET api/supervisor/recorrido?empleado=Nombre&fecha=2026-10-29  -> los puntos de ubicación de esa persona ese día
     [HttpGet("recorrido")]
@@ -63,6 +89,7 @@ public class SupervisorController : ControllerBase
     {
         var persona = (await _empleados.ListarAsync()).FirstOrDefault(e => e.NombreCompleto.Equals(empleado ?? "", StringComparison.OrdinalIgnoreCase));
         if (persona is null) return NotFound(new { mensaje = "No encontramos a esa persona." });
+        if (!(await AlcanceAsync()).Incluye(persona.NombreCompleto)) return FueraDeAlcance();
 
         var puntos = await recorrido.ObtenerAsync(persona.Id, (fecha ?? DateTime.Now).Date);
         return Ok(puntos.Select(p => new { p.FechaHora, p.Latitud, p.Longitud, p.Precision }));
@@ -72,7 +99,8 @@ public class SupervisorController : ControllerBase
     [HttpGet("empleados")]
     public async Task<IActionResult> Empleados()
     {
+        var alcance = await AlcanceAsync();
         var empleados = await _empleados.ListarAsync();
-        return Ok(empleados.Where(e => e.Activo).Select(e => e.NombreCompleto).OrderBy(n => n).ToList());
+        return Ok(empleados.Where(e => e.Activo && alcance.Incluye(e.NombreCompleto)).Select(e => e.NombreCompleto).OrderBy(n => n).ToList());
     }
 }

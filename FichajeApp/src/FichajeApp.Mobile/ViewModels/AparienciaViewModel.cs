@@ -8,6 +8,9 @@ public static class ColoresApp
 {
     public const double ContrasteMinimo = 3.0;
 
+    // Los colores de la marca: son los mismos de Tema.xaml. "Restablecer colores" vuelve a estos.
+    public const string MarcaPrincipal = "#7A2E3A", MarcaTexto = "#FFFFFF", MarcaAcento = "#B88A4A";
+
     // "#RRGGBB" en mayúsculas, o null si no es un color válido (se acepta sin el #)
     public static string? Normalizar(string? texto)
     {
@@ -21,12 +24,13 @@ public static class ColoresApp
 
     public static readonly IReadOnlyDictionary<string, string> Paleta = new Dictionary<string, string>
     {
-        ["Terracota"] = "#B5542B", ["Ladrillo"] = "#9C3D2A", ["Ocre"] = "#C9892B", ["Arena"] = "#D9B38C",
+        // Tonos tierra y borgoña primero (la marca por defecto); sin naranjas ni amarillos fuertes
+        ["Borgoña"] = "#7A2E3A", ["Vino"] = "#5A1F29", ["Ladrillo"] = "#8E3B34", ["Madera"] = "#8B5A2B",
+        ["Ocre"] = "#A8842F", ["Arena oscura"] = "#B88A4A", ["Arena"] = "#D9B38C", ["Chocolate"] = "#4E342E",
         ["Azul"] = "#1B5E9B", ["Azul oscuro"] = "#0D47A1", ["Celeste"] = "#0288D1",
         ["Verde"] = "#2E7D32", ["Verde azulado"] = "#00796B", ["Violeta"] = "#6A1B9A",
-        ["Bordó"] = "#AD1457", ["Rojo"] = "#C62828", ["Naranja"] = "#E65100",
-        ["Gris azulado"] = "#455A64", ["Negro"] = "#212121", ["Dorado"] = "#FFB300",
-        ["Amarillo"] = "#FDD835", ["Blanco"] = "#FFFFFF"
+        ["Bordó"] = "#AD1457", ["Rojo"] = "#C62828",
+        ["Gris azulado"] = "#455A64", ["Negro"] = "#212121", ["Blanco"] = "#FFFFFF"
     };
 }
 
@@ -108,7 +112,7 @@ public class AparienciaViewModel : VmBase
     };
 
     // El borde marca cuál de los tres se está editando
-    private static readonly Color Marcado = Color.FromArgb("#3B2A20"), NoMarcado = Color.FromArgb("#DCCFC2");
+    private static readonly Color Marcado = Color.FromArgb("#2E211C"), NoMarcado = Color.FromArgb("#DCCFC2");
     public Color BordePrincipal => _editando == 0 ? Marcado : NoMarcado;
     public Color BordeTexto => _editando == 1 ? Marcado : NoMarcado;
     public Color BordeAcento => _editando == 2 ? Marcado : NoMarcado;
@@ -206,7 +210,7 @@ public class AparienciaViewModel : VmBase
         Estado = "Mientras elegís, toda la app cambia en vivo. Si salís sin guardar, vuelve a lo anterior.";
     }
 
-    // Elige una imagen del teléfono y la achica a 256 px: así pesa poco y entra en la planilla
+    // Elige una imagen del teléfono y la achica a 256 px: así pesa poco y se guarda rápido
     public async Task ElegirLogoAsync()
     {
         try
@@ -262,6 +266,24 @@ public class AparienciaViewModel : VmBase
         Cargar();
         await _feedback.ExitoAsync("Cambios guardados. Ya los ven todos.");
     }).ContinueWith(_ => Notificar(nameof(PuedeGuardar)));
+
+    // Vuelve a los colores de la marca y los guarda para todos. No toca el nombre ni el logo.
+    public async Task RestablecerColoresAsync()
+    {
+        if (!await Dialogos.Confirmar("¿Restablecer los colores?",
+                "Los tres colores vuelven a los de la marca: borgoña, texto blanco y arena. Se guarda y lo ven todos los usuarios.", "Restablecer"))
+            return;
+
+        await ConEspera(async () =>
+        {
+            var r = await _api.GuardarApariencia(Nombre, ColoresApp.MarcaPrincipal, ColoresApp.MarcaTexto, ColoresApp.MarcaAcento, null, false);
+            if (!r.Exito) { await _feedback.ErrorAsync(TextosDeError.Para(null, r.Mensaje)); return; }
+
+            await _remota.ActualizarAsync();
+            Cargar();
+            await _feedback.ExitoAsync("Colores restablecidos. Ya los ven todos.");
+        });
+    }
 
     public async Task RestaurarAsync()
     {

@@ -4,7 +4,7 @@ public record ResultadoSincronizacion(int Agregados, int Actualizados, int Retir
 
 public record PlanFeriados(List<Feriado> Agregar, List<Feriado> Actualizar, List<DateTime> Retirar, int Omitidos);
 
-// Regla de fusión entre lo que hay en la planilla y los feriados oficiales. Pura, para probarla sin Google.
+// Regla de fusión entre los feriados guardados y los feriados oficiales. Pura, para probarla sin red.
 //  - Lo cargado a mano o descartado por el administrador nunca se toca.
 //  - Lo que vino de la API se actualiza si cambió.
 //  - Un feriado futuro que vino de la API y ya no figura en el listado oficial (lo movieron) se retira,

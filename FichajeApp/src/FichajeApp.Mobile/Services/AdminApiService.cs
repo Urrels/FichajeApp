@@ -31,9 +31,17 @@ public class UsuarioAdmin
     public int IntentosFallidos { get; set; }
     public List<int> RolIds { get; set; } = new();
     public List<string> Roles { get; set; } = new();
+    public int? SupervisorId { get; set; }
+    public string? Supervisor { get; set; }
 
     public string Estado => !Activo ? "Dado de baja" : Bloqueado ? "Bloqueado" : "Activo";
-    public string Detalle => $"{Email} · {string.Join(", ", Roles)} · {Estado}";
+    public string Detalle => $"{Email} · {string.Join(", ", Roles)} · {Estado}" + (Supervisor is null ? "" : $" · A cargo de {Supervisor}");
+}
+
+public class SupervisorResumen
+{
+    public int Id { get; set; }
+    public string Nombre { get; set; } = string.Empty;
 }
 
 public class RolResumen
@@ -240,6 +248,10 @@ public class AdminApiService
     public Task<ResultadoConsulta<Respuesta>> Desbloquear(int id) => Pedir<Respuesta>(HttpMethod.Post, $"admin/usuarios/{id}/desbloquear");
     public Task<ResultadoConsulta<Respuesta>> RestablecerPin(int id, string pin) =>
         Pedir<Respuesta>(HttpMethod.Post, $"admin/usuarios/{id}/restablecer-pin", new { pin });
+    public Task<ResultadoConsulta<List<SupervisorResumen>>> ListarSupervisores() =>
+        Pedir<List<SupervisorResumen>>(HttpMethod.Get, "admin/usuarios/supervisores");
+    public Task<ResultadoConsulta<Respuesta>> AsignarSupervisor(int id, int? supervisorId) =>
+        Pedir<Respuesta>(HttpMethod.Put, $"admin/usuarios/{id}/supervisor", new { supervisorId });
     public Task<ResultadoConsulta<Respuesta>> AsignarRoles(int id, List<int> rolIds) =>
         Pedir<Respuesta>(HttpMethod.Put, $"admin/usuarios/{id}/roles", new { rolIds });
     public Task<ResultadoConsulta<List<HistorialItem>>> HistorialDeUsuario(int id) =>

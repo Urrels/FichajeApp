@@ -43,11 +43,7 @@ public class EmpleadosFalso : IEmpleadosRepositorio
     }
 
     // Copias, como una hoja real: modificar el objeto devuelto no cambia lo guardado hasta llamar a Actualizar
-    private static EmpleadoDto Copia(EmpleadoDto e) => new()
-    {
-        Id = e.Id, NombreCompleto = e.NombreCompleto, Email = e.Email, PinHash = e.PinHash, Activo = e.Activo,
-        Rol = e.Rol, IntentosFallidos = e.IntentosFallidos, Bloqueado = e.Bloqueado, Fila = e.Fila
-    };
+    private static EmpleadoDto Copia(EmpleadoDto e) => e.Clonar();
 }
 
 public class RolesFalso : IRolesRepositorio
@@ -175,23 +171,6 @@ public class AparienciaFalso : IAparienciaRepositorio
     }
 }
 
-// Crea "planillas" sin ir a Google: guarda qué se pidió y qué se borró
-public class CreadorFalso : ICreadorDePlanilla
-{
-    public string IdQueDevuelve { get; set; } = "1PlanillaNuevaCreadaPorElServidor0123456789abc";
-    public Exception? ErrorAlCrear { get; set; }
-    public List<(string Titulo, string Email)> Creadas { get; } = new();
-    public List<string> Eliminadas { get; } = new();
-
-    public Task<string> CrearAsync(string credencialesJson, string titulo, string emailPropietario)
-    {
-        if (ErrorAlCrear is not null) return Task.FromException<string>(ErrorAlCrear);
-        Creadas.Add((titulo, emailPropietario));
-        return Task.FromResult(IdQueDevuelve);
-    }
-
-    public Task EliminarAsync(string credencialesJson, string spreadsheetId) { Eliminadas.Add(spreadsheetId); return Task.CompletedTask; }
-}
 public class ConfiguracionFichajeFalso : IConfiguracionFichajeRepositorio
 {
     public ConfiguracionFichaje? Datos { get; set; }
@@ -344,6 +323,7 @@ public class Entorno
 
     public BitacoraService Bitacora { get; }
     public PermisosService Permisos { get; }
+    public JerarquiaService Jerarquia { get; }
     public GuardaAdministracion Guarda { get; }
     public HistorialUsuariosService Historial { get; }
     public LoginService Login { get; }
@@ -376,10 +356,11 @@ public class Entorno
 
         Bitacora = new BitacoraService(BitacoraRepo, Reloj);
         Permisos = new PermisosService(Roles, Empleados);
+        Jerarquia = new JerarquiaService(Empleados, Permisos);
         Guarda = new GuardaAdministracion(Roles, Permisos);
         Historial = new HistorialUsuariosService(HistorialRepo, Roles, Reloj);
         Login = new LoginService(Empleados, Permisos, Bitacora, Historial, tiempo: Reloj);
-        Usuarios = new UsuariosAdminService(Empleados, Roles, Fichajes, Historial, HistorialRepo, Guarda, Bitacora, Permisos);
+        Usuarios = new UsuariosAdminService(Empleados, Roles, Fichajes, Historial, HistorialRepo, Guarda, Bitacora, Permisos, jerarquia: Jerarquia);
         RolesServicio = new RolesService(Roles, Guarda, Bitacora, Permisos);
         Jornadas = new JornadasService(Fichajes, Empleados);
         FichajesAdmin = new FichajesAdminService(Jornadas, Fichajes, Empleados, LiquidacionRepo, Bitacora, Reloj);

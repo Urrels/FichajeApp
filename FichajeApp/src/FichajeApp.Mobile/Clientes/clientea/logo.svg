@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
   <!-- El logo se muestra dentro de un círculo blanco: va en el color de la marca, no en blanco -->
-  <circle cx="48" cy="48" r="34" fill="none" stroke="#B5542B" stroke-width="8" />
-  <path d="M48 31 V48 L60 55" fill="none" stroke="#B5542B" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="48" cy="48" r="34" fill="none" stroke="#7A2E3A" stroke-width="8" />
+  <path d="M48 31 V48 L60 55" fill="none" stroke="#7A2E3A" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
 </svg>

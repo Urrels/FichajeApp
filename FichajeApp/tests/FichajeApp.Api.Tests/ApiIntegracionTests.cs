@@ -11,25 +11,30 @@ using FichajeApp.Api.Dominio.Liquidacion;
 using FichajeApp.Api.Infrastructure;
 using FichajeApp.Api.Models;
 using FichajeApp.Api.Repositorios;
+using FichajeApp.Api.Servicios;
 using FichajeApp.Api.Storage;
 
 namespace FichajeApp.Api.Tests;
 
 // Levanta la API real en memoria (DI, JWT, autorización por permiso, filtros, rate limiting) con los
-// repositorios de Google Sheets reemplazados por los falsos: prueba el cableado de punta a punta por HTTP.
+// repositorios de la base SQL reemplazados por los falsos: prueba el cableado de punta a punta por HTTP.
 public class ApiFactory : WebApplicationFactory<Program>
 {
     public Entorno Datos { get; } = new();
+    public NotificacionesRepoFalso Notificaciones { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
         builder.ConfigureServices(servicios =>
         {
-            // Nada de Google en los tests
+            // Sin base de datos ni tareas de fondo en los tests
             servicios.RemoveAll<IHostedService>();
-            servicios.RemoveAll<GoogleSheetsClient>();
             servicios.RemoveAll<TimeProvider>();
+            servicios.RemoveAll<INotificacionesRepositorio>();
+            servicios.RemoveAll<IDispositivosPushRepositorio>();
+            servicios.RemoveAll<IHorariosRepositorio>();
+            servicios.RemoveAll<IRecorridoRepositorio>();
             servicios.RemoveAll<IEmpleadosRepositorio>();
             servicios.RemoveAll<IRolesRepositorio>();
             servicios.RemoveAll<IBitacoraRepositorio>();
@@ -60,6 +65,10 @@ public class ApiFactory : WebApplicationFactory<Program>
             servicios.AddSingleton<FichajeApp.Api.Servicios.IProveedorFeriados>(Datos.ProveedorFeriados);
             servicios.AddSingleton<FichajeApp.Api.Services.ISitiosRepository, SitiosVacio>();
             servicios.AddSingleton<IFichajeStorageStrategy, StorageVacio>();
+            servicios.AddSingleton<INotificacionesRepositorio>(Notificaciones);
+            servicios.AddSingleton<IDispositivosPushRepositorio, DispositivosFalso>();
+            servicios.AddSingleton<IHorariosRepositorio, HorariosEnMemoria>();
+            servicios.AddSingleton<IRecorridoRepositorio, RecorridoRepoFalso>();
         });
     }
 }

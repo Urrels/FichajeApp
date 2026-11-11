@@ -77,13 +77,13 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Clientes\$(Cliente)\appicon.svg" ForegroundFile="Clientes\$(Cliente)\appiconfg.svg" Color="#B5542B" />
+		<MauiIcon Include="Clientes\$(Cliente)\appicon.svg" ForegroundFile="Clientes\$(Cliente)\appiconfg.svg" Color="#7A2E3A" />
 			<!-- Logo de la cabecera y configuración del cliente (nombre, URL de la API y colores) -->
 			<MauiImage Include="Clientes\$(Cliente)\logo.svg" Link="Resources\Images\logo.svg" BaseSize="96,96" />
 			<EmbeddedResource Include="Clientes\$(Cliente)\cliente.json" LogicalName="cliente.json" />
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#B5542B" BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#7A2E3A" BaseSize="128,128" />
 
 		<!-- Ilustraciones de la ayuda de la clave de instalación -->
 		<!-- Son PNG ya dibujados desde los .svg de la misma carpeta: el generador de imágenes de MAUI 10 falla con SVG que tienen texto -->

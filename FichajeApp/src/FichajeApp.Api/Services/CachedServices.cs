@@ -12,7 +12,7 @@ namespace FichajeApp.Api.Services;
 // Todas las lecturas salen de la misma lista y toda escritura la invalida, así el bloqueo por intentos
 // fallidos y las bajas se ven enseguida. Devuelve copias: quien la usa modifica el objeto (por ejemplo el
 // login suma un intento) y eso no debe tocar lo que quedó en la caché si la escritura falla.
-// Vale para una sola instancia de la API; una edición manual de la planilla se ve al vencer la caché.
+// Vale para una sola instancia de la API; un cambio hecho directo en la base se ve al vencer la caché.
 public class CachedEmpleadosRepositorio : IEmpleadosRepositorio
 {
     private const string Clave = "empleados:lista";
@@ -56,11 +56,7 @@ public class CachedEmpleadosRepositorio : IEmpleadosRepositorio
         finally { _cache.Remove(Clave); }
     }
 
-    private static EmpleadoDto Copiar(EmpleadoDto e) => new()
-    {
-        Id = e.Id, NombreCompleto = e.NombreCompleto, Email = e.Email, PinHash = e.PinHash, Activo = e.Activo,
-        Rol = e.Rol, IntentosFallidos = e.IntentosFallidos, Bloqueado = e.Bloqueado, Fila = e.Fila
-    };
+    private static EmpleadoDto Copiar(EmpleadoDto e) => e.Clonar();
 }
 
 public class CachedSitiosRepository : ISitiosRepository

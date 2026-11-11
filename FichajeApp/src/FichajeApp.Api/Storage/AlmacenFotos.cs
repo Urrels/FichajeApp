@@ -7,7 +7,7 @@ namespace FichajeApp.Api.Storage;
 // (por ejemplo Amazon S3) sin tocar el resto.
 public interface IAlmacenFotos
 {
-    // Guarda la foto y devuelve su nombre relativo (es lo que queda anotado en la planilla)
+    // Guarda la foto y devuelve su nombre relativo (es lo que queda anotado en el fichaje)
     Task<string> GuardarAsync(byte[] bytes, DateTime fecha);
 
     // null si no existe o el nombre no es válido

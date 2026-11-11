@@ -32,87 +32,51 @@ builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
 builder.Services.Configure<FichajeOptions>(builder.Configuration.GetSection(FichajeOptions.Seccion));
 
-// La conexión con Google Sheets se puede configurar desde la app: se guarda cifrada en esta carpeta del servidor
-var carpetaDeDatos = builder.Configuration["Setup:Carpeta"] ?? Path.Combine(builder.Environment.ContentRootPath, "datos");
-builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(carpetaDeDatos, "llaves")));
-builder.Services.AddSingleton<AlmacenConexion>();
-builder.Services.AddSingleton<IProbadorConexion, ProbadorConexionGoogle>();
-builder.Services.AddSingleton<ICreadorDePlanilla, CreadorDePlanillaGoogle>();
-builder.Services.AddSingleton<ConexionService>();
-
-// Una sola conexión a Google Sheets, un reloj inyectable (se reemplaza en las pruebas) y un lock por empleado
-builder.Services.AddSingleton<GoogleSheetsClient>();
+// Un reloj inyectable (se reemplaza en las pruebas) y un lock por empleado
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<BloqueoPorClave>();
 
-// Dónde viven los datos: con ConnectionStrings:Fichaje se usa la base SQL (SQL Server / Azure SQL);
-// sin ella, la planilla de Google Sheets de siempre.
+// Los datos viven en una base SQL (SQL Server / Azure SQL): ConnectionStrings:Fichaje es obligatoria.
+// En las pruebas automáticas no hay base: se registra una cadena de relleno y cada prueba cambia los repositorios por otros en memoria.
 var cadenaSql = builder.Configuration.GetConnectionString("Fichaje");
-var usaSql = !string.IsNullOrWhiteSpace(cadenaSql);
-
-if (usaSql)
+if (string.IsNullOrWhiteSpace(cadenaSql))
 {
-    // Azure SQL serverless se pausa solo: la primera conexión después de un rato puede fallar, por eso se reintenta
-    builder.Services.AddDbContextFactory<FichajeDbContext>(o =>
-        o.UseSqlServer(cadenaSql, sql => sql.EnableRetryOnFailure(maxRetryCount: 10, maxRetryDelay: TimeSpan.FromSeconds(15), errorNumbersToAdd: null)));
-
-    // Decorator: la lista de empleados se cachea unos segundos (se invalida sola al escribir),
-    // porque cada pedido autenticado y cada fichaje la consultan.
-    builder.Services.AddSingleton<EmpleadosSqlRepositorio>();
-    builder.Services.AddSingleton<IEmpleadosRepositorio>(sp => new CachedEmpleadosRepositorio(
-        sp.GetRequiredService<EmpleadosSqlRepositorio>(),
-        sp.GetRequiredService<IMemoryCache>()));
-    builder.Services.AddSingleton<SitiosSqlRepositorio>();
-    builder.Services.AddSingleton<ISitiosAdminRepositorio>(sp => sp.GetRequiredService<SitiosSqlRepositorio>());
-    builder.Services.AddSingleton<ISitiosRepository>(sp => new CachedSitiosRepository(
-        sp.GetRequiredService<SitiosSqlRepositorio>(),
-        sp.GetRequiredService<IMemoryCache>(),
-        sp.GetRequiredService<IOptions<FichajeOptions>>()));
-    builder.Services.AddSingleton<IRolesRepositorio, RolesSqlRepositorio>();
-    builder.Services.AddSingleton<IBitacoraRepositorio, BitacoraSqlRepositorio>();
-    builder.Services.AddSingleton<IHistorialUsuariosRepositorio, HistorialUsuariosSqlRepositorio>();
-    builder.Services.AddSingleton<IFichajesRepositorio, FichajesSqlRepositorio>();
-    builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSqlRepositorio>();
-    builder.Services.AddSingleton<IHorariosRepositorio, HorariosSqlRepositorio>();
-    builder.Services.AddSingleton<INotificacionesRepositorio, NotificacionesSqlRepositorio>();
-    builder.Services.AddSingleton<IRecorridoRepositorio, RecorridoSqlRepositorio>();
-    builder.Services.AddSingleton<IDispositivosPushRepositorio, DispositivosPushSqlRepositorio>();
-    builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSqlRepositorio>();
-    builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSqlRepositorio>();
-    // Migra la base y siembra permisos, roles y el primer administrador antes de que arranque el resto
-    builder.Services.AddHostedService<InicializadorSql>();
-    // ConexionService (la pantalla de conectar la planilla) sigue registrado pero no hace nada con SQL
-    builder.Services.AddSingleton<FichajeApp.Api.Infrastructure.IInicializadorPlanilla, InicializadorNulo>();
+    if (!builder.Environment.IsEnvironment("Testing"))
+        throw new InvalidOperationException(
+            "Falta la cadena de conexión a la base de datos. Definí ConnectionStrings__Fichaje (ver docs/SERVIDOR.md).");
+    cadenaSql = "Server=(local);Database=Pruebas;Trusted_Connection=True;TrustServerCertificate=True";
 }
-else
-{
-    // Servicios de datos (Google Sheets). Decorator: la lista de empleados se cachea unos segundos
-    // (se invalida sola al escribir), porque cada pedido autenticado y cada fichaje la consultan.
-    builder.Services.AddSingleton<GoogleSheetsEmpleadosService>();
-    builder.Services.AddSingleton<IEmpleadosRepositorio>(sp => new CachedEmpleadosRepositorio(
-        sp.GetRequiredService<GoogleSheetsEmpleadosService>(),
-        sp.GetRequiredService<IMemoryCache>()));
-    builder.Services.AddSingleton<GoogleSheetsSitiosService>();
-    builder.Services.AddSingleton<ISitiosRepository>(sp => new CachedSitiosRepository(
-        sp.GetRequiredService<GoogleSheetsSitiosService>(),
-        sp.GetRequiredService<IMemoryCache>(),
-        sp.GetRequiredService<IOptions<FichajeOptions>>()));
 
-    builder.Services.AddSingleton<ISitiosAdminRepositorio, SitiosAdminNoDisponible>();
-    builder.Services.AddSingleton<IHorariosRepositorio, HorariosNoDisponible>();
-    builder.Services.AddSingleton<INotificacionesRepositorio, NotificacionesNoDisponible>();
-    builder.Services.AddSingleton<IRecorridoRepositorio, RecorridoNoDisponible>();
-    builder.Services.AddSingleton<IDispositivosPushRepositorio, DispositivosPushNoDisponible>();
+// Azure SQL serverless se pausa solo: la primera conexión después de un rato puede fallar, por eso se reintenta
+builder.Services.AddDbContextFactory<FichajeDbContext>(o =>
+    o.UseSqlServer(cadenaSql, sql => sql.EnableRetryOnFailure(maxRetryCount: 10, maxRetryDelay: TimeSpan.FromSeconds(15), errorNumbersToAdd: null)));
 
-    // Repositorios de la administración
-    builder.Services.AddSingleton<IRolesRepositorio, RolesSheetsRepositorio>();
-    builder.Services.AddSingleton<IBitacoraRepositorio, BitacoraSheetsRepositorio>();
-    builder.Services.AddSingleton<IHistorialUsuariosRepositorio, HistorialUsuariosSheetsRepositorio>();
-    builder.Services.AddSingleton<IFichajesRepositorio, FichajesSheetsRepositorio>();
-    builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSheetsRepositorio>();
-    builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSheetsRepositorio>();
-    builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSheetsRepositorio>();
-}
+// Decorator: la lista de empleados se cachea unos segundos (se invalida sola al escribir),
+// porque cada pedido autenticado y cada fichaje la consultan.
+builder.Services.AddSingleton<EmpleadosSqlRepositorio>();
+builder.Services.AddSingleton<IEmpleadosRepositorio>(sp => new CachedEmpleadosRepositorio(
+    sp.GetRequiredService<EmpleadosSqlRepositorio>(),
+    sp.GetRequiredService<IMemoryCache>()));
+builder.Services.AddSingleton<SitiosSqlRepositorio>();
+builder.Services.AddSingleton<ISitiosAdminRepositorio>(sp => sp.GetRequiredService<SitiosSqlRepositorio>());
+builder.Services.AddSingleton<ISitiosRepository>(sp => new CachedSitiosRepository(
+    sp.GetRequiredService<SitiosSqlRepositorio>(),
+    sp.GetRequiredService<IMemoryCache>(),
+    sp.GetRequiredService<IOptions<FichajeOptions>>()));
+builder.Services.AddSingleton<IRolesRepositorio, RolesSqlRepositorio>();
+builder.Services.AddSingleton<IBitacoraRepositorio, BitacoraSqlRepositorio>();
+builder.Services.AddSingleton<IHistorialUsuariosRepositorio, HistorialUsuariosSqlRepositorio>();
+builder.Services.AddSingleton<IFichajesRepositorio, FichajesSqlRepositorio>();
+builder.Services.AddSingleton<ILiquidacionRepositorio, LiquidacionSqlRepositorio>();
+builder.Services.AddSingleton<IHorariosRepositorio, HorariosSqlRepositorio>();
+builder.Services.AddSingleton<INotificacionesRepositorio, NotificacionesSqlRepositorio>();
+builder.Services.AddSingleton<IRecorridoRepositorio, RecorridoSqlRepositorio>();
+builder.Services.AddSingleton<IDispositivosPushRepositorio, DispositivosPushSqlRepositorio>();
+builder.Services.AddSingleton<IAparienciaRepositorio, AparienciaSqlRepositorio>();
+builder.Services.AddSingleton<IConfiguracionFichajeRepositorio, ConfiguracionFichajeSqlRepositorio>();
+// Migra la base y siembra permisos, roles y el primer administrador antes de que arranque el resto
+builder.Services.AddHostedService<InicializadorSql>();
+
 builder.Services.AddSingleton<ISitiosService, SitiosService>();
 builder.Services.AddSingleton<SitiosAdminService>();
 builder.Services.AddSingleton<JwtService>();
@@ -167,29 +131,20 @@ builder.Services.AddSingleton<FeriadosService>();
 if (builder.Configuration.GetValue("Feriados:SincronizacionAutomatica", true))
     builder.Services.AddHostedService<FeriadosHostedService>();
 
-// Strategy: dónde se guardan los fichajes (SQL o Google Sheets). Con caché del "último tipo del día".
-if (usaSql)
-{
-    builder.Services.AddSingleton<FichajesSqlStorage>();
-    builder.Services.AddSingleton<IFichajeStorageStrategy>(sp => new CachedFichajeStorage(
-        sp.GetRequiredService<FichajesSqlStorage>(),
-        sp.GetRequiredService<IMemoryCache>()));
-}
-else
-{
-    // Crea las pestañas y los datos iniciales de la administración al arrancar
-    builder.Services.AddSingleton<InicializadorPlanilla>();
-    builder.Services.AddSingleton<IInicializadorPlanilla>(sp => sp.GetRequiredService<InicializadorPlanilla>());
-    builder.Services.AddHostedService(sp => sp.GetRequiredService<InicializadorPlanilla>());
-
-    builder.Services.AddSingleton<GoogleSheetsStorageStrategy>();
-    builder.Services.AddSingleton<IFichajeStorageStrategy>(sp => new CachedFichajeStorage(
-        sp.GetRequiredService<GoogleSheetsStorageStrategy>(),
-        sp.GetRequiredService<IMemoryCache>()));
-}
+// Strategy: dónde se guardan los fichajes (la base SQL). Con caché del "último tipo del día".
+builder.Services.AddSingleton<FichajesSqlStorage>();
+builder.Services.AddSingleton<IFichajeStorageStrategy>(sp => new CachedFichajeStorage(
+    sp.GetRequiredService<FichajesSqlStorage>(),
+    sp.GetRequiredService<IMemoryCache>()));
 
 // Observer: se pueden registrar varios observers; todos se inyectan como IEnumerable<IFichajeObserver>
 builder.Services.AddSingleton<IFichajeObserver, LogFichajeObserver>();
+// Avisa (en la app y por push) a supervisores y administradores cada vez que alguien ficha una entrada o una salida
+builder.Services.AddSingleton<JerarquiaService>();
+builder.Services.AddSingleton<AvisosPorJerarquia>();
+builder.Services.AddSingleton<AlertasDeFichaje>();
+builder.Services.AddHostedService<AlertasDeFichajeHostedService>();
+builder.Services.AddSingleton<IFichajeObserver, AvisoFichajeASupervisores>();
 
 builder.Services.AddScoped<IFichajeService, FichajeService>();
 builder.Services.AddSingleton<ConsultaFichajesService>();
@@ -213,7 +168,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
 
         // Un usuario dado de baja o bloqueado pierde el acceso enseguida, aunque su token siga vigente.
-        // El estado se consulta a la planilla como mucho una vez por minuto por usuario.
+        // El estado se consulta a la base como mucho una vez por minuto por usuario.
         options.Events = new JwtBearerEvents
         {
             OnTokenValidated = async contexto =>
@@ -305,17 +260,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Sin conexión configurada, cualquier pedido que necesite la planilla responde 503 con un mensaje claro
-app.Use(async (contexto, siguiente) =>
-{
-    try { await siguiente(); }
-    catch (ConexionNoConfiguradaException ex) when (!contexto.Response.HasStarted)
-    {
-        contexto.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-        await contexto.Response.WriteAsJsonAsync(new { mensaje = ex.Message, codigo = "SIN_CONFIGURAR" });
-    }
-});
-
 if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
     app.UseHsts();
 
@@ -335,10 +279,6 @@ app.UseAuthentication();
 app.UseRateLimiter();   // después de autenticar: el límite del kiosco cuenta por cuenta de sucursal
 app.UseAuthorization();
 app.MapControllers();
-
-// El código de activación es solo para conectar una planilla de Google: con base SQL no hay nada que conectar
-if (!usaSql && !app.Environment.IsEnvironment("Testing") && !app.Services.GetRequiredService<GoogleSheetsClient>().Configurado)
-    app.Services.GetRequiredService<ConexionService>().AnunciarClave();
 
 app.Run();
 

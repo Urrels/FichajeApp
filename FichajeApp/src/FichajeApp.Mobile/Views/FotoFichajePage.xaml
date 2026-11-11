@@ -5,9 +5,12 @@
              Title="Foto del fichaje"
              BackgroundColor="Black">
 
-    <Grid RowDefinitions="*,Auto" Padding="12">
+    <Grid RowDefinitions="*,Auto,Auto" Padding="16" RowSpacing="12">
         <Image x:Name="Foto" Aspect="AspectFit" />
         <ActivityIndicator x:Name="Cargando" IsRunning="True" HorizontalOptions="Center" VerticalOptions="Center" />
-        <Label x:Name="Detalle" Grid.Row="1" TextColor="White" HorizontalTextAlignment="Center" Margin="0,8,0,0" />
+        <Label x:Name="Detalle" Grid.Row="1" TextColor="White" FontSize="15" HorizontalTextAlignment="Center" />
+        <!-- Solo si el fichaje tiene ubicación: abre las coordenadas exactas en Google Maps -->
+        <Button x:Name="MapsButton" Grid.Row="2" Text="Ver en Google Maps" IsVisible="False" Clicked="OnVerEnMapsClicked"
+                HorizontalOptions="Fill" />
     </Grid>
 </ContentPage>
