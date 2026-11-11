@@ -20,7 +20,8 @@ public static class FotoDePerfil
                 // Falla del detector en el teléfono: la foto de perfil se acepta (no se bloquea a nadie), el fichaje no
                 if (!estricto) return foto;
                 if (!await Dialogos.Confirmar("No pudimos revisar la foto",
-                        "No se pudo comprobar que se vea tu cara. Probá de nuevo con buena luz.", "Sacar otra"))
+                        "No se pudo comprobar que se vea tu cara. Probá de nuevo con buena luz.\n\nDetalle para soporte: " + DetectorDeCara.Diagnostico,
+                        "Sacar otra"))
                     return null;
                 continue;
             }
@@ -32,7 +33,9 @@ public static class FotoDePerfil
             if (estricto)
                 _ = IPlatformApplication.Current?.Services.GetService<ApiService>()?.ReportarAlertaAsync("cara");
 
-            if (!await Dialogos.Confirmar("Esta foto no sirve", ReglasDeCara.Mensaje(veredicto), "Sacar otra"))
+            // Al fichar se agrega el detalle de la revisión: si una cara real se rechaza, con eso se ve por qué
+            var mensaje = ReglasDeCara.Mensaje(veredicto) + (estricto ? $"\n\nDetalle para soporte: {DetectorDeCara.Diagnostico}" : "");
+            if (!await Dialogos.Confirmar("Esta foto no sirve", mensaje, "Sacar otra"))
                 return null;
         }
     }
