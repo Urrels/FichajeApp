@@ -59,6 +59,6 @@ Si cambia esta política, se publicará la nueva versión en esta página.
 | Información de empleo / otros datos | Registros de asistencia: funcionalidad |
 | ¿Se cifran en tránsito? | Sí (HTTPS) |
 | ¿Se pueden pedir que se borren? | Sí (contactando a la empresa) |
-| ¿Se comparten con terceros? | No (el almacenamiento en Google Sheets es del propio cliente) |
+| ¿Se comparten con terceros? | No (la base de datos es del propio cliente) |
 
 Permisos que la app declara: **ubicación precisa en primer plano**, **cámara** (opcional), **biometría**. El recorrido opcional durante la jornada usa un servicio en primer plano con notificación fija, sin el permiso de ubicación en segundo plano.

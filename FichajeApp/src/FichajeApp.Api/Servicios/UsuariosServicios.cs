@@ -59,13 +59,16 @@ public class UsuariosAdminService
     private readonly NotificacionesService? _notificaciones;
     private readonly string _nombreApp;
     private readonly LoginService? _login;   // para levantar el bloqueo temporal por intentos fallidos
+    private readonly JerarquiaService? _jerarquia;
 
     public UsuariosAdminService(IEmpleadosRepositorio empleados, IRolesRepositorio roles, IFichajesRepositorio fichajes,
         HistorialUsuariosService historial, IHistorialUsuariosRepositorio historialRepositorio,
         GuardaAdministracion guarda, BitacoraService bitacora, PermisosService permisos, SesionesVigentes? sesiones = null,
         IEnviadorDeCorreo? correo = null, NotificacionesService? notificaciones = null,
-        Microsoft.Extensions.Options.IOptions<OpcionesCorreo>? opcionesCorreo = null, LoginService? login = null)
+        Microsoft.Extensions.Options.IOptions<OpcionesCorreo>? opcionesCorreo = null, LoginService? login = null,
+        JerarquiaService? jerarquia = null)
     {
+        _jerarquia = jerarquia;
         _correo = correo;
         _login = login;
         _notificaciones = notificaciones;
@@ -89,12 +92,14 @@ public class UsuariosAdminService
         var roles = await _roles.ListarRolesAsync();
         var asignaciones = await _roles.ListarAsignacionesAsync();
 
-        var empleados = (await _empleados.ListarAsync()).AsEnumerable();
+        var todos = await _empleados.ListarAsync();
+        var empleados = todos.AsEnumerable();
         if (!string.IsNullOrWhiteSpace(busqueda))
             empleados = empleados.Where(e => e.NombreCompleto.Contains(busqueda, StringComparison.OrdinalIgnoreCase)
                                           || e.Email.Contains(busqueda, StringComparison.OrdinalIgnoreCase));
 
         var lista = empleados.OrderBy(e => e.NombreCompleto, StringComparer.OrdinalIgnoreCase).ToList();
+        var nombrePorId = todos.ToDictionary(e => e.Id, e => e);
         return new PaginaResultado<UsuarioAdminDto>
         {
             Total = lista.Count,
@@ -112,7 +117,9 @@ public class UsuariosAdminService
                     Bloqueado = e.Bloqueado,
                     IntentosFallidos = e.IntentosFallidos,
                     RolIds = ids,
-                    Roles = roles.Where(r => ids.Contains(r.Id)).Select(r => r.Nombre).ToList()
+                    Roles = roles.Where(r => ids.Contains(r.Id)).Select(r => r.Nombre).ToList(),
+                    SupervisorId = e.SupervisorId,
+                    Supervisor = e.SupervisorId is int sid && nombrePorId.TryGetValue(sid, out var sup) && sup.Activo ? sup.NombreCompleto : null
                 };
             }).ToList()
         };
@@ -273,6 +280,48 @@ public class UsuariosAdminService
         _sesiones?.Invalidar(id);
         await _historial.RegistrarAsync(e, "ASIGNACION_ROL", actor);
         await _bitacora.RegistrarAsync(actor, "ROLES_ASIGNADOS:" + e.NombreCompleto);
+    }
+
+    // Define quién tiene a cargo a una persona (supervisorId = null la deja a cargo del administrador).
+    // Reglas: solo dos niveles (un supervisor depende del administrador, no de otro supervisor) y el administrador
+    // no depende de nadie. Si más tarde el supervisor se da de baja o pierde el permiso, no hace falta tocar nada:
+    // los avisos de esa persona van al administrador (ver JerarquiaService.DestinatariosDeAsync).
+    public async Task AsignarSupervisorAsync(string actor, int empleadoId, int? supervisorId)
+    {
+        if (_jerarquia is null)
+            throw new InvalidOperationException("No se pueden asignar supervisores en este momento.");
+
+        var e = await ObtenerAsync(empleadoId);
+        var conPanel = await _jerarquia.PersonasConPermisoAsync(Dominio.Seguridad.CatalogoPermisos.VerPanelSupervisor);
+        var admins = await _jerarquia.PersonasConPermisoAsync(Dominio.Seguridad.CatalogoPermisos.AdministrarUsuarios);
+
+        EmpleadoDto? supervisor = null;
+        if (supervisorId is int sid)
+        {
+            if (sid == empleadoId) throw new InvalidOperationException("Una persona no puede ser su propio supervisor.");
+            if (admins.Contains(empleadoId)) throw new InvalidOperationException("El administrador no depende de ningún supervisor.");
+
+            supervisor = await _empleados.ObtenerPorIdAsync(sid) ?? throw new InvalidOperationException("El supervisor indicado no existe.");
+            if (!supervisor.Activo) throw new InvalidOperationException("El supervisor indicado está dado de baja.");
+            if (!conPanel.Contains(sid) || admins.Contains(sid))
+                throw new InvalidOperationException("Esa persona no tiene el rol de supervisor. Asignáselo primero desde Usuarios → Roles.");
+            if (supervisor.SupervisorId is not null)
+                throw new InvalidOperationException("Un supervisor no puede estar a cargo de otro supervisor: depende del administrador.");
+
+            // Quien ya tiene personas a cargo no puede pasar a depender de otro supervisor (quedarían tres niveles)
+            if ((await _empleados.ListarAsync()).Any(x => x.SupervisorId == empleadoId))
+                throw new InvalidOperationException("Esa persona tiene empleados a cargo: reasignalos antes de ponerle un supervisor.");
+        }
+
+        if (e.SupervisorId == supervisorId) return;
+        e.SupervisorId = supervisorId;
+        await _empleados.ActualizarAsync(e);
+        await _bitacora.RegistrarAsync(actor, supervisor is null
+            ? "SUPERVISOR_QUITADO:" + e.NombreCompleto
+            : $"SUPERVISOR_ASIGNADO:{e.NombreCompleto}>{supervisor.NombreCompleto}");
+
+        if (supervisor is not null && _notificaciones is not null)
+            await _notificaciones.CrearAsync(supervisor.Id, "Tenés una persona nueva a cargo", $"{e.NombreCompleto} quedó a tu cargo.");
     }
 
     public async Task<List<HistorialUsuario>> HistorialAsync(int id)

@@ -135,7 +135,7 @@ public class FeriadosService
     }
 }
 
-// Una vez por día mantiene al día los feriados. Si falla (sin internet, planilla todavía sin crear) reintenta en 15 minutos
+// Una vez por día mantiene al día los feriados. Si falla (sin internet) reintenta en 15 minutos
 // en vez de esperar un día. Un error nunca tira la API.
 public class FeriadosHostedService : BackgroundService
 {

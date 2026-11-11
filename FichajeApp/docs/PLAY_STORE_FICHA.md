@@ -15,7 +15,7 @@ Límites de Play: nombre 30 caracteres, descripción corta 80, descripción larg
 | Cuenta de Play Console (USD 25) y verificación de identidad | Pendiente |
 | Prueba cerrada con 12 testers durante 14 días (cuenta personal) | Pendiente |
 | Capturas, ícono 512×512 e imagen destacada 1024×500 | Pendiente (ver más abajo) |
-| API en un servidor con HTTPS y la planilla conectada | Pendiente por cliente |
+| API en un servidor con HTTPS y la base de datos configurada | Pendiente por cliente |
 | `ApplicationVersion` / `ApplicationDisplayVersion` | Hoy `1` / `1.0` |
 
 ## Datos básicos
@@ -85,7 +85,7 @@ Importante: la API tiene que estar encendida con esos usuarios mientras dure la 
 
 | Pregunta | Respuesta |
 |---|---|
-| ¿Recopila o comparte datos? | Sí, recopila. No comparte con terceros (el servidor es del proveedor y la planilla es del cliente) |
+| ¿Recopila o comparte datos? | Sí, recopila. No comparte con terceros (el servidor es del proveedor y la base de datos es del cliente) |
 | Ubicación precisa | Recopilada · opcional · finalidad: funcionalidad de la app. **Ahora también se recopila con la app cerrada** (recorrido durante la jornada): en Data safety, al marcar ubicación, indicá que se recopila también en segundo plano |
 | Identificadores de dispositivo u otros | Token de Firebase Cloud Messaging para los push: recopilado, se asocia a la cuenta, finalidad: funcionalidad de la app (no publicidad), no se comparte con terceros salvo Google como proveedor del servicio de mensajes |
 | Historial de ubicaciones | Es el recorrido durante la jornada: opcional (lo activa la empresa y la persona acepta un aviso) · funcionalidad de la app |

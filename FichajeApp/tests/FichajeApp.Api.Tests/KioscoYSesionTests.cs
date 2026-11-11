@@ -140,7 +140,6 @@ public class NavegacionDeLaAppTests
         Assert.Equal(CatalogoPermisos.FicharAsistencia, NombresPermisos.FicharAsistencia);
         Assert.Equal(CatalogoPermisos.VerPanelSupervisor, NombresPermisos.VerPanelSupervisor);
         Assert.Equal(CatalogoPermisos.ConfigurarFichaje, NombresPermisos.ConfigurarFichaje);
-        Assert.Equal(CatalogoPermisos.CambiarConexion, NombresPermisos.CambiarConexion);
         Assert.Equal(CatalogoPermisos.GestionarApariencia, NombresPermisos.GestionarApariencia);
         Assert.Equal(CatalogoPermisos.AdministrarUsuarios, NombresPermisos.AdministrarUsuarios);
         Assert.All(NombresPermisos.DeAdministracion, p => Assert.Contains(p, CatalogoPermisos.Todos));

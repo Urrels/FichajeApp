@@ -3,7 +3,7 @@ using FichajeApp.Api.Models;
 namespace FichajeApp.Api.Services;
 
 // Abstracciones de los servicios de datos: los controllers y el dominio dependen
-// de estas interfaces, no de Google Sheets (Dependency Inversion).
+// de estas interfaces, no de la base de datos (Dependency Inversion).
 
 // Acceso a datos de los sitios (solo lee)
 public interface ISitiosRepository

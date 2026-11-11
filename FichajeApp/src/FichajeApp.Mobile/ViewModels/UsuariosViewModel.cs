@@ -40,7 +40,7 @@ public class UsuariosViewModel : VmBase
 
     public async Task AccionesAsync(UsuarioAdmin usuario)
     {
-        var opciones = new List<string> { "Editar datos", "Foto de perfil", "Asignar roles", "Horario semanal", "Restablecer PIN" };
+        var opciones = new List<string> { "Editar datos", "Foto de perfil", "Asignar roles", "Supervisor a cargo", "Horario semanal", "Restablecer PIN" };
         if (usuario.Bloqueado) opciones.Add("Desbloquear");
         opciones.Add("Ver historial");
 
@@ -50,6 +50,7 @@ public class UsuariosViewModel : VmBase
             case "Editar datos": await EditarAsync(usuario); break;
             case "Foto de perfil": await FotoDePerfilAsync(usuario); break;
             case "Asignar roles": await AsignarRolesAsync(usuario); break;
+            case "Supervisor a cargo": await AsignarSupervisorAsync(usuario); break;
             case "Horario semanal":
                 await Shell.Current.GoToAsync($"{nameof(Views.HorarioPage)}?id={usuario.Id}&nombre={Uri.EscapeDataString(usuario.NombreCompleto)}");
                 break;
@@ -92,6 +93,29 @@ public class UsuariosViewModel : VmBase
         if (string.IsNullOrEmpty(email)) return;
 
         await Ejecutar(() => _api.EditarUsuario(u.Id, nombre, email), "Datos actualizados");
+    }
+
+    // Quién tiene a cargo a esta persona: ese supervisor ve sus fichajes y recibe sus avisos. Sin supervisor, queda a cargo del administrador.
+    private async Task AsignarSupervisorAsync(UsuarioAdmin u)
+    {
+        var lista = await _api.ListarSupervisores();
+        if (!lista.Exito || lista.Datos is null) { await Dialogos.Aviso("No se pudo", lista.Mensaje); return; }
+
+        const string Ninguno = "Ninguno (a cargo del administrador)";
+        var candidatos = lista.Datos.Where(s => s.Id != u.Id).ToList();
+        if (candidatos.Count == 0)
+        {
+            await Dialogos.Aviso("Todavía no hay supervisores",
+                "Para elegir un supervisor primero dale el rol «Supervisor» a alguien (Asignar roles).");
+            return;
+        }
+
+        var actual = u.Supervisor is null ? "ninguno" : u.Supervisor;
+        var elegida = await Dialogos.Elegir($"Supervisor de {u.NombreCompleto} (hoy: {actual})", candidatos.Select(s => s.Nombre).Prepend(Ninguno));
+        if (elegida is null) return;
+
+        int? supervisorId = elegida == Ninguno ? null : candidatos.First(s => s.Nombre == elegida).Id;
+        await Ejecutar(() => _api.AsignarSupervisor(u.Id, supervisorId), supervisorId is null ? "Quedó a cargo del administrador" : "Supervisor asignado");
     }
 
     private async Task AsignarRolesAsync(UsuarioAdmin u)

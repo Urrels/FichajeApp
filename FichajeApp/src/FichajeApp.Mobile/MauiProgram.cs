@@ -29,6 +29,11 @@ public static class MauiProgram
             });
 
 #if ANDROID
+        // Sin autocompletar: el sistema (Google o el fabricante) abría su propio cartel de "guardar contraseña / huella"
+        // encima del login, desalineado y tapando la pantalla. La app ya tiene su propio "Recordar mis datos" seguro.
+        Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("SinAutocompletar", (handler, _) =>
+            handler.PlatformView.ImportantForAutofill = Android.Views.ImportantForAutofill.No);
+
         // Las fechas y listas nativas de Android traen una línea inferior: dentro del campo con borde (estilo "Campo") sobra
         Microsoft.Maui.Handlers.DatePickerHandler.Mapper.AppendToMapping("SinLinea", (handler, _) =>
             handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
@@ -42,10 +47,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<AparienciaService>();
         builder.Services.AddSingleton<IFeedback, Feedback>();
         builder.Services.AddSingleton<AuthService>();
-        builder.Services.AddSingleton<ConfiguracionApiService>();
-        builder.Services.AddTransient<ConfiguracionViewModel>();
-        builder.Services.AddTransient<ConfiguracionPage>();
-        builder.Services.AddTransient<AyudaClavePage>();
+        builder.Services.AddSingleton<EstadoServidor>();
         builder.Services.AddTransient<ConfigFichajeViewModel>();
         builder.Services.AddTransient<ConfigFichajePage>();
         builder.Services.AddTransient<FotoFichajePage>();

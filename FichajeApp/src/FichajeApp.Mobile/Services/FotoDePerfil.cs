@@ -5,7 +5,9 @@ namespace FichajeApp.Mobile.Services;
 public static class FotoDePerfil
 {
     // La foto en base64, o null si la persona canceló. Lanza PermissionException si negó la cámara.
-    public static async Task<string?> TomarValidadaAsync()
+    // estricto (selfie del fichaje): si el detector no puede revisar la foto, NO se acepta. Sin eso se podía fichar
+    // sacándole una foto a cualquier cosa.
+    public static async Task<string?> TomarValidadaAsync(bool estricto = false)
     {
         while (true)
         {
@@ -13,11 +15,22 @@ public static class FotoDePerfil
             if (foto is null) return null;
 
             var caras = await DetectorDeCara.DetectarAsync(foto);
-            // Si el detector no pudo correr (falla del teléfono) no se bloquea a nadie: se acepta la foto
-            if (caras is null) return foto;
+            if (caras is null)
+            {
+                // Falla del detector en el teléfono: la foto de perfil se acepta (no se bloquea a nadie), el fichaje no
+                if (!estricto) return foto;
+                if (!await Dialogos.Confirmar("No pudimos revisar la foto",
+                        "No se pudo comprobar que se vea tu cara. Probá de nuevo con buena luz.", "Sacar otra"))
+                    return null;
+                continue;
+            }
 
             var veredicto = ReglasDeCara.Evaluar(caras);
             if (veredicto == VeredictoCara.Valida) return foto;
+
+            // Al fichar, una foto rechazada también le llega al supervisor (puede ser alguien intentando engañar al control)
+            if (estricto)
+                _ = IPlatformApplication.Current?.Services.GetService<ApiService>()?.ReportarAlertaAsync("cara");
 
             if (!await Dialogos.Confirmar("Esta foto no sirve", ReglasDeCara.Mensaje(veredicto), "Sacar otra"))
                 return null;

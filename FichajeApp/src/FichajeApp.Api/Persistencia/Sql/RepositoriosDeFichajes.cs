@@ -9,7 +9,7 @@ using FichajeApp.Api.Storage;
 
 namespace FichajeApp.Api.Persistencia.Sql;
 
-// Tabla Fichajes, vista desde dos lados (igual que la hoja): lo que registra la app al fichar (Strategy) y lo que
+// Tabla Fichajes, vista desde dos lados (Strategy y repositorio): lo que registra la app al fichar (Strategy) y lo que
 // corrige o carga a mano un administrador (repositorio).
 public class FichajesSqlStorage : BaseSql, IFichajeStorageStrategy
 {
@@ -34,7 +34,7 @@ public class FichajesSqlStorage : BaseSql, IFichajeStorageStrategy
         await db.SaveChangesAsync();
     }
 
-    // Los cargados a mano no se cuentan acá: no tienen ubicación y no cambian lo que toca fichar (igual que en la planilla)
+    // Los cargados a mano no se cuentan acá: no tienen ubicación y no cambian lo que toca fichar
     public Task<List<FichajeDto>> ObtenerFichajesAsync() => LeerAsync(async db =>
         (await db.Fichajes.Where(f => !f.EsManual).OrderBy(f => f.FechaHora).ThenBy(f => f.Id).ToListAsync())
             .Select(f => new FichajeDto
@@ -51,14 +51,17 @@ public class FichajesSqlStorage : BaseSql, IFichajeStorageStrategy
                 Foto = f.Foto
             }).ToList());
 
-    // Sin fichajes hoy el próximo es "Entrada": se devuelve "Salida" para que ProximoTipoAsync lo invierta
+    // Sin fichajes hoy el próximo es "Entrada": se devuelve "Salida" para que ProximoTipoAsync lo invierta.
+    // Las SALIDAS cargadas a mano cuentan: si el administrador le agrega la salida a una entrada que quedó abierta,
+    // el fichaje tiene que verse cerrado (antes se ignoraban y la jornada seguía "abierta"). Una ENTRADA cargada a mano
+    // no abre nada: no cambia lo que le toca fichar a la persona.
     public Task<string> ObtenerUltimoTipoFichajeAsync(string nombreCompleto) => LeerAsync(async db =>
     {
         var hoy = DateTime.Now.Date;
         var manana = hoy.AddDays(1);
         var nombre = nombreCompleto.ToLower();
         var tipo = await db.Fichajes
-            .Where(f => !f.EsManual && f.NombreCompleto.ToLower() == nombre && f.FechaHora >= hoy && f.FechaHora < manana)
+            .Where(f => (!f.EsManual || f.Tipo == "Salida") && f.NombreCompleto.ToLower() == nombre && f.FechaHora >= hoy && f.FechaHora < manana)
             .OrderByDescending(f => f.FechaHora).ThenByDescending(f => f.Id)
             .Select(f => f.Tipo).FirstOrDefaultAsync();
         return string.IsNullOrEmpty(tipo) ? "Salida" : tipo;

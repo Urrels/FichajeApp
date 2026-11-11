@@ -5,7 +5,7 @@ using FichajeApp.Api.Repositorios;
 namespace FichajeApp.Api.Persistencia.Sql;
 
 // Tablas ParametrosLiquidacion, ValorHora, Feriados, ExcedentesAprobados, Liquidaciones y LiquidacionDias.
-// A diferencia de la planilla, cerrar una liquidación es atómico: el período y sus días se guardan juntos o no se guarda nada.
+// Cerrar una liquidación es atómico: el período y sus días se guardan juntos o no se guarda nada.
 public class LiquidacionSqlRepositorio : BaseSql, ILiquidacionRepositorio
 {
     public LiquidacionSqlRepositorio(IDbContextFactory<FichajeDbContext> fabrica) : base(fabrica) { }

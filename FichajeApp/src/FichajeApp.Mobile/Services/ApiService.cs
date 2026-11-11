@@ -140,6 +140,26 @@ public class ApiService
         catch { return null; }
     }
 
+    // Avisa al servidor que la huella ("biometria") o el control de cara ("cara") fallaron al fichar: le llega al supervisor.
+    // Es un aviso extra: nunca lanza ni demora al usuario, y si no hay conexión simplemente no se envía.
+    public async Task ReportarAlertaAsync(string tipo)
+    {
+        try
+        {
+            var token = SessionManager.Instance.Token;
+            if (string.IsNullOrEmpty(token)) return;
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, $"{_clientes.BaseUrl}/fichaje/alerta")
+            {
+                Content = JsonContent.Create(new { tipo })
+            };
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+            using var _ = await _httpClient.SendAsync(request, cts.Token);
+        }
+        catch { /* el aviso es opcional */ }
+    }
+
     private async Task<ResultadoConsulta<T>> GetAsync<T>(string ruta)
     {
         try

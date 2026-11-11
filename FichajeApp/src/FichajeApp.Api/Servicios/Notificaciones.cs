@@ -54,15 +54,6 @@ public class NotificacionesSqlRepositorio : Persistencia.Sql.BaseSql, INotificac
     }
 }
 
-// Con la planilla de Google no hay dónde guardarlas: la app funciona igual, sin centro de notificaciones
-public class NotificacionesNoDisponible : INotificacionesRepositorio
-{
-    public Task AgregarAsync(Notificacion notificacion) => Task.CompletedTask;
-    public Task<List<Notificacion>> ListarAsync(int empleadoId, int maximo) => Task.FromResult(new List<Notificacion>());
-    public Task<int> ContarNoLeidasAsync(int empleadoId) => Task.FromResult(0);
-    public Task MarcarLeidasAsync(int empleadoId, int? id) => Task.CompletedTask;
-}
-
 // Avisos dentro de la app (centro de notificaciones). Crear uno nunca rompe la operación que lo origina.
 public class NotificacionesService
 {
@@ -83,7 +74,9 @@ public class NotificacionesService
         _log = log;
     }
 
-    public async Task CrearAsync(int empleadoId, string titulo, string mensaje)
+    // push = false: solo queda el registro en el centro de notificaciones, sin sonar en el teléfono (por ejemplo, el
+    // registro de auditoría del administrador cuando el aviso urgente ya le llegó al supervisor)
+    public async Task CrearAsync(int empleadoId, string titulo, string mensaje, bool push = true)
     {
         try
         {
@@ -95,7 +88,7 @@ public class NotificacionesService
                 Fecha = _tiempo.GetLocalNow().DateTime
             });
             // Ademas del aviso dentro de la app, un push al telefono (si esta configurado y la persona lo registro)
-            if (_push is not null) await _push.NotificarAsync(empleadoId, Recortar(titulo, 120), Recortar(mensaje, 400));
+            if (push && _push is not null) await _push.NotificarAsync(empleadoId, Recortar(titulo, 120), Recortar(mensaje, 400));
         }
         catch (Exception ex) { _log?.LogWarning("No se pudo guardar una notificación: {Tipo}", ex.GetType().Name); }
     }

@@ -14,7 +14,7 @@ public partial class SupervisorPage : ContentPage
 
     // Entrada en verde y salida en ámbar (los mismos tonos que las etiquetas del kiosco)
     private static readonly Color ColorEntrada = Color.FromArgb("#4E7A2F");
-    private static readonly Color ColorSalida = Color.FromArgb("#B26A00");
+    private static readonly Color ColorSalida = Color.FromArgb("#8B5A2B");
 
     private readonly SupervisorViewModel _viewModel;
     private bool _visible;
@@ -71,20 +71,50 @@ public partial class SupervisorPage : ContentPage
     private async void OnHistorialClicked(object sender, EventArgs e) => await _viewModel.BuscarHistorialAsync();
     private async void OnBuscarClicked(object sender, EventArgs e) => await _viewModel.BuscarHistorialAsync();
 
-    // Al elegir un fichaje de la lista, el mapa se centra en ese punto; si tiene foto, se abre
-    private async void OnItemSelected(object sender, SelectionChangedEventArgs e)
+    private FichajeItem? _elegido;
+
+    // Al elegir un fichaje de la lista, el mapa se centra en ese punto y abajo aparece su detalle
+    // (con "Ver en Google Maps" y, si tiene, "Ver foto")
+    private void OnItemSelected(object sender, SelectionChangedEventArgs e)
     {
         if (e.CurrentSelection.FirstOrDefault() is not FichajeItem f) return;
+        _elegido = f;
 
         if (f.TieneUbicacion)
             CentrarEn(f.Latitud, f.Longitud, resolucion: 1.5);
 
-        if (f.TieneFoto)
-        {
-            ((CollectionView)sender).SelectedItem = null;
-            await Shell.Current.GoToAsync($"{nameof(FotoFichajePage)}?archivo={Uri.EscapeDataString(f.Foto!)}" +
-                $"&titulo={Uri.EscapeDataString($"{f.NombreCompleto} · {f.TipoFichaje} {f.FechaHora:dd/MM HH:mm}")}");
-        }
+        DetalleTitulo.Text = $"{f.NombreCompleto} · {f.TipoFichaje}";
+        var lugar = string.IsNullOrWhiteSpace(f.Direccion) ? f.Lugar : $"{f.Lugar} · {f.Direccion}";
+        DetalleTexto.Text = $"{f.FechaHora:dd/MM/yyyy HH:mm} · {lugar}"
+            + (string.IsNullOrWhiteSpace(f.Motivo) ? "" : $"\nMotivo: {f.Motivo}")
+            + (f.TieneUbicacion ? "" : "\nEste fichaje no tiene ubicación.");
+        MapsButton.IsVisible = f.TieneUbicacion;
+        FotoButton.IsVisible = f.TieneFoto;
+        // Con un solo botón, que ocupe todo el ancho en vez de quedar a medias
+        Grid.SetColumnSpan(MapsButton, f.TieneFoto ? 1 : 2);
+        Grid.SetColumnSpan(FotoButton, f.TieneUbicacion ? 1 : 2);
+        Grid.SetColumn(FotoButton, f.TieneUbicacion ? 1 : 0);
+        DetalleCard.IsVisible = true;
+    }
+
+    private void OnCerrarDetalle(object? sender, TappedEventArgs e)
+    {
+        _elegido = null;
+        DetalleCard.IsVisible = false;
+    }
+
+    private async void OnVerEnMapsClicked(object? sender, EventArgs e)
+    {
+        if (_elegido is { TieneUbicacion: true } f) await EnlaceMapas.AbrirAsync(f.Latitud, f.Longitud);
+    }
+
+    private async void OnVerFotoClicked(object? sender, EventArgs e)
+    {
+        if (_elegido is not { TieneFoto: true } f) return;
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        await Shell.Current.GoToAsync($"{nameof(FotoFichajePage)}?archivo={Uri.EscapeDataString(f.Foto!)}" +
+            $"&titulo={Uri.EscapeDataString($"{f.NombreCompleto} · {f.TipoFichaje} {f.FechaHora:dd/MM HH:mm}")}" +
+            $"&lat={f.Latitud.ToString(inv)}&lon={f.Longitud.ToString(inv)}");
     }
 
     // resolución = metros por píxel: 1.5 deja ver una cuadra, 600 todo el país
@@ -123,7 +153,7 @@ public partial class SupervisorPage : ContentPage
 
         if (_viewModel.HayRecorrido)
         {
-            var linea = new Polyline { StrokeColor = Color.FromArgb("#B5542B"), StrokeWidth = 4 };
+            var linea = new Polyline { StrokeColor = Color.FromArgb("#7A2E3A"), StrokeWidth = 4 };
             foreach (var f in items)
                 linea.Positions.Add(new Position(f.Latitud, f.Longitud));
             Mapa.Drawables.Add(linea);

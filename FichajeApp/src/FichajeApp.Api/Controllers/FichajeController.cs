@@ -76,6 +76,26 @@ public class FichajeController : ControllerBase
         }
     }
 
+    public record AlertaRequest(string? Tipo);
+
+    // El teléfono avisa que la huella o el control de cara fallaron al fichar ("biometria" | "cara"): le llega al supervisor
+    // de la persona (o al administrador si no tiene) y queda registro para auditar. No cambia nada del fichaje.
+    [HttpPost("alerta")]
+    public async Task<IActionResult> Alerta([FromBody] AlertaRequest request, [FromServices] Servicios.AlertasDeFichaje alertas)
+    {
+        var email = User.FindFirst(ClaimTypes.Email)?.Value;
+        if (string.IsNullOrEmpty(email)) return Unauthorized();
+
+        var empleado = await _empleadosService.BuscarPorEmailAsync(email);
+        if (empleado is null) return NotFound(new { mensaje = "Empleado no encontrado" });
+
+        var tipo = (request.Tipo ?? "").Trim().ToLowerInvariant();
+        if (tipo != Servicios.AlertasDeFichaje.Biometria && tipo != Servicios.AlertasDeFichaje.Cara)
+            return BadRequest(new { mensaje = "Tipo de alerta no válido." });
+
+        return Ok(new { avisado = await alertas.ReportarAsync(empleado, tipo) });
+    }
+
     [HttpPost]
     public async Task<IActionResult> RegistrarFichaje([FromBody] FichajeRequestDto request)
     {

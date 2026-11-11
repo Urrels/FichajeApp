@@ -8,11 +8,10 @@
    Models, Helpers, Validaciones, Storage, Observers, ViewModels, Views, Converters)
    dentro de cada proyecto generado, respetando la misma estructura de carpetas.
 3. En `FichajeApp.Api`:
-   - `dotnet add package Google.Apis.Sheets.v4`
+   - `dotnet add package Microsoft.EntityFrameworkCore.SqlServer`
    - `dotnet add package BCrypt.Net-Next`
    - `dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer`
-   - Poné el JSON de tu Service Account en `credentials/service-account.json`
-   - Completá `SpreadsheetId` y `Jwt:Secret` en `appsettings.json`
+   - Definí `ConnectionStrings__Fichaje` (la base SQL) y `Jwt:Secret` (ver docs/SERVIDOR.md)
 4. En `FichajeApp.Mobile`:
    - `dotnet workload install maui` (si no lo tenés)
    - `dotnet add package Plugin.Fingerprint`
@@ -31,7 +30,7 @@
   `IFichajeObserver` / `LogFichajeObserver` (backend, Subject = `FichajeService`).
 - **Composite** → `Validaciones/IReglaValidacion.cs`, `ValidacionUbicacion.cs`,
   `ValidacionEmpleadoActivo.cs`, `ValidacionCompuesta.cs` (backend).
-- **Strategy** → `Storage/IFichajeStorageStrategy.cs` + `GoogleSheetsStorageStrategy.cs`
+- **Strategy** → `Storage/IFichajeStorageStrategy.cs` + `Persistencia/Sql/RepositoriosDeFichajes.cs` (la base SQL)
   (backend): permite cambiar el destino de persistencia sin tocar el resto del sistema.
 
 ## Registro de ubicación (modo "Libre")
@@ -53,38 +52,27 @@ Configuración en `appsettings.json`:
 - Cualquier otro valor: modo anterior, sede fija validada con `GeoValidator`
   (`Lugar = "Sede"`).
 
-### Cambios manuales en la planilla de Google (no se automatizan)
-
-**Hoja nueva `Sitios`** — encabezado en fila 1, datos desde fila 2:
-
-| A: Nombre | B: Latitud | C: Longitud | D: RadioMetros |
-|-----------|------------|-------------|----------------|
-
-**Hoja `Fichajes`** — encabezados en fila 1, columnas A-J:
-
-| A | B | C | D | E | F | G | H | I | J |
-|---|---|---|---|---|---|---|---|---|---|
-| Nombre | FechaHora | Lat | Lon | Tipo | Lugar | Motivo | Precisión (m) | Dirección | Mapa |
-
 ## Administración: usuarios, roles, bitácora y liquidación de horas
 
 Portado de `ingenieria_software` (BE/DAL/BLL de usuarios, perfiles y permisos, y el Proceso 3 de liquidación de horas)
-y adaptado a esta API: planilla de Google en lugar de SQL Server, token JWT en lugar de `SessionManager`.
+y adaptado a esta API: base SQL con Entity Framework, token JWT en lugar de `SessionManager`.
 
-### Pestañas nuevas (se crean solas al iniciar la API)
-`Roles`, `Permisos`, `RolPermiso`, `UsuarioRol`, `Bitacora`, `UsuarioHistorial`, `Parametros`, `ValorHora`, `Feriados`,
-`ExcedentesAprobados`, `Liquidaciones` y `LiquidacionDias`. Se puede apagar con `Planilla:AutoCrear = false`.
-La API también siembra el catálogo de permisos, los roles iniciales y los parámetros de liquidación.
+### Base de datos
+Las tablas (`Empleados`, `Fichajes`, `Roles`, `Permisos`, `RolPermiso`, `UsuarioRol`, `Bitacora`, `UsuarioHistorial`, `Parametros`,
+`ValorHora`, `Feriados`, `Excedentes`, `Liquidaciones`, `LiquidacionDias`, `Horarios`, `Notificaciones`, `Recorrido`, `DispositivosPush`,
+`Sitios`, `Apariencia` y `ConfigFichaje`) las crea y actualiza sola la API al arrancar con las migraciones de Entity Framework
+(`Persistencia/Migraciones`). También siembra el catálogo de permisos, los roles iniciales y los parámetros de liquidación.
 
-Cambios en pestañas existentes:
-- **`Empleados`**: dos columnas nuevas, `G IntentosFallidos` y `H Bloqueado`. La columna `F` (opcional) solo sirve como
-  **rol inicial**: `Administrador`, `Supervisor` o vacío (= Empleado). Después los roles se gestionan en `UsuarioRol`.
-- **`Fichajes`**: columnas nuevas `K Corregido | L MotivoCorreccion | M CorregidoPor | N FechaCorreccion`.
-  El identificador de un fichaje es su **número de fila**: no hay que borrar ni reordenar filas a mano.
+### Jerarquía: administrador, supervisor y empleado
+`Empleados.SupervisorId` dice quién tiene a cada persona a cargo. El **administrador** (permiso *Administrar usuarios*) ve y gestiona
+a todos; el **supervisor** solo a los empleados que tiene asignados (panel, fichajes, correcciones, fotos y recorrido); el **empleado**
+solo ficha. Los avisos (fichaje, huella o foto rechazada, jornada abierta) van al supervisor directo con push, y el administrador
+recibe un registro en su centro de notificaciones sin que suene. Si la persona no tiene supervisor válido (nunca se le asignó, se dio
+de baja o perdió el permiso), el aviso va al administrador con push. Se asigna desde Administración → Usuarios → *Supervisor a cargo*.
 
 ### Primer administrador
-Antes de la primera ejecución, poné `Administrador` en la columna `F` de tu fila de `Empleados`, o configurá
-`Planilla:AdministradorInicial` con tu email: si no hay ningún administrador activo, la API te asigna el rol.
+Definí `Setup__AdminNombre`, `Setup__AdminEmail` y `Setup__AdminPin`: el primer administrador se crea solo la primera vez, si todavía
+no hay ningún empleado. Si más adelante no queda ningún administrador activo, la API le da el rol a `Setup__AdminEmail`.
 
 ### Roles y permisos (patrón Composite)
 `Rol` es la rama y `Permiso` la hoja (`Dominio/Seguridad`). **No hay herencia de permisos**: el padre de un rol es solo
@@ -118,17 +106,14 @@ no superpone jornadas, no toca períodos ya liquidados y deja quién, cuándo y 
 (`/api/admin/liquidacion/liquidaciones/{id}/csv`).
 
 ### Límites a tener en cuenta
-- Google Sheets no tiene transacciones: las escrituras de varias filas se serializan con un lock **dentro de una sola
-  instancia de la API**. Con varias instancias hace falta una base de datos.
 - Los empleados se identifican por **nombre completo** en `Fichajes` (único): no se puede renombrar a quien ya fichó.
-- Cada consulta lee hojas completas; sin caché. Con mucho volumen conviene una base de datos.
 
 ### Pruebas
 ```bash
 dotnet test tests/FichajeApp.Api.Tests
 ```
 Cubren el cálculo de horas, las reglas de roles y los servicios (con repositorios en memoria) y la API completa por HTTP.
-**No** cubren la lectura y escritura reales contra Google Sheets.
+Los repositorios SQL se prueban contra SQLite en memoria; la base real (SQL Server) no está cubierta por las pruebas.
 
 ### Pantallas de administración en la app
 El menú lateral muestra **Supervisor** y **Administración** solo a quien tiene los permisos (la app consulta
@@ -143,7 +128,7 @@ Las acciones se hacen con diálogos del sistema: es la versión mínima, sin pan
 
 Con el permiso **Gestionar apariencia** (el rol Administrador lo recibe solo al reiniciar la API), Administración →
 **Apariencia** permite cambiar el nombre, los tres colores (principal, texto sobre el principal y acento) y el logo,
-con vista previa. Se guarda en la pestaña `Apariencia` de la planilla (se crea sola) y todos los usuarios lo ven al abrir
+con vista previa. Se guarda en la base y todos los usuarios lo ven al abrir
 la app (`GET /api/apariencia`, público; `PUT /api/admin/apariencia`, con permiso). Lo guardado pisa lo que trae
 `cliente.json`, y "Volver a los originales" lo borra. Se valida el formato `#RRGGBB`, un contraste mínimo del texto
 sobre el color principal, y el logo (PNG/JPG, hasta 150 KB; la app lo achica a 256 px). **El ícono del launcher no
@@ -152,7 +137,7 @@ se puede cambiar en runtime**: lo fija Android al instalar, así que solo cambia
 ### Cómo se ficha: ubicación y foto (por cliente)
 
 Cada cliente elige, desde Administración → **Cómo se ficha** (permiso *Configurar fichaje*, lo recibe el rol Administrador),
-qué se pide al fichar. Se guarda en la pestaña `ConfigFichaje` de su planilla y vale para todos los teléfonos al próximo fichaje:
+qué se pide al fichar. Se guarda en la base y vale para todos los teléfonos al próximo fichaje:
 
 | Opción | Valores |
 |---|---|
@@ -161,7 +146,7 @@ qué se pide al fichar. Se guarda en la pestaña `ConfigFichaje` de su planilla 
 
 Mientras nadie lo cambie rige lo de siempre: `Fichaje:ModoUbicacion` de appsettings y sin foto.
 
-**Las fotos se guardan en el servidor** (`datos/fotos/aaaa/mm/dd/<id>.jpg`, fuera de git); en la planilla, la hoja `Fichajes`
+**Las fotos se guardan en el servidor** (`datos/fotos/aaaa/mm/dd/<id>.jpg`, fuera de git); en la base, el fichaje
 guarda solo el nombre del archivo en la columna `O`. La selfie se saca con la **cámara frontal dentro de la app** (paquete CommunityToolkit.Maui.Camera; si no se puede abrir, se usa la cámara del sistema). La app la achica a 640 px (~100 KB) y la API solo acepta PNG/JPG de hasta 400 KB.
 El supervisor ve la foto tocando el fichaje en su panel (`GET /api/supervisor/foto`, con permiso de supervisor).
 Detrás de `IAlmacenFotos`, así que pasar a Amazon S3 u otro almacenamiento es cambiar una clase. **Hay que hacer copia de seguridad
@@ -187,20 +172,13 @@ El PIN tiene el mismo control que el login: 3 errores bloquean al empleado hasta
 incorrecto responde 400 (no 401) para no cerrar la sesión del teléfono. La cuenta de la sucursal no ficha por sí misma, y el
 Administrador (que tiene todos los permisos, incluido el del kiosco) **no** se trata como cuenta de sucursal: ve su panel.
 Con el modo en Personal, los endpoints del kiosco responden 409 con un mensaje que explica cómo activarlo.
-### Conectar Google Sheets desde la app
-
-Cada cliente conecta su propia planilla sin tocar archivos del servidor: en el login, **Conectar mi planilla de Google**
-(aparece sola si el servidor todavía no está configurado). Lo más simple es **"Crear la planilla por mí"**: se escribe el Gmail y los datos del administrador, y el servidor crea la planilla (con la API de Google Drive habilitada), la prepara y se la comparte. También se puede pegar el link de una planilla propia. Se carga el link de la planilla, los datos del primer administrador y la **código de activación**; la cuenta de servicio (`.json`) la pone una vez quien instala el servidor (`GoogleSheets:CredentialsPath`) y la app muestra el correo con el que hay que compartir la planilla (si el servidor no tiene ninguna, se carga desde la app). La API (`POST /api/configuracion/google`) prueba el
-acceso contra Google, guarda la credencial **cifrada en el servidor** (`datos/`, fuera de git) y crea las pestañas.
-El código de activación (que quien instala el servidor le manda al cliente) es `Setup:Clave` o, si no se definió, una que la API genera y escribe en el log y en
-`datos/clave-instalacion.txt`. Lo que haya en `appsettings` (`GoogleSheets:*`) sigue funcionando como alternativa.
 La guía completa para publicar en Play Store está en [docs/PLAY_STORE.md](docs/PLAY_STORE.md).
 
 ## Varios clientes (una API por cliente)
 
-Cada cliente tiene su propia instancia de la API y su propia planilla. Por instancia se
-configuran por variables de entorno: `GoogleSheets__SpreadsheetId`,
-`GoogleSheets__CredentialsPath`, `Jwt__Secret` (distinto en cada una),
+Cada cliente tiene su propia instancia de la API y su propia base de datos. Por instancia se
+configuran por variables de entorno: `ConnectionStrings__Fichaje`,
+`Jwt__Secret` (distinto en cada una),
 `Fichaje__ModoUbicacion`, `Fichaje__PrecisionMaxMetros`, `Fichaje__CacheMinutos`.
 
 La app móvil se compila **una vez por cliente** (cada una con su ícono, nombre, colores y URL

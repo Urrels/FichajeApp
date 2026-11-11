@@ -176,6 +176,9 @@ namespace FichajeApp.Api.Persistencia.Migraciones
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("SupervisorId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -183,6 +186,8 @@ namespace FichajeApp.Api.Persistencia.Migraciones
 
                     b.HasIndex("NombreCompleto")
                         .IsUnique();
+
+                    b.HasIndex("SupervisorId");
 
                     b.ToTable("Empleados", (string)null);
                 });
@@ -744,6 +749,14 @@ namespace FichajeApp.Api.Persistencia.Migraciones
                         .IsUnique();
 
                     b.ToTable("ValorHora", (string)null);
+                });
+
+            modelBuilder.Entity("FichajeApp.Api.Persistencia.EmpleadoFila", b =>
+                {
+                    b.HasOne("FichajeApp.Api.Persistencia.EmpleadoFila", null)
+                        .WithMany()
+                        .HasForeignKey("SupervisorId")
+                        .OnDelete(DeleteBehavior.NoAction);
                 });
 
             modelBuilder.Entity("FichajeApp.Api.Persistencia.LiquidacionDiaFila", b =>

@@ -6,12 +6,8 @@ services:
     restart: unless-stopped
     environment:
       Jwt__Secret: ${JWT_SECRET:?Definí JWT_SECRET en .env}
-      Setup__Clave: ${CODIGO_ACTIVACION:?Definí CODIGO_ACTIVACION en .env}
+      ConnectionStrings__Fichaje: ${CONEXION_SQL:?Definí CONEXION_SQL en .env}
       Fichaje__FotosRetencionDias: ${DIAS_FOTOS:-90}
-      # Opcional: si ya tenés la credencial de la cuenta de servicio, montala (si no, se carga desde la app)
-      # GoogleSheets__CredentialsPath: /secretos/service-account.json
-    # volumes:
-    #   - ./credentials/service-account.json:/secretos/service-account.json:ro
     volumes:
       - datos:/datos
     # No se publica el puerto: solo Caddy puede hablarle (así nadie falsea la IP del usuario)

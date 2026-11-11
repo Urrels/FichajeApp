@@ -34,4 +34,5 @@ public partial class AparienciaPage : ContentPage
     private void OnQuitarLogo(object sender, EventArgs e) => _viewModel.QuitarLogo();
     private async void OnGuardar(object sender, EventArgs e) => await _viewModel.GuardarAsync();
     private async void OnRestaurar(object sender, EventArgs e) => await _viewModel.RestaurarAsync();
+    private async void OnRestablecerColores(object sender, EventArgs e) => await _viewModel.RestablecerColoresAsync();
 }

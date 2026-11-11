@@ -76,9 +76,12 @@ public class UsuariosController : AdminControllerBase
     private readonly IAlmacenPerfiles _perfiles;
     private readonly BitacoraService _bitacora;
 
+    private readonly JerarquiaService _jerarquia;
+
     public UsuariosController(UsuariosAdminService usuarios, RolesService roles, IEmpleadosRepositorio empleados,
-        IAlmacenPerfiles perfiles, BitacoraService bitacora)
+        IAlmacenPerfiles perfiles, BitacoraService bitacora, JerarquiaService jerarquia)
     {
+        _jerarquia = jerarquia;
         _usuarios = usuarios;
         _roles = roles;
         _empleados = empleados;
@@ -94,6 +97,20 @@ public class UsuariosController : AdminControllerBase
     [HttpGet]
     public async Task<IActionResult> Listar([FromQuery] string? busqueda, [FromQuery] int pagina = 1, [FromQuery] int tamanio = 25) =>
         Ok(await _usuarios.ListarAsync(busqueda, pagina, tamanio));
+
+    public record SupervisorRequest(int? SupervisorId);
+
+    // Quiénes pueden ser "supervisor a cargo" (tienen el rol de supervisor y no son administradores)
+    [HttpGet("supervisores")]
+    public async Task<IActionResult> Supervisores() => Ok(await _jerarquia.SupervisoresDisponiblesAsync());
+
+    // Pone a una persona a cargo de un supervisor (SupervisorId = null: queda a cargo del administrador)
+    [HttpPut("{id:int}/supervisor")]
+    public async Task<IActionResult> Supervisor(int id, [FromBody] SupervisorRequest r)
+    {
+        await _usuarios.AsignarSupervisorAsync(Actor, id, r.SupervisorId);
+        return Ok(new { mensaje = r.SupervisorId is null ? "Quedó a cargo del administrador" : "Supervisor asignado" });
+    }
 
     // Roles disponibles para el selector de asignación
     [HttpGet("roles")]
@@ -252,11 +269,31 @@ public class FichajesAdminController : AdminControllerBase
 {
     private readonly FichajesAdminService _fichajes;
     private readonly IEmpleadosRepositorio _empleados;
+    private readonly IFichajesRepositorio _registros;
+    private readonly JerarquiaService _jerarquia;
 
-    public FichajesAdminController(FichajesAdminService fichajes, IEmpleadosRepositorio empleados)
+    public FichajesAdminController(FichajesAdminService fichajes, IEmpleadosRepositorio empleados,
+        IFichajesRepositorio registros, JerarquiaService jerarquia)
     {
         _fichajes = fichajes;
         _empleados = empleados;
+        _registros = registros;
+        _jerarquia = jerarquia;
+    }
+
+    // El administrador corrige a cualquiera; un supervisor, solo a las personas que tiene a cargo
+    private Task<AlcanceDeUsuario> AlcanceAsync() => _jerarquia.AlcanceDeAsync(Actor);
+
+    private IActionResult FueraDeAlcance() =>
+        StatusCode(StatusCodes.Status403Forbidden, new { mensaje = "Esa persona no está a tu cargo." });
+
+    // ¿La persona dueña de este fichaje está a cargo de quien pide? Si el fichaje no existe, el servicio responde el error de siempre.
+    private async Task<bool> PermitidoPorFichajeAsync(int fichajeId)
+    {
+        var alcance = await AlcanceAsync();
+        if (alcance.EsGlobal) return true;
+        var fichaje = await _registros.ObtenerAsync(fichajeId);
+        return fichaje is null || alcance.Incluye(fichaje.NombreCompleto);
     }
 
     public record CorregirRequest(int EntradaId, DateTime Ingreso, DateTime Egreso, string Motivo);
@@ -265,22 +302,32 @@ public class FichajesAdminController : AdminControllerBase
 
     // Para el selector de empleado de la carga manual (este permiso no incluye listar usuarios)
     [HttpGet("empleados")]
-    public async Task<IActionResult> Empleados() => Ok(await EmpleadosActivos.ListarAsync(_empleados));
+    public async Task<IActionResult> Empleados()
+    {
+        var alcance = await AlcanceAsync();
+        return Ok((await EmpleadosActivos.ListarAsync(_empleados)).Where(e => alcance.Incluye(e.Nombre)).ToList());
+    }
 
     [HttpPost("completar-entrada")]
     public async Task<IActionResult> CompletarEntrada([FromBody] CompletarEntradaRequest r)
     {
+        if (!await PermitidoPorFichajeAsync(r.SalidaId)) return FueraDeAlcance();
         await _fichajes.CompletarEntradaAsync(Actor, r.SalidaId, r.Ingreso, r.Motivo);
         return Ok(new { mensaje = "Entrada cargada" });
     }
 
     [HttpGet("incompletos")]
-    public async Task<IActionResult> Incompletos([FromQuery] DateTime desde, [FromQuery] DateTime hasta, [FromQuery] bool soloVencidos = false) =>
-        Ok(await _fichajes.ListarIncompletosAsync(desde, hasta, soloVencidos));
+    public async Task<IActionResult> Incompletos([FromQuery] DateTime desde, [FromQuery] DateTime hasta, [FromQuery] bool soloVencidos = false)
+    {
+        var alcance = await AlcanceAsync();
+        var lista = await _fichajes.ListarIncompletosAsync(desde, hasta, soloVencidos);
+        return Ok(lista.Where(f => alcance.Incluye(f.Empleado)).ToList());
+    }
 
     [HttpPost("corregir")]
     public async Task<IActionResult> Corregir([FromBody] CorregirRequest r)
     {
+        if (!await PermitidoPorFichajeAsync(r.EntradaId)) return FueraDeAlcance();
         await _fichajes.CorregirAsync(Actor, r.EntradaId, r.Ingreso, r.Egreso, r.Motivo);
         return Ok(new { mensaje = "Fichaje corregido" });
     }
@@ -288,6 +335,7 @@ public class FichajesAdminController : AdminControllerBase
     [HttpPost("manual")]
     public async Task<IActionResult> Manual([FromBody] ManualRequest r)
     {
+        if (!(await AlcanceAsync()).Incluye(r.Empleado?.Trim())) return FueraDeAlcance();
         await _fichajes.AgregarManualAsync(Actor, r.Empleado, r.Ingreso, r.Egreso, r.Motivo);
         return Ok(new { mensaje = "Fichaje cargado" });
     }

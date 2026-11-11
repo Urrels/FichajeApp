@@ -63,7 +63,7 @@ public partial class RecorridoPage : ContentPage
         Mapa.Pins.Clear();
         Mapa.Drawables.Clear();
 
-        var linea = new Polyline { StrokeColor = Color.FromArgb("#B5542B"), StrokeWidth = 4 };
+        var linea = new Polyline { StrokeColor = Color.FromArgb("#7A2E3A"), StrokeWidth = 4 };
         for (int i = 0; i < puntos.Count; i++)
         {
             var p = puntos[i];
@@ -77,7 +77,7 @@ public partial class RecorridoPage : ContentPage
                 Address = primero ? "Primer punto" : ultimo ? "Último punto" : "Punto del recorrido",
                 Position = new Position(p.Latitud, p.Longitud),
                 Type = PinType.Pin,
-                Color = primero ? Color.FromArgb("#4E7A2F") : ultimo ? Color.FromArgb("#B26A00") : Color.FromArgb("#B5542B"),
+                Color = primero ? Color.FromArgb("#4E7A2F") : ultimo ? Color.FromArgb("#8B5A2B") : Color.FromArgb("#7A2E3A"),
                 Scale = primero || ultimo ? 0.9f : 0.6f
             });
             var globo = Mapa.Pins[^1].Callout;

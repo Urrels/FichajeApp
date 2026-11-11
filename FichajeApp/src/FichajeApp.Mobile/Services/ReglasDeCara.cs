@@ -1,7 +1,8 @@
 namespace FichajeApp.Mobile.Services;
 
 // Una cara encontrada en la foto, con su tamaño relativo al de la imagen (0 a 1)
-public record CaraDetectada(float AnchoRelativo, float AltoRelativo);
+// TieneRasgos: se ubicaron los dos ojos, la nariz y la boca. Un objeto con forma "de cara" no los tiene.
+public record CaraDetectada(float AnchoRelativo, float AltoRelativo, bool TieneRasgos = true);
 
 public enum VeredictoCara { Valida, SinCara, VariasCaras, MuyLejos }
 
@@ -15,6 +16,7 @@ public static class ReglasDeCara
     {
         if (caras.Count == 0) return VeredictoCara.SinCara;
         if (caras.Count > 1) return VeredictoCara.VariasCaras;
+        if (!caras[0].TieneRasgos) return VeredictoCara.SinCara;
         return caras[0].AnchoRelativo < AnchoMinimo ? VeredictoCara.MuyLejos : VeredictoCara.Valida;
     }
 

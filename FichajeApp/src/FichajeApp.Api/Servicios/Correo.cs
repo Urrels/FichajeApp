@@ -87,7 +87,7 @@ public static class PlantillasCorreo
     private static string Marco(string app, string cuerpoHtml) => $@"<!doctype html>
 <html><body style=""margin:0;padding:24px;background:#FBF6F0;font-family:Arial,Helvetica,sans-serif;color:#2B2B2B"">
 <div style=""max-width:480px;margin:0 auto;background:#FFFFFF;border:1px solid #E8DDD0;border-radius:12px;overflow:hidden"">
-<div style=""background:#B5542B;color:#FFFFFF;padding:20px 24px;font-size:20px;font-weight:bold"">{WebUtility.HtmlEncode(app)}</div>
+<div style=""background:#7A2E3A;color:#FFFFFF;padding:20px 24px;font-size:20px;font-weight:bold"">{WebUtility.HtmlEncode(app)}</div>
 <div style=""padding:24px;font-size:15px;line-height:1.5"">{cuerpoHtml}</div>
 </div></body></html>";
 
@@ -110,7 +110,7 @@ public static class PlantillasCorreo
         var n = WebUtility.HtmlEncode(nombre);
         var html = Marco(app, $@"<p>Hola {n},</p>
 <p>Pediste cambiar tu PIN. Tu código es:</p>
-<p style=""font-size:32px;letter-spacing:8px;font-weight:bold;color:#B5542B;margin:16px 0"">{codigo}</p>
+<p style=""font-size:32px;letter-spacing:8px;font-weight:bold;color:#7A2E3A;margin:16px 0"">{codigo}</p>
 <p>Ingresalo en la app junto con tu PIN nuevo. Vale <b>{minutos} minutos</b>.</p>
 <p style=""color:#6B6B6B;font-size:13px"">Si no lo pediste vos, ignorá este mail: tu PIN actual sigue funcionando.</p>");
         var texto = $"Hola {nombre},\n\nPediste cambiar tu PIN. Tu código es: {codigo}\n\nIngresalo en la app junto con tu PIN nuevo. Vale {minutos} minutos.\n\n" +

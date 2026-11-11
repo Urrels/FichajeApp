@@ -7,7 +7,7 @@
              Title="Supervisor"
              BackgroundColor="{DynamicResource ColorFondo}">
 
-    <Grid RowDefinitions="Auto,Auto,2*,Auto,3*" RowSpacing="8" Padding="16">
+    <Grid RowDefinitions="Auto,Auto,2*,Auto,Auto,3*" RowSpacing="10" Padding="16">
 
         <!-- Modo de consulta: el activo se ve relleno, los otros con borde -->
         <Grid Grid.Row="0" ColumnDefinitions="*,*,*" ColumnSpacing="8">
@@ -38,21 +38,26 @@
         </Grid>
 
         <!-- Filtros: solo en Historial -->
-        <VerticalStackLayout Grid.Row="1" Spacing="4" IsVisible="{Binding EsHistorial}">
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                <Border Grid.Column="0" Style="{StaticResource Campo}"><DatePicker Date="{Binding Desde}" /></Border>
-                <Border Grid.Column="1" Style="{StaticResource Campo}"><DatePicker Date="{Binding Hasta}" /></Border>
-            </Grid>
-            <Border Style="{StaticResource Campo}"><Picker Title="Empleado"
-                    ItemsSource="{Binding Empleados}"
-                    SelectedItem="{Binding EmpleadoSeleccionado}" /></Border>
-            <HorizontalStackLayout Spacing="8">
-                <Switch IsToggled="{Binding UnirRecorrido}" />
-                <Label Text="Unir con línea (recorrido de una persona)" VerticalOptions="Center" />
-            </HorizontalStackLayout>
-            <Button Text="Buscar" Clicked="OnBuscarClicked" />
-            <Button Text="Ver recorrido de la persona elegida (fecha Desde)" Clicked="OnVerRecorridoClicked" Style="{StaticResource BotonSecundario}" />
-        </VerticalStackLayout>
+        <Border Grid.Row="1" Style="{StaticResource Tarjeta}" Padding="12" IsVisible="{Binding EsHistorial}">
+            <VerticalStackLayout Spacing="8">
+                <Label Text="FILTROS" Style="{StaticResource EncabezadoSeccion}" Margin="0" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Border Grid.Column="0" Style="{StaticResource Campo}"><DatePicker Date="{Binding Desde}" /></Border>
+                    <Border Grid.Column="1" Style="{StaticResource Campo}"><DatePicker Date="{Binding Hasta}" /></Border>
+                </Grid>
+                <Border Style="{StaticResource Campo}"><Picker Title="Empleado"
+                        ItemsSource="{Binding Empleados}"
+                        SelectedItem="{Binding EmpleadoSeleccionado}" /></Border>
+                <HorizontalStackLayout Spacing="8">
+                    <Switch IsToggled="{Binding UnirRecorrido}" VerticalOptions="Center" />
+                    <Label Text="Unir los puntos con una línea" VerticalOptions="Center" FontSize="14" />
+                </HorizontalStackLayout>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Buscar" Clicked="OnBuscarClicked" />
+                    <Button Grid.Column="1" Text="Ver recorrido" Clicked="OnVerRecorridoClicked" Style="{StaticResource BotonSecundario}" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
 
         <Border Grid.Row="2" Style="{StaticResource Tarjeta}" Padding="0" StrokeShape="RoundRectangle 16">
             <Grid>
@@ -62,11 +67,28 @@
             </Grid>
         </Border>
 
-        <Label Grid.Row="3" Text="{Binding Estado}" Style="{StaticResource TextoAclaracion}" HorizontalOptions="Center"
-               HorizontalTextAlignment="Center" />
+        <Label Grid.Row="3" Text="{Binding Estado}" FontSize="13" FontAttributes="Bold" TextColor="{DynamicResource ColorTextoSuave}"
+               HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+
+        <!-- Detalle del fichaje elegido: quién, cuándo y dónde, con la foto y Google Maps a un toque -->
+        <Border x:Name="DetalleCard" Grid.Row="4" Style="{StaticResource Tarjeta}" Padding="14" IsVisible="False">
+            <VerticalStackLayout Spacing="6">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label x:Name="DetalleTitulo" FontSize="17" FontAttributes="Bold" VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="✕" FontSize="20" Padding="8,0" TextColor="{DynamicResource ColorTextoSuave}" VerticalOptions="Center">
+                        <Label.GestureRecognizers><TapGestureRecognizer Tapped="OnCerrarDetalle" /></Label.GestureRecognizers>
+                    </Label>
+                </Grid>
+                <Label x:Name="DetalleTexto" FontSize="13" TextColor="{DynamicResource ColorTextoSuave}" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,4,0,0">
+                    <Button x:Name="MapsButton" Grid.Column="0" Text="Ver en Google Maps" Clicked="OnVerEnMapsClicked" FontSize="13" />
+                    <Button x:Name="FotoButton" Grid.Column="1" Text="Ver foto" Clicked="OnVerFotoClicked" Style="{StaticResource BotonSecundario}" FontSize="13" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
 
         <!-- Deslizar hacia abajo actualiza; además se actualiza sola cada 30 s -->
-        <RefreshView Grid.Row="4" Command="{Binding RefrescarCommand}" IsRefreshing="{Binding Refrescando}">
+        <RefreshView Grid.Row="5" Command="{Binding RefrescarCommand}" IsRefreshing="{Binding Refrescando}">
             <CollectionView ItemsSource="{Binding Items}"
                             SelectionMode="Single"
                             SelectionChanged="OnItemSelected">
@@ -75,7 +97,41 @@
                 </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <ctl:ItemDeLista Titulo="{Binding NombreCompleto}" Detalle="{Binding Resumen}" />
+                        <!-- Tarjeta con una franja de color: verde entrada, ámbar salida -->
+                        <Border Style="{StaticResource Tarjeta}" Margin="0,4" Padding="12">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="Selected">
+                                        <VisualState.Setters>
+                                            <Setter Property="BackgroundColor" Value="{DynamicResource ColorSuperficie}" />
+                                            <Setter Property="Stroke" Value="{DynamicResource ColorPrimario}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <Grid ColumnDefinitions="6,*,Auto" ColumnSpacing="12">
+                                <BoxView WidthRequest="6" CornerRadius="3" Color="#4E7A2F">
+                                    <BoxView.Triggers>
+                                        <DataTrigger TargetType="BoxView" Binding="{Binding TipoFichaje}" Value="Salida">
+                                            <Setter Property="Color" Value="#8B5A2B" />
+                                        </DataTrigger>
+                                    </BoxView.Triggers>
+                                </BoxView>
+                                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                    <Label Text="{Binding NombreCompleto}" FontSize="16" FontAttributes="Bold" />
+                                    <Label Text="{Binding Resumen}" Style="{StaticResource TextoAclaracion}" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="2" Text="{Binding TipoFichaje}" FontSize="13" FontAttributes="Bold"
+                                       TextColor="#4E7A2F" VerticalOptions="Center">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding TipoFichaje}" Value="Salida">
+                                            <Setter Property="TextColor" Value="#8B5A2B" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Grid>
+                        </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

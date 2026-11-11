@@ -7,12 +7,10 @@ public partial class App : Application
     private readonly AuthService _authService;
     private readonly AparienciaService _apariencia;
 
-    private readonly ConfiguracionApiService _configuracion;
     private readonly PerfilFotos _perfiles;
 
-    public App(AuthService authService, IClienteService clientes, AparienciaService apariencia, ConfiguracionApiService configuracion, PerfilFotos perfiles)
+    public App(AuthService authService, IClienteService clientes, AparienciaService apariencia, PerfilFotos perfiles)
     {
-        _configuracion = configuracion;
         _perfiles = perfiles;
         InitializeComponent();
 
@@ -30,13 +28,6 @@ public partial class App : Application
     {
         // Restaura el token guardado en SecureStorage y puebla el Singleton SessionManager
         var haySesion = await _authService.RestaurarSesionAsync();
-
-        // Si el servidor se reinició sin planilla (por ejemplo para empezar de cero), la sesión guardada es de la planilla vieja
-        if (haySesion && (await _configuracion.EstadoAsync())?.Configurada == false)
-        {
-            _authService.Logout();
-            haySesion = false;
-        }
         await Shell.Current.GoToAsync(haySesion ? Navegacion.RutaInicial() : "//LoginPage");
 
         // La apariencia vigente se pide sin bloquear el arranque; si cambió, la pantalla se actualiza sola

@@ -164,7 +164,8 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         else if (config.PideFoto)
         {
             Estado = "Sacate una foto...";
-            try { foto = await FotoFichaje.TomarAsync(); }
+            // Con control de cara: si no se ve una cara real la foto se rechaza con un mensaje y se puede repetir
+            try { foto = await FotoDePerfil.TomarValidadaAsync(estricto: true); }
             catch (Exception ex)
             {
                 if (config.FotoObligatoria) { Fallar(TextosDeError.CamaraNoDisponible); Procesando = false; return; }
@@ -186,7 +187,13 @@ public class FichajeViewModel : INotifyPropertyChanged, ISessionObserver
         var (bioExito, bioMensaje) = await _biometricService.AutenticarAsync();
         var ubicacion = await ubicacionTask;
 
-        if (!bioExito) { Fallar(bioMensaje); Procesando = false; return; }
+        if (!bioExito)
+        {
+            // Una huella que no pasó (no una cancelación ni un teléfono sin huella) se le avisa al supervisor
+            if (bioMensaje.StartsWith("Autenticación fallida") && !bioMensaje.Contains("Cancel", StringComparison.OrdinalIgnoreCase))
+                _ = _apiService.ReportarAlertaAsync("biometria");
+            Fallar(bioMensaje); Procesando = false; return;
+        }
         if (!ubicacion.Exito) { Fallar(ubicacion.Mensaje); Procesando = false; return; }
 
         Estado = "Registrando fichaje...";

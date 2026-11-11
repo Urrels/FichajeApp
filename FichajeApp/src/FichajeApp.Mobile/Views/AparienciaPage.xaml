@@ -50,6 +50,9 @@
             <Button Text="Que el texto se ajuste solo" Clicked="OnTextoAutomatico" IsVisible="{Binding TextoAutomaticoDisponible}" />
             <Label Text="El texto se ajusta solo para que se lea bien sobre el color principal. Si elegís uno a mano, queda fijo." FontSize="11" />
 
+            <!-- Vuelve a los colores de la marca (borgoña, texto blanco y arena) y los guarda para todos; no toca el nombre ni el logo -->
+            <Button Text="Restablecer colores" Style="{StaticResource BotonSecundario}" Clicked="OnRestablecerColores" />
+
             <ctl:BannerInline Severidad="Error" Texto="{Binding Aviso}" IsVisible="{Binding HayAviso}" />
 
             <Label Text="Logo" FontAttributes="Bold" Margin="0,6,0,0" />

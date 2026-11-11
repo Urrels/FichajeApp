@@ -20,7 +20,7 @@ public static class DetectorDeCara
 
             var opciones = new FaceDetectorOptions.Builder()
                 .SetPerformanceMode(FaceDetectorOptions.PerformanceModeAccurate)
-                .SetLandmarkMode(FaceDetectorOptions.LandmarkModeNone)
+                .SetLandmarkMode(FaceDetectorOptions.LandmarkModeAll)
                 .SetClassificationMode(FaceDetectorOptions.ClassificationModeNone)
                 .Build();
             using var detector = FaceDetection.GetClient(opciones);
@@ -39,7 +39,12 @@ public static class DetectorDeCara
                 if (lista.Get(i) is Face cara)
                 {
                     var r = cara.BoundingBox;
-                    caras.Add(new CaraDetectada((float)r.Width() / bitmap.Width, (float)r.Height() / bitmap.Height));
+                    // Una cara de verdad tiene ojos, nariz y boca ubicables; una mancha o un dibujo suelen no tenerlos
+                    bool rasgos = cara.GetLandmark(FaceLandmark.LeftEye) is not null
+                        && cara.GetLandmark(FaceLandmark.RightEye) is not null
+                        && cara.GetLandmark(FaceLandmark.NoseBase) is not null
+                        && cara.GetLandmark(FaceLandmark.MouthBottom) is not null;
+                    caras.Add(new CaraDetectada((float)r.Width() / bitmap.Width, (float)r.Height() / bitmap.Height, rasgos));
                 }
             }
             return caras;

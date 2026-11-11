@@ -2,7 +2,7 @@
 <resources>
     <!-- Colores neutros del tema de Android: aparecen donde la app todavía no pintó con los de la marca
          (barra de estado con el menú abierto, cursor, diálogos de fecha). Antes eran el violeta de la plantilla de MAUI. -->
-    <color name="colorPrimary">#B5542B</color>
-    <color name="colorPrimaryDark">#8A3E1F</color>
-    <color name="colorAccent">#B5542B</color>
+    <color name="colorPrimary">#7A2E3A</color>
+    <color name="colorPrimaryDark">#5A1F29</color>
+    <color name="colorAccent">#7A2E3A</color>
 </resources>

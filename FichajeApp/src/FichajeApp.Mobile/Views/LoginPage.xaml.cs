@@ -7,20 +7,19 @@ public partial class LoginPage : ContentPage
 {
     private readonly LoginViewModel _viewModel;
 
-    private readonly ConfiguracionApiService _configuracion;
+    private readonly EstadoServidor _servidor;
     private readonly IClienteService _clientes;
     private readonly AparienciaService _apariencia;
     private readonly AuthService _auth;
     private readonly PerfilFotos _perfiles;
-    private bool _yaOfrecioConfigurar;
     private int _toquesEnElLogo;
     private DateTime _primerToque;
 
-    public LoginPage(AuthService authService, ConfiguracionApiService configuracion, IClienteService clientes,
+    public LoginPage(AuthService authService, EstadoServidor servidor, IClienteService clientes,
         AparienciaService apariencia, IBiometricService biometria, PerfilFotos perfiles)
     {
         InitializeComponent();
-        _configuracion = configuracion;
+        _servidor = servidor;
         _clientes = clientes;
         _apariencia = apariencia;
         _auth = authService;
@@ -30,20 +29,12 @@ public partial class LoginPage : ContentPage
         BindingContext = _viewModel;
     }
 
-    // Servidor recién instalado: lleva directo a conectar la planilla (una sola vez por apertura de la app)
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         _viewModel.Limpiar();
         MostrarServidorPersonalizado();
         await _viewModel.ActualizarHuellaAsync();
-        if (_yaOfrecioConfigurar) return;
-        _yaOfrecioConfigurar = true;
-
-        var estado = await _configuracion.EstadoAsync();
-        ConectarButton.IsVisible = estado?.UsaSql != true;   // con base SQL no hay planilla que conectar
-        if (estado?.Configurada == false)
-            await Shell.Current.GoToAsync(nameof(ConfiguracionPage));
     }
 
     // Recordatorio visible solo cuando la app apunta a un servidor distinto del que trae el build
@@ -88,8 +79,7 @@ public partial class LoginPage : ContentPage
         MostrarServidorPersonalizado();
 
         // Se comprueba al guardar para que el error se vea acá y no recién al intentar entrar
-        var estado = await _configuracion.EstadoAsync();
-        if (estado is null)
+        if (!await _servidor.RespondeAsync())
         {
             await Dialogos.Aviso("Guardada, pero no responde",
                 $"Se guardó {url}, pero no se pudo conectar. Revisá que el servidor esté encendido y que la dirección sea correcta.");
@@ -97,13 +87,8 @@ public partial class LoginPage : ContentPage
         }
 
         _ = _apariencia.ActualizarAsync(); // trae los colores y el logo de ese servidor
-        await Dialogos.Aviso("Conectado", estado.Configurada
-            ? $"El servidor responde:\n{url}"
-            : $"El servidor responde pero todavía no tiene planilla conectada:\n{url}");
-        if (!estado.Configurada) await Shell.Current.GoToAsync(nameof(ConfiguracionPage));
+        await Dialogos.Aviso("Conectado", $"El servidor responde:\n{url}");
     }
-
-    private async void OnConfigurarClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(ConfiguracionPage));
 
     // Tocar "Listo" en el teclado entra, igual que el botón
     private async void OnPinCompleted(object sender, EventArgs e) => await _viewModel.LoginAsync();

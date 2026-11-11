@@ -11,25 +11,13 @@ public record SitioAdmin(int Id, string Nombre, double Latitud, double Longitud,
 public record GuardarSitioRequest(string? Nombre, double Latitud, double Longitud, double RadioMetros);
 
 // Alta, cambio y baja de los lugares conocidos (donde se puede fichar con "Ubicación libre").
-// Hoy solo los guarda la base SQL; con la planilla se siguen editando en la pestaña "Sitios".
+// Se guardan en la base SQL.
 public interface ISitiosAdminRepositorio
 {
     Task<List<SitioAdmin>> ListarAsync();
     Task<int> CrearAsync(Sitio sitio);
     Task ActualizarAsync(int id, Sitio sitio);   // InvalidOperationException si no existe
     Task EliminarAsync(int id);                  // InvalidOperationException si no existe
-}
-
-// Para quien usa la planilla de Google: no hay dónde guardar desde la app
-public class SitiosAdminNoDisponible : ISitiosAdminRepositorio
-{
-    private static InvalidOperationException Error() => new(
-        "Cargar lugares desde la app necesita la base de datos SQL. Con la planilla de Google se cargan en la pestaña «Sitios».");
-
-    public Task<List<SitioAdmin>> ListarAsync() => throw Error();
-    public Task<int> CrearAsync(Sitio sitio) => throw Error();
-    public Task ActualizarAsync(int id, Sitio sitio) => throw Error();
-    public Task EliminarAsync(int id) => throw Error();
 }
 
 public class SitiosAdminService

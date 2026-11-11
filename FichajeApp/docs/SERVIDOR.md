@@ -1,7 +1,7 @@
 # Poner la API en internet
 
 La app de Play Store habla con la API por internet con **HTTPS**. Hace falta **una API por cliente** (cada una con su propio
-`Jwt__Secret`, su código de activación y su carpeta `datos`). No necesitás un dominio propio.
+`Jwt__Secret`, su base de datos y su carpeta `datos`). No necesitás un dominio propio.
 
 > Los archivos de esta guía (`Dockerfile`, `docker-compose.yml`, `Caddyfile`) están escritos pero **no se probaron** en esta
 > máquina (no tiene Docker). Probalos primero con un cliente de prueba antes de dárselos a uno real.
@@ -11,7 +11,7 @@ La app de Play Store habla con la API por internet con **HTTPS**. Hace falta **u
 | Variable | Para qué |
 |---|---|
 | `Jwt__Secret` | Clave que firma las sesiones: 32+ caracteres al azar, **distinta por cliente**. La API **se niega a arrancar en producción** con la de ejemplo. |
-| `Setup__Clave` | Código de activación que le mandás al cliente (ver README). |
+| `ConnectionStrings__Fichaje` | **Obligatoria.** La cadena de conexión de la base SQL (ver abajo). Sin ella la API se niega a arrancar. |
 | `Fichaje__FotosRetencionDias` | Días que se guardan las fotos (90 por defecto, `0` = nunca se borran). |
 | `Fichaje__PrecisionMaxMetros` | Valor **inicial** del error máximo del GPS que se acepta al fichar (50 m por defecto). El administrador lo cambia desde la app (Cómo se ficha → Precisión del GPS) y eso manda sobre este valor. Adentro de un edificio el GPS suele dar ±30 a ±150 m: para un cliente que ficha en un lugar cerrado conviene "Flexible" (100 m) o ubicación "Ninguna". |
 | `Feriados__SincronizacionAutomatica` | `true` por defecto: una vez por día (y al arrancar) el servidor trae los feriados nacionales de la API pública ArgentinaDatos a la pestaña **Feriados**. Lo cargado a mano nunca se pisa. Si el servidor no tiene salida a internet, ponerlo en `false` (los feriados se cargan a mano). El administrador también puede forzarlo desde Liquidación → Configuración → Feriados → Actualizar. |
@@ -19,8 +19,8 @@ La app de Play Store habla con la API por internet con **HTTPS**. Hace falta **u
 | `TZ` | Zona horaria del servidor. El `Dockerfile` ya trae `America/Argentina/Buenos_Aires`; si lo desplegás sin Docker, ponela vos. Sin esto un servidor en UTC guarda los fichajes 3 h corridos y los de la noche aparecen en el día siguiente (el supervisor no los ve en "Hoy"). |
 | `Setup__Carpeta` | Carpeta persistente para `datos` (en el `Dockerfile`: `/datos`). |
 
-**Lo más importante:** la carpeta `datos` guarda la credencial cifrada, las llaves, el código de activación y **las fotos**.
-Tiene que ser un **volumen persistente** y tener **copia de seguridad**. Si se pierde, el cliente tiene que volver a conectar su planilla.
+**Lo más importante:** la carpeta `datos` guarda **las fotos** (de fichajes y de perfil).
+Tiene que ser un **volumen persistente** y tener **copia de seguridad**. Si se pierde, se pierden las fotos (los fichajes están en la base).
 
 Para generar una clave al azar (PowerShell):
 
@@ -28,12 +28,11 @@ Para generar una clave al azar (PowerShell):
 -join ((48..57)+(65..90)+(97..122) | Get-Random -Count 40 | ForEach-Object {[char]$_})
 ```
 
-## Dónde se guardan los datos: base SQL (recomendado) o planilla de Google
+## Dónde se guardan los datos: base SQL
 
-Si definís la variable `ConnectionStrings__Fichaje`, la API guarda todo en **SQL Server / Azure SQL** y **no usa Google Sheets**.
-Sin esa variable sigue funcionando con la planilla, como antes.
+La API guarda todo en **SQL Server / Azure SQL**. Ya no se puede usar una planilla de Google: esa opción se eliminó.
 
-| Variable (solo con base SQL) | Para qué |
+| Variable | Para qué |
 |---|---|
 | `ConnectionStrings__Fichaje` | Cadena de conexión. Azure SQL: `Server=tcp:SERVIDOR.database.windows.net,1433;Database=NOMBRE;User ID=USUARIO;Password=CLAVE;Encrypt=True;TrustServerCertificate=False;Connection Timeout=60;` |
 | `Setup__AdminNombre`, `Setup__AdminEmail`, `Setup__AdminPin` | El **primer administrador**. Se crea solo la primera vez, si todavía no hay ningún empleado (PIN de 4 dígitos). Después se pueden sacar. |
@@ -42,10 +41,13 @@ Sin esa variable sigue funcionando con la planilla, como antes.
 - Al arrancar la API crea las tablas, siembra los permisos y roles y crea el primer administrador. No hay que correr scripts.
 - Azure SQL *serverless* se pausa solo cuando no se usa: la primera consulta después de un rato puede tardar unos segundos.
   La API reintenta la conexión sola (hasta ~1 minuto), pero el primer fichaje del día puede sentirse lento.
-- Con base SQL ya no existen la clave de activación ni la pantalla "Conectar mi planilla": la app entra directo al login.
+- La app entra directo al login: no hay clave de activación ni pantalla para conectar nada.
 - **Lugares conocidos (tabla `Sitios`)**: se cargan desde la app, en Administración → Lugares conocidos (hace falta el permiso
   «Configurar fichaje»). Lo más cómodo es agregar cada lugar estando ahí: la app toma la ubicación. Un cambio se ve en el
-  próximo fichaje. Con la planilla de Google se siguen cargando en la pestaña «Sitios».
+  próximo fichaje.
+- **Jerarquía**: Administrador → Supervisores → Empleados. En Administración → Usuarios → *Supervisor a cargo* se elige quién tiene
+  a cargo a cada empleado. El supervisor solo ve, corrige y recibe avisos de los suyos; si un empleado no tiene supervisor (o el
+  suyo se dio de baja), los avisos van al administrador.
 - **Copia de seguridad**: en Azure SQL son automáticas (restauración a un momento dado, 7 días por defecto). Probá restaurar una vez.
 - Las **fotos** (de fichajes y de perfil) y las llaves de seguridad siguen en la carpeta `datos`, no en la base: necesitan disco persistente.
 - Para probar en tu máquina sin instalar nada: LocalDB (viene con Visual Studio):
@@ -65,11 +67,8 @@ Sirven Railway, Render, Fly.io y similares: les das el repositorio de GitHub, de
 1. Creá una cuenta y un proyecto nuevo desde el repositorio de GitHub (carpeta raíz: `FichajeApp`, usa el `Dockerfile`).
 2. Cargá las variables de la tabla de arriba.
 3. **Agregá un volumen persistente** montado en `/datos` (si no, cada despliegue borra todo).
-4. Esperá a que despliegue y abrí `https://TU-DIRECCION/api/configuracion/estado`: tiene que responder `{"configurada":false,...}`.
+4. Esperá a que despliegue y abrí `https://TU-DIRECCION/api/configuracion/estado`: tiene que responder `{"configurada":true,...}`.
 5. Esa dirección más `/api` es la `apiBaseUrl` del cliente (`Clientes/<cliente>/cliente.json`).
-
-Como en estos servicios es incómodo subir un archivo, **no pongas el `.json` de Google en el servidor**: cargalo desde la app
-(la pantalla de conexión lo pide cuando el servidor no tiene credencial; se guarda cifrado en `/datos`).
 
 Los precios cambian: revisalos en el sitio de cada servicio. Para 22 empleados alcanza con el plan más chico.
 
@@ -81,7 +80,7 @@ Sirve cualquier VPS con Ubuntu y Docker. Caddy consigue y renueva solo el certif
    `fichaje-sol.duckdns.org`) apuntando a la IP del servidor.
 2. Abrí los puertos 80 y 443 del servidor.
 3. En el servidor: `git clone` del repositorio y `cd FichajeApp`.
-4. `cp .env.example .env` y completá `DOMINIO`, `JWT_SECRET` y `CODIGO_ACTIVACION`.
+4. `cp .env.example .env` y completá `DOMINIO`, `JWT_SECRET` y `CONEXION_SQL` (la cadena de conexión de la base).
 5. `docker compose up -d --build`
 6. Abrí `https://TU-DOMINIO/api/configuracion/estado`.
 
@@ -91,13 +90,10 @@ El volumen `datos` queda en Docker: respaldalo con `docker run --rm -v fichajeap
 ## Antes de dárselo al cliente
 
 - [ ] `https://TU-DIRECCION/api/configuracion/estado` responde.
-- [ ] Probé conectar una planilla de prueba desde la app y entrar con el administrador.
-- [ ] Reinicié el servidor y siguió conectada (el volumen persiste).
-- [ ] Anoté el `Jwt__Secret`, el código de activación y dónde está la copia de seguridad.
+- [ ] Entré con el administrador (`Setup__Admin*`) y todo carga.
+- [ ] Reinicié el servidor y las fotos siguieron ahí (el volumen persiste).
+- [ ] Anoté el `Jwt__Secret`, la cadena de conexión y dónde está la copia de seguridad.
 - [ ] El `apiBaseUrl` del cliente es `https://…/api` (con `s`: Android bloquea `http` fuera del emulador).
-
-> Ojo: `dotnet publish` copia `credentials/service-account.json` a la carpeta de salida. No subas esa carpeta a ningún lado.
-> La imagen de Docker **no** la incluye (`.dockerignore`).
 
 ## Seguridad del inicio de sesión
 
@@ -135,7 +131,7 @@ hay que pedir uno nuevo. Cada código vale 15 minutos, se puede pedir uno por mi
 ## Notificaciones dentro de la app
 
 El menú lateral tiene **Notificaciones** (con el número de avisos sin leer). Hoy se generan al darte de alta, cuando cambia tu PIN y cuando
-cambia tu horario. Necesitan la base SQL (con la planilla de Google no se guardan). No son notificaciones "push": se ven al abrir la app.
+cambia tu horario. Se guardan en la base SQL. No son notificaciones "push": se ven al abrir la app.
 
 ## Notificaciones push (Firebase)
 

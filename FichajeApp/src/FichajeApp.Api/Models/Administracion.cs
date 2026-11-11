@@ -52,6 +52,9 @@ public class UsuarioAdminDto
     public int IntentosFallidos { get; set; }
     public List<int> RolIds { get; set; } = new();
     public List<string> Roles { get; set; } = new();
+    // Quién lo tiene a cargo (null = el administrador)
+    public int? SupervisorId { get; set; }
+    public string? Supervisor { get; set; }
 }
 
 // Un fichaje de la hoja con su identificador (número de fila) y datos de corrección

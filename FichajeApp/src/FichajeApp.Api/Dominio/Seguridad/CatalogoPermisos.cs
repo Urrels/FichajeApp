@@ -22,15 +22,15 @@ public static class CatalogoPermisos
     // Teléfono compartido de una sucursal: cada empleado ficha eligiendo su nombre y poniendo su PIN
     public const string FicharEnKiosco = "Fichar en kiosco";
 
-    // Cambiar la planilla de Google una vez que el servidor ya está configurado
-    public const string CambiarConexion = "Cambiar conexión de Google";
-
     public static readonly string[] Todos =
     {
         AdministrarUsuarios, GestionRoles, VerBitacora, CambiarPin,
         FicharAsistencia, VerPanelSupervisor, CorregirFichajes, LiquidarHoras, GestionarApariencia, ConfigurarFichaje,
-        FicharEnKiosco, CambiarConexion
+        FicharEnKiosco
     };
+
+    // Permisos que existieron en versiones anteriores y ya no hacen nada: al arrancar se borran de la base (ver InicializadorSql)
+    public static readonly string[] Obsoletos = { "Cambiar conexión de Google" };
 
     // Cuenta de un teléfono de sucursal: puede usar el kiosco pero no ficha por sí misma. El Administrador tiene todos los
     // permisos (incluido el del kiosco) y sí ficha, así que NO es una cuenta de sucursal.

@@ -263,12 +263,15 @@ public class FotosApiTests : IClassFixture<ApiFactory>
     {
         var ana = await ClienteDe("ana@test.com", Entorno.PinAna);
         var beto = await ClienteDe("beto@test.com", Entorno.PinBeto);
+        var admin = await ClienteDe("admin@test.com", Entorno.PinAdmin);
 
         Assert.Equal(HttpStatusCode.Forbidden, (await ana.GetAsync("/api/supervisor/foto?archivo=2026/10/29/x.jpg")).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await beto.GetAsync("/api/supervisor/foto?archivo=2026/10/29/x.jpg")).StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await admin.GetAsync("/api/supervisor/foto?archivo=2026/10/29/x.jpg")).StatusCode);
+        // Un supervisor solo recibe fotos de quienes tiene a cargo: una que no es de ninguna de esas personas, no
+        Assert.Equal(HttpStatusCode.Forbidden, (await beto.GetAsync("/api/supervisor/foto?archivo=2026/10/29/x.jpg")).StatusCode);
 
         var nombre = await _fabrica.Datos.Fotos.GuardarAsync(Imagenes.Jpeg, DateTime.Today);
-        var r = await beto.GetAsync("/api/supervisor/foto?archivo=" + Uri.EscapeDataString(nombre));
+        var r = await admin.GetAsync("/api/supervisor/foto?archivo=" + Uri.EscapeDataString(nombre));
         Assert.Equal(HttpStatusCode.OK, r.StatusCode);
         Assert.Equal("image/jpeg", r.Content.Headers.ContentType!.MediaType);
     }

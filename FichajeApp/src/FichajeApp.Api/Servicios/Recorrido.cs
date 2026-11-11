@@ -56,15 +56,6 @@ public class RecorridoSqlRepositorio : Persistencia.Sql.BaseSql, IRecorridoRepos
     }
 }
 
-// Con la planilla de Google no hay dónde guardar el recorrido
-public class RecorridoNoDisponible : IRecorridoRepositorio
-{
-    public Task AgregarAsync(int empleadoId, IReadOnlyCollection<PuntoGuardado> puntos) =>
-        throw new InvalidOperationException("El recorrido durante la jornada necesita la base de datos SQL.");
-    public Task<List<PuntoGuardado>> ListarAsync(int empleadoId, DateTime desde, DateTime hasta) => Task.FromResult(new List<PuntoGuardado>());
-    public Task<int> EliminarAnterioresAsync(DateTime antesDe) => Task.FromResult(0);
-}
-
 public record ResultadoRecorrido(int Aceptados, bool Seguir, string? Motivo = null);
 
 // Recorrido durante la jornada: el teléfono manda puntos mientras hay una jornada abierta y el cliente lo activó.

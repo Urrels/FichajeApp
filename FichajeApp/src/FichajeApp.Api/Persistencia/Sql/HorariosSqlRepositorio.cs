@@ -25,11 +25,3 @@ public class HorariosSqlRepositorio : BaseSql, IHorariosRepositorio
         await db.SaveChangesAsync();
     });
 }
-
-public class HorariosNoDisponible : IHorariosRepositorio
-{
-    public Task<List<HorarioEmpleado>> ListarAsync() => Task.FromResult(new List<HorarioEmpleado>());
-
-    public Task GuardarAsync(int empleadoId, IReadOnlyCollection<HorarioEmpleado> horarios) =>
-        throw new InvalidOperationException("Los horarios por empleado necesitan la base de datos SQL.");
-}
