@@ -105,12 +105,6 @@
                        HorizontalOptions="Center" HorizontalTextAlignment="Center"
                        TextColor="{DynamicResource ColorTextoSuave}" />
 
-                <Button x:Name="ConectarButton" Text="Conectar mi planilla de Google"
-                        Clicked="OnConfigurarClicked"
-                        BackgroundColor="Transparent"
-                        TextColor="{DynamicResource ColorTextoSuave}"
-                        FontSize="12" />
-
             </VerticalStackLayout>
         </Border>
     </Grid>
